@@ -18,5 +18,31 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """Weblate API client library."""
+from __future__ import unicode_literals
+
+try:
+    from urllib import urlencode, urlopen
+except ImportError:
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
+
+import json
 
 __version__ = 0.0
+
+API_URL = 'http://127.0.0.1:8000/api/'
+USER_AGENT = 'wlc/{0}'.format(__version__)
+
+
+class Weblate(object):
+    def __init__(self, user='', password='', url=API_URL, config=None):
+        """Create the object, storing user and API password."""
+        if config is not None:
+            self.user = config.get(config.section, 'user')
+            self.password = config.get(config.section, 'password')
+            self.url = config.get(config.section, 'url')
+        else:
+            self.user = user
+            self.password = password
+            self.url = url
+
