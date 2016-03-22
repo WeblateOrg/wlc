@@ -1,0 +1,2 @@
+# wlc
+Weblate commandline client
