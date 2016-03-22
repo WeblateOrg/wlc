@@ -1,0 +1,23 @@
+language: python
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "pypy"
+  - "pypy3"
+sudo: false
+# commands to install dependencies
+install: 
+  - pip install -r requirements.txt
+  - pip install -r requirements-test.txt
+# commands to run tests
+script: 
+  - py.test --cov=wlc
+after_script:
+  - codecov
+# trigger Buildtime Trend Service to parse Travis CI log
+notifications:
+  webhooks:
+    - https://buildtimetrend.herokuapp.com/travis

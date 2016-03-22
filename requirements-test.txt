@@ -1,0 +1,4 @@
+codecov
+HTTPretty
+pytest
+pytest-cov
