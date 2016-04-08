@@ -28,21 +28,25 @@ except ImportError:
 
 import json
 
-__version__ = 0.0
+__version__ = 0.1
 
+URL = 'https://weblate.org/'
+DEVEL_URL = 'https://github.com/nijel/wlc'
 API_URL = 'http://127.0.0.1:8000/api/'
 USER_AGENT = 'wlc/{0}'.format(__version__)
 
 
+class WeblateException(Exception):
+    """Generic error."""
+
+
 class Weblate(object):
-    def __init__(self, user='', password='', url=API_URL, config=None):
-        """Create the object, storing user and API password."""
+    def __init__(self, key='', url=API_URL, config=None):
+        """Create the object, storing key and API url."""
         if config is not None:
-            self.user = config.get(config.section, 'user')
-            self.password = config.get(config.section, 'password')
+            self.key = config.get(config.section, 'key')
             self.url = config.get(config.section, 'url')
         else:
-            self.user = user
-            self.password = password
+            self.key = key
             self.url = url
 
