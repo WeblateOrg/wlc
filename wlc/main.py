@@ -25,8 +25,6 @@ import sys
 import json
 import csv
 from argparse import ArgumentParser
-from datetime import datetime, timedelta
-import dateutil.parser
 
 import wlc
 from wlc.config import WeblateConfig, NoOptionError

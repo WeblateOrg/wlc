@@ -21,9 +21,8 @@
 from __future__ import unicode_literals
 
 from unittest import TestCase
-from wlc import Weblate, WeblateException
+from wlc import Weblate
 import httpretty
-import datetime
 import os
 
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
