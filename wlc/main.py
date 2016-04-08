@@ -418,6 +418,18 @@ class ListLanguages(Command):
         self.print(self.wlc.list_languages())
 
 
+@register_command
+class ListTranslations(Command):
+    """Lists translations."""
+
+    name = 'list-translations'
+    description = "Lists all translations"""
+
+    def run(self):
+        """Main execution of the command."""
+        self.print(self.wlc.list_translations())
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()

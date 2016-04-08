@@ -94,6 +94,10 @@ class Weblate(object):
         """Lists components in the instance"""
         return self._list_factory('components/', Component)
 
+    def list_translations(self):
+        """Lists translations in the instance"""
+        return self._list_factory('translations/', Translation)
+
     def list_languages(self):
         """Lists languages in the instance"""
         return self._list_factory('languages/', Language)
@@ -183,4 +187,22 @@ class Component(LazyObject):
     _id = 'slug'
     _mappings = {
         'project': Project,
+    }
+
+
+class Translation(LazyObject):
+    """Translation object"""
+    _params = (
+        'url', 'web_url',
+        'language', 'component', 'translated', 'fuzzy', 'total',
+        'translated_words', 'fuzzy_words', 'failing_checks_words',
+        'total_words', 'failing_checks', 'have_suggestion', 'have_comment',
+        'language_code', 'filename', 'revision', 'share_url', 'translate_url',
+        'is_template', 'translated_percent', 'fuzzy_percent',
+        'failing_checks_percent', 'last_change', 'last_author',
+    )
+    _id = 'slug'
+    _mappings = {
+        'language': Language,
+        'component': Component,
     }
