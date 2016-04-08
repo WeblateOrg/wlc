@@ -32,7 +32,6 @@ def register_uri(path, domain='http://127.0.0.1:8000/api'):
     """Simplified URL registration"""
     filename = os.path.join(DATA_TEST_BASE, path)
     url = '/'.join((domain, path, ''))
-    print url, filename
     with open(filename, 'rb') as handle:
         httpretty.register_uri(
             httpretty.GET,
