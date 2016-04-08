@@ -1,7 +1,10 @@
 wlc
 ===
 
-Weblate commandline client
+`Weblate`_ commandline client using `Weblate's REST API`_.
+
+.. _Weblate's REST API: https://docs.weblate.org/en/latest/api.html
+.. _Weblate: https://weblate.org/
 
 .. image:: https://travis-ci.org/nijel/wlc.svg?branch=master
     :target: https://travis-ci.org/nijel/wlc
