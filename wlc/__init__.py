@@ -90,6 +90,14 @@ class Weblate(object):
         """Lists projects in the instance"""
         return self._list_factory('projects/', Project)
 
+    def list_components(self):
+        """Lists components in the instance"""
+        return self._list_factory('components/', Component)
+
+    def list_languages(self):
+        """Lists languages in the instance"""
+        return self._list_factory('languages/', Language)
+
 
 class LazyObject(object):
     """Object which supports deferred loading"""
@@ -161,4 +169,18 @@ class Project(LazyObject):
     _id = 'slug'
     _mappings = {
         'source_language': Language,
+    }
+
+
+class Component(LazyObject):
+    """Component object"""
+    _params = (
+        'url', 'web_url',
+        'name', 'slug', 'project', 'vcs', 'repo', 'git_export', 'branch',
+        'filemask', 'template', 'new_base', 'file_format', 'license',
+        'license_url',
+    )
+    _id = 'slug'
+    _mappings = {
+        'project': Project,
     }

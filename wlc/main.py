@@ -384,7 +384,6 @@ class Version(Command):
 
 @register_command
 class ListProjects(Command):
-
     """Lists projects."""
 
     name = 'list-projects'
@@ -393,6 +392,30 @@ class ListProjects(Command):
     def run(self):
         """Main execution of the command."""
         self.print(self.wlc.list_projects())
+
+
+@register_command
+class ListComponents(Command):
+    """Lists components."""
+
+    name = 'list-components'
+    description = "Lists all components"""
+
+    def run(self):
+        """Main execution of the command."""
+        self.print(self.wlc.list_components())
+
+
+@register_command
+class ListLanguages(Command):
+    """Lists languages."""
+
+    name = 'list-languages'
+    description = "Lists all languages"""
+
+    def run(self):
+        """Main execution of the command."""
+        self.print(self.wlc.list_languages())
 
 
 def main(settings=None, stdout=None, args=None):
