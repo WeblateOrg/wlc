@@ -25,7 +25,7 @@ from six.moves.urllib.parse import urlencode
 
 import json
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 URL = 'https://weblate.org/'
 DEVEL_URL = 'https://github.com/nijel/wlc'
