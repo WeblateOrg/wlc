@@ -20,15 +20,12 @@
 """Weblate API client library."""
 from __future__ import unicode_literals
 
-try:
-    from urllib import urlencode, urlopen
-except ImportError:
-    from urllib.parse import urlencode
-    from urllib.request import urlopen
+from six.moves.urllib.request import Request, urlopen
+from six.moves.urllib.parse import urlencode
 
 import json
 
-__version__ = 0.1
+__version__ = '0.1'
 
 URL = 'https://weblate.org/'
 DEVEL_URL = 'https://github.com/nijel/wlc'
@@ -50,3 +47,118 @@ class Weblate(object):
             self.key = key
             self.url = url
 
+    def request(self, path, params=None):
+        """Constructs request object"""
+        if not path.startswith('http'):
+            path = '{0}{1}'.format(self.url, path)
+        request = Request(path)
+        request.add_header('User-Agent', USER_AGENT)
+        request.add_header('Accept', 'application/json')
+        if self.key:
+            request.add_header(
+                'Authorization',
+                'Token %s' % self.key
+            )
+
+        handle = urlopen(request, params)
+        content = handle.read()
+
+        result = json.loads(content.decode('utf-8'))
+
+        return result
+
+    def post(self, path, **kwargs):
+        """Perform POST request on the API."""
+        params = urlencode(
+            {key: val.encode('utf-8') for key, val in kwargs.items()}
+        )
+        return self.request(path, params)
+
+    def get(self, path):
+        """Perform GET request on the API."""
+        return self.request(path)
+
+    def _list_factory(self, path, parser):
+        """Wrapper for listing objects"""
+        data = self.get(path)
+        # TODO: handle pagination
+        return [
+            parser(weblate=self, **item) for item in data['results']
+        ]
+
+    def list_projects(self):
+        """Lists projects in the instance"""
+        return self._list_factory('projects/', Project)
+
+
+class LazyObject(object):
+    """Object which supports deferred loading"""
+    _params = ()
+    _mappings = {}
+    _url = None
+    _weblate = None
+    _loaded = False
+    _data = None
+    _id = 'url'
+
+    def __init__(self, weblate, url, **kwargs):
+        self._weblate = weblate
+        self._url = url
+        self._data = {}
+        self._load_params(**kwargs)
+        self._load_params(url=url)
+
+    def _load_params(self, **kwargs):
+        for param in self._params:
+            if param in kwargs:
+                if param in self._mappings:
+                    self._data[param] = self._mappings[param](
+                        self._weblate, **kwargs[param]
+                    )
+                else:
+                    self._data[param] = kwargs[param]
+
+    def _lazy_load(self):
+        if self._loaded:
+            raise WeblateException('Failed to load')
+        data = self._weblate.get(self._url)
+        self._load_params(**data)
+        self._loaded = True
+
+    def __getattr__(self, name):
+        if name not in self._params:
+            raise AttributeError()
+        if name not in self._data:
+            self._lazy_load()
+        return self._data[name]
+
+    def keys(self):
+        return self._params
+
+    def items(self):
+        for key in self._params:
+            yield key, self.__getattr__(key)
+
+    def to_value(self):
+        return self.__getattr__(self._id)
+
+
+class Language(LazyObject):
+    """Language object"""
+    _params = (
+        'url', 'web_url',
+        'code', 'name', 'nplurals', 'pluralequation', 'direction',
+    )
+    _id = 'code'
+
+
+class Project(LazyObject):
+    """Project object"""
+    _params = (
+        'url', 'web_url',
+        'name', 'slug', 'web', 'source_language'
+    )
+    _id = 'slug'
+    _mappings = {
+        'source_language': Language,
+    }

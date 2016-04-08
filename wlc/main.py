@@ -246,6 +246,8 @@ class Command(object):
             return '{0}'.format(value)
         elif value is None:
             return ''
+        elif hasattr(value, 'to_value'):
+            return value.to_value()
         return value
 
     @classmethod
@@ -291,7 +293,7 @@ class Command(object):
                 self.println('    <tr>')
                 for key in header:
                     self.println('      <td>{0}</td>'.format(
-                        self.format_value(item[key])
+                        self.format_value(getattr(item, key))
                     ))
                 self.println('    </tr>')
             self.println('  </tbody>')
@@ -316,7 +318,7 @@ class Command(object):
             for item in value:
                 for key in header:
                     self.println('{0}: {1}'.format(
-                        key, self.format_value(item[key])
+                        key, self.format_value(getattr(item, key))
                     ))
                 self.println('')
         elif isinstance(list(value.items())[0][1], dict):
@@ -378,6 +380,19 @@ class Version(Command):
             self.println(wlc.__version__)
         else:
             self.print({'version': wlc.__version__})
+
+
+@register_command
+class ListProjects(Command):
+
+    """Lists projects."""
+
+    name = 'list-projects'
+    description = "Lists all projects"""
+
+    def run(self):
+        """Main execution of the command."""
+        self.print(self.wlc.list_projects())
 
 
 def main(settings=None, stdout=None, args=None):
