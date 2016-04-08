@@ -49,31 +49,31 @@ def get_parser():
         epilog='This utility is developed at <{0}>.'.format(wlc.DEVEL_URL),
     )
     parser.add_argument(
-        '--format',
+        '--format', '-f',
         default='text',
         choices=('text', 'csv', 'json', 'html'),
         help='Output format to use'
     )
     parser.add_argument(
-        '--version',
+        '--version', '-v',
         action='version',
         version='wlc {0}'.format(wlc.__version__)
     )
     parser.add_argument(
-        '--config',
+        '--config', '-c',
         help='Path to configuration file',
     )
     parser.add_argument(
-        '--config-section',
+        '--config-section', '-s',
         default='wlc',
         help='Configuration section to use'
     )
     parser.add_argument(
-        '--key',
+        '--key', '-k',
         help='API key',
     )
     parser.add_argument(
-        '--url',
+        '--url', '-u',
         help='API URL',
     )
     subparser = parser.add_subparsers(dest="cmd")

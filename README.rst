@@ -22,3 +22,33 @@ Weblate commandline client
 .. image:: https://hosted.weblate.org/widgets/weblate/-/svg-badge.svg
     :alt: Translation status
     :target: https://hosted.weblate.org/engage/weblate/?utm_source=widget
+
+Installation
+------------
+
+Install using pip:
+
+.. code-block:: sh
+
+    pip install wlc
+
+Sources are available at <https://github.com/nijel/wlc>.
+
+Usage
+-----
+
+Command line usage:
+
+.. code-block:: sh
+
+    wlc list-projects
+    wlc list-subprojects
+    wlc list-translations
+
+Configuration is stored in ``~/.config/wlc``:
+
+.. code-block:: ini
+
+    [wlc]
+    url = https://hosted.weblate.org/api/
+    key = APIKEY

@@ -60,7 +60,7 @@ class WeblateTest(TestCase):
 
     @httpretty.activate
     def test_projects(self):
-        """Test getting balance."""
+        """Test listing projects."""
         register_uris()
         self.assertEqual(
             len(Weblate().list_projects()),
