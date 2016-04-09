@@ -3,9 +3,6 @@ wlc
 
 `Weblate`_ commandline client using `Weblate's REST API`_.
 
-.. _Weblate's REST API: https://docs.weblate.org/en/latest/api.html
-.. _Weblate: https://weblate.org/
-
 .. image:: https://travis-ci.org/nijel/wlc.svg?branch=master
     :target: https://travis-ci.org/nijel/wlc
     :alt: Build Status
@@ -26,6 +23,10 @@ wlc
     :alt: Translation status
     :target: https://hosted.weblate.org/engage/weblate/?utm_source=widget
 
+.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat
+    :alt: Documentation
+    :target: https://docs.weblate.org/en/latest/wlc.html
+
 Installation
 ------------
 
@@ -39,6 +40,8 @@ Sources are available at <https://github.com/nijel/wlc>.
 
 Usage
 -----
+
+Please see `Weblate documentation`_ for more complete documentation.
 
 Command line usage:
 
@@ -55,3 +58,7 @@ Configuration is stored in ``~/.config/wlc``:
     [wlc]
     url = https://hosted.weblate.org/api/
     key = APIKEY
+
+.. _Weblate's REST API: https://docs.weblate.org/en/latest/api.html
+.. _Weblate documentation: https://docs.weblate.org/en/latest/wlc.html
+.. _Weblate: https://weblate.org/
