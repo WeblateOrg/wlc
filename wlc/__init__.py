@@ -86,6 +86,35 @@ class Weblate(object):
             parser(weblate=self, **item) for item in data['results']
         ]
 
+    def _get_factory(self, prefix, path, parser):
+        """Wrapper for listing objects"""
+        data = self.get('/'.join((prefix, path)))
+        return parser(weblate=self, **data)
+
+    def get_object(self, path):
+        """Returns object (project, component, translation) based on path
+        """
+        parts = path.split('/')
+        if len(parts) == 3:
+            return self.get_translation(path)
+        elif len(parts) == 2:
+            return self.get_component(path)
+        elif len(parts) == 1:
+            return self.get_project(path)
+        raise ValueError('Not supported path: {0}'.format(path))
+
+    def get_project(self, path):
+        """Returns project of given path"""
+        return self._get_factory('projects', path, Project)
+
+    def get_component(self, path):
+        """Returns component of given path"""
+        return self._get_factory('components', path, Component)
+
+    def get_translation(self, path):
+        """Returns translation of given path"""
+        return self._get_factory('translations', path, Translation)
+
     def list_projects(self):
         """Lists projects in the instance"""
         return self._list_factory('projects/', Project)
@@ -143,6 +172,9 @@ class LazyObject(object):
         if name not in self._data:
             self._lazy_load()
         return self._data[name]
+
+    def __getitem__(self, name):
+        return self.__getattr__(name)
 
     def keys(self):
         return self._params

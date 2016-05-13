@@ -352,6 +352,42 @@ class Command(object):
         raise NotImplementedError
 
 
+class ObjectCommand(Command):
+    """Command to require path to object"""
+
+    @classmethod
+    def add_parser(cls, subparser):
+        """Create parser for command line."""
+        parser = super(ObjectCommand, cls).add_parser(subparser)
+        parser.add_argument(
+            'object',
+            nargs='*',
+            help=(
+                'Object on which we should operate '
+                '(project, component or translation)'
+            )
+        )
+        return parser
+
+    def get_object(self):
+        """Returns object"""
+        if self.args.object:
+            path = self.args.object[0]
+        else:
+            try:
+                path = self.config.get(self.config.section, 'translation')
+            except NoOptionError:
+                path = None
+
+        if not path:
+            raise CommandError('No object passed on command line!')
+
+        return self.wlc.get_object(path)
+
+    def run(self):
+        """Main execution of the command."""
+        raise NotImplementedError
+
 
 @register_command
 class Version(Command):
@@ -426,6 +462,18 @@ class ListTranslations(Command):
     def run(self):
         """Main execution of the command."""
         self.print(self.wlc.list_translations())
+
+
+@register_command
+class ShowObject(ObjectCommand):
+    """Shows object"""
+
+    name = 'show'
+    description = "Shows translation, component or project"
+
+    def run(self):
+        """Executor"""
+        self.print(self.get_object())
 
 
 def main(settings=None, stdout=None, args=None):
