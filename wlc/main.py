@@ -65,7 +65,7 @@ def get_parser():
     )
     parser.add_argument(
         '--config-section', '-s',
-        default='wlc',
+        default='weblate',
         help='Configuration section to use'
     )
     parser.add_argument(
