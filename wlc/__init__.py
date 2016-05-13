@@ -60,10 +60,32 @@ class Weblate(object):
                 'Token %s' % self.key
             )
 
-        handle = urlopen(request, params)
-        content = handle.read()
-
-        result = json.loads(content.decode('utf-8'))
+        try:
+            handle = urlopen(request, params)
+            content = handle.read()
+        except IOError as error:
+            if hasattr(error, 'code'):
+                if error.code == 429:
+                    raise WeblateException(
+                        'Throttling on the server'
+                    )
+                elif error.code == 404:
+                    raise WeblateException(
+                        'Object not found on the server'
+                    )
+                elif error.code == 403:
+                    raise WeblateException(
+                        'You don\'t have permission to access this object'
+                    )
+                raise WeblateException(
+                    'HTTP error {0}: {1}'.format(error.code, error.reason)
+                )
+        try:
+            result = json.loads(content.decode('utf-8'))
+        except ValueError:
+            raise WeblateException(
+                'Server returned invalid JSON'
+            )
 
         return result
 
