@@ -385,7 +385,7 @@ class ListProjects(Command):
     """Lists projects."""
 
     name = 'list-projects'
-    description = "Lists all projects"""
+    description = "Lists all projects"
 
     def run(self):
         """Main execution of the command."""
@@ -397,7 +397,7 @@ class ListComponents(Command):
     """Lists components."""
 
     name = 'list-components'
-    description = "Lists all components"""
+    description = "Lists all components"
 
     def run(self):
         """Main execution of the command."""
@@ -409,7 +409,7 @@ class ListLanguages(Command):
     """Lists languages."""
 
     name = 'list-languages'
-    description = "Lists all languages"""
+    description = "Lists all languages"
 
     def run(self):
         """Main execution of the command."""
@@ -421,7 +421,7 @@ class ListTranslations(Command):
     """Lists translations."""
 
     name = 'list-translations'
-    description = "Lists all translations"""
+    description = "Lists all translations"
 
     def run(self):
         """Main execution of the command."""
