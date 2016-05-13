@@ -94,7 +94,7 @@ class Weblate(object):
     def get_object(self, path):
         """Returns object (project, component, translation) based on path
         """
-        parts = path.split('/')
+        parts = path.strip('/').split('/')
         if len(parts) == 3:
             return self.get_translation(path)
         elif len(parts) == 2:
