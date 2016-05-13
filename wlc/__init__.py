@@ -88,7 +88,7 @@ class Weblate(object):
 
     def _get_factory(self, prefix, path, parser):
         """Wrapper for listing objects"""
-        data = self.get('/'.join((prefix, path)))
+        data = self.get('/'.join((prefix, path, '')))
         return parser(weblate=self, **data)
 
     def get_object(self, path):
