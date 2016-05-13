@@ -148,3 +148,16 @@ class TestOutput(TestCase):
         """Test version printing."""
         output = execute(['--format', 'html', 'version'])
         self.assertIn(wlc.__version__, output)
+
+
+class TestCommands(TestCase):
+    @httpretty.activate
+    def test_ls(self):
+        """Project listing."""
+        register_uris()
+        output = execute(
+            [
+                'ls'
+            ],
+        )
+        self.assertIn('Hello', output)
