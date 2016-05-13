@@ -161,3 +161,14 @@ class TestCommands(TestCase):
             ],
         )
         self.assertIn('Hello', output)
+
+    @httpretty.activate
+    def test_list_projects(self):
+        """Project listing."""
+        register_uris()
+        output = execute(
+            [
+                'list-projects'
+            ],
+        )
+        self.assertIn('Hello', output)
