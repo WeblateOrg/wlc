@@ -89,10 +89,8 @@ class Weblate(object):
 
     def post(self, path, **kwargs):
         """Perform POST request on the API."""
-        params = urlencode(
-            {key: val.encode('utf-8') for key, val in kwargs.items()}
-        )
-        return self.request(path, params)
+        params = urlencode(kwargs)
+        return self.request(path, params.encode('utf-8'))
 
     def get(self, path):
         """Perform GET request on the API."""
@@ -235,6 +233,12 @@ class Project(LazyObject):
     def list(self):
         return self._weblate.list_components(
             self._attribs['components_list_url']
+        )
+
+    def commit(self):
+        return self._weblate.post(
+            self._attribs['repository_url'],
+            operation='commit'
         )
 
 class Component(LazyObject):

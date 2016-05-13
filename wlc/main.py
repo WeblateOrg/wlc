@@ -491,6 +491,19 @@ class ListObject(ObjectCommand):
             lsproj.run()
 
 
+@register_command
+class CommitObject(ObjectCommand):
+    """Commits object"""
+
+    name = 'commit'
+    description = "Commits changes in translation, component or project"
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        self.print(obj.commit())
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()
