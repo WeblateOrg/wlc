@@ -482,7 +482,13 @@ class ListObject(ObjectCommand):
 
     def run(self):
         """Executor"""
-        self.print(self.get_object().list())
+        try:
+            obj = self.get_object()
+            self.print(obj.list())
+        except CommandError:
+            # Called without params
+            lsproj = ListProjects(self.args, self.config, self.stdout)
+            lsproj.run()
 
 
 def main(settings=None, stdout=None, args=None):
