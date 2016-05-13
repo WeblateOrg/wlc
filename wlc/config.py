@@ -20,6 +20,8 @@
 """Weblate API library, configuration."""
 from __future__ import unicode_literals
 
+import os.path
+
 try:
     from configparser import RawConfigParser, NoOptionError
 except ImportError:
@@ -49,6 +51,16 @@ class WeblateConfig(RawConfigParser):
 
     def load(self, path=None):
         """Load configuration from XDG paths."""
+        if path is None:
+            cwd = os.path.abspath('.')
+            prev = None
+            while cwd != prev:
+                conf_name = os.path.join(cwd, '.weblate')
+                if os.path.exists(conf_name):
+                    path = conf_name
+                    break
+                prev = cwd
+                cwd = os.path.dirname(cwd)
         if path is None:
             path = load_config_paths('weblate')
         self.read(path)
