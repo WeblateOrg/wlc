@@ -35,7 +35,7 @@ class WeblateConfig(RawConfigParser):
 
     """Configuration parser wrapper with defaults."""
 
-    def __init__(self, section='wlc'):
+    def __init__(self, section='weblate'):
         """Construct WeblateConfig object."""
         RawConfigParser.__init__(self)
         self.section = section
@@ -50,5 +50,5 @@ class WeblateConfig(RawConfigParser):
     def load(self, path=None):
         """Load configuration from XDG paths."""
         if path is None:
-            path = load_config_paths('wlc')
+            path = load_config_paths('weblate')
         self.read(path)
