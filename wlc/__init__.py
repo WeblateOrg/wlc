@@ -40,8 +40,7 @@ class Weblate(object):
     def __init__(self, key='', url=API_URL, config=None):
         """Create the object, storing key and API url."""
         if config is not None:
-            self.key = config.get(config.section, 'key')
-            self.url = config.get(config.section, 'url')
+            self.url, self.key = config.get_url_key()
         else:
             self.key = key
             self.url = url

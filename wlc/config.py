@@ -42,6 +42,7 @@ class WeblateConfig(RawConfigParser):
 
     def set_defaults(self):
         """Set default values."""
+        self.add_section('keys')
         self.add_section(self.section)
         self.set(self.section, 'key', '')
         self.set(self.section, 'url', wlc.API_URL)
@@ -49,15 +50,26 @@ class WeblateConfig(RawConfigParser):
     def load(self, path=None):
         """Load configuration from XDG paths."""
         if path is None:
-            cwd = os.path.abspath('.')
-            prev = None
-            while cwd != prev:
-                conf_name = os.path.join(cwd, '.weblate')
-                if os.path.exists(conf_name):
-                    path = conf_name
-                    break
-                prev = cwd
-                cwd = os.path.dirname(cwd)
-        if path is None:
             path = load_config_paths('weblate')
         self.read(path)
+
+        # Try reading from current dir
+        cwd = os.path.abspath('.')
+        prev = None
+        while cwd != prev:
+            conf_name = os.path.join(cwd, '.weblate')
+            if os.path.exists(conf_name):
+                self.read(conf_name)
+            prev = cwd
+            cwd = os.path.dirname(cwd)
+
+    def get_url_key(self):
+        """Returns API URL and key"""
+        url = self.get(self.section, 'url')
+        key = self.get(self.section, 'key')
+        if not key:
+            try:
+                key = self.get('keys', url)
+            except NoOptionError:
+                key = ''
+        return url, key
