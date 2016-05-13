@@ -18,7 +18,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """Test command line interface."""
-from __future__ import unicode_literals
 
 from unittest import TestCase
 from io import StringIO, BytesIO

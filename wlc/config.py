@@ -18,14 +18,11 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """Weblate API library, configuration."""
-from __future__ import unicode_literals
 
 import os.path
 
-try:
-    from configparser import RawConfigParser, NoOptionError
-except ImportError:
-    from ConfigParser import RawConfigParser, NoOptionError
+from configparser import RawConfigParser, NoOptionError
+
 from xdg.BaseDirectory import load_config_paths
 
 import wlc
@@ -39,7 +36,7 @@ class WeblateConfig(RawConfigParser):
 
     def __init__(self, section='weblate'):
         """Construct WeblateConfig object."""
-        RawConfigParser.__init__(self)
+        RawConfigParser.__init__(self, delimiters=('=',))
         self.section = section
         self.set_defaults()
 

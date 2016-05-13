@@ -18,9 +18,8 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """Test the module."""
-from __future__ import unicode_literals
-
 from unittest import TestCase
+
 from wlc import Weblate
 import httpretty
 import os

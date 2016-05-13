@@ -18,10 +18,9 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """Weblate API client library."""
-from __future__ import unicode_literals
 
-from six.moves.urllib.request import Request, urlopen
-from six.moves.urllib.parse import urlencode
+from urllib.request import Request, urlopen
+from urllib.parse import urlencode
 
 import json
 
