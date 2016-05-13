@@ -80,7 +80,7 @@ class TestSettings(TestCase):
         register_uris()
         output = execute(
             ['list-projects'],
-            settings=(('wlc', 'url', 'https://example.net/'),)
+            settings=(('weblate', 'url', 'https://example.net/'),)
         )
         self.assertIn('Hello', output)
 
@@ -108,10 +108,10 @@ class TestSettings(TestCase):
     def test_parsing(self):
         """Test config file parsing."""
         config = WeblateConfig()
-        self.assertEqual(config.get('wlc', 'url'), wlc.API_URL)
+        self.assertEqual(config.get('weblate', 'url'), wlc.API_URL)
         config.load()
         config.load(TEST_CONFIG)
-        self.assertEqual(config.get('wlc', 'url'), 'https://example.net/')
+        self.assertEqual(config.get('weblate', 'url'), 'https://example.net/')
 
     def test_argv(self):
         """Test sys.argv processing."""
