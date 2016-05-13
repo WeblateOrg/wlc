@@ -476,6 +476,18 @@ class ShowObject(ObjectCommand):
         self.print(self.get_object())
 
 
+@register_command
+class ListObject(ObjectCommand):
+    """Lists object"""
+
+    name = 'ls'
+    description = "List content of translation, component or project"
+
+    def run(self):
+        """Executor"""
+        self.print(self.get_object().list())
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()

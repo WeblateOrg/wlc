@@ -115,17 +115,17 @@ class Weblate(object):
         """Returns translation of given path"""
         return self._get_factory('translations', path, Translation)
 
-    def list_projects(self):
+    def list_projects(self, path='projects/'):
         """Lists projects in the instance"""
-        return self._list_factory('projects/', Project)
+        return self._list_factory(path, Project)
 
-    def list_components(self):
+    def list_components(self, path='components/'):
         """Lists components in the instance"""
-        return self._list_factory('components/', Component)
+        return self._list_factory(path, Component)
 
-    def list_translations(self):
+    def list_translations(self, path='translation/'):
         """Lists translations in the instance"""
-        return self._list_factory('translations/', Translation)
+        return self._list_factory(path, Translation)
 
     def list_languages(self):
         """Lists languages in the instance"""
@@ -140,12 +140,14 @@ class LazyObject(object):
     _weblate = None
     _loaded = False
     _data = None
+    _attribs = None
     _id = 'url'
 
     def __init__(self, weblate, url, **kwargs):
         self._weblate = weblate
         self._url = url
         self._data = {}
+        self._attribs = {}
         self._load_params(**kwargs)
         self._load_params(url=url)
 
@@ -158,6 +160,9 @@ class LazyObject(object):
                     )
                 else:
                     self._data[param] = kwargs[param]
+                del kwargs[param]
+        for key in kwargs:
+            self._attribs[key] = kwargs[key]
 
     def _lazy_load(self):
         if self._loaded:
@@ -207,6 +212,10 @@ class Project(LazyObject):
         'source_language': Language,
     }
 
+    def list(self):
+        return self._weblate.list_components(
+            self._attribs['components_list_url']
+        )
 
 class Component(LazyObject):
     """Component object"""
@@ -220,6 +229,11 @@ class Component(LazyObject):
     _mappings = {
         'project': Project,
     }
+
+    def list(self):
+        return self._weblate.list_translations(
+            self._attribs['translations_url']
+        )
 
 
 class Translation(LazyObject):
@@ -238,3 +252,6 @@ class Translation(LazyObject):
         'language': Language,
         'component': Component,
     }
+
+    def list(self):
+        return self
