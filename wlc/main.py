@@ -100,13 +100,6 @@ def sorted_items(value):
         yield key, value[key]
 
 
-def key_value(value):
-    """Validate key=value parameter."""
-    if '=' not in value:
-        raise ValueError('Please specify --param as key=value')
-    return value
-
-
 class Command(object):
 
     """Basic command object."""
@@ -129,99 +122,6 @@ class Command(object):
         """Create parser for command line."""
         return subparser.add_parser(
             cls.name, description=cls.description
-        )
-
-    @staticmethod
-    def add_list_option(parser):
-        """Add argparse argument --list."""
-        parser.add_argument(
-            '--list',
-            action='store_true',
-            help='List all records (instead of printing summary)'
-        )
-
-    @staticmethod
-    def add_line_option(parser):
-        """Add argparse argument --line."""
-        parser.add_argument(
-            '--line',
-            help='Line to use for listing'
-        )
-
-    def resolve(self, kind, value):
-        """Resolve line/phone number from configuration."""
-        if value is None:
-            return None
-        if value.isdigit():
-            return value
-        try:
-            return self.config.get(kind, value)
-        except NoOptionError:
-            raise CommandError(
-                'Invalid value for {0}: {1}'.format(kind, value)
-            )
-
-    @staticmethod
-    def summary(values, fields):
-        """Calculate summary of values."""
-        result = {}
-        for field in fields:
-            result[field] = 0
-        for value in values:
-            for field in fields:
-                result[field] += value[field]
-        return result
-
-    @staticmethod
-    def summary_group(values, fields, group, groups):
-        """Calculate summary of values groupped by attribute."""
-        result = {}
-        for field in fields:
-            for group_name in groups:
-                result['{0}_{1}'.format(field, group_name)] = 0
-
-        for value in values:
-            group_name = value[group]
-            for field in fields:
-                result['{0}_{1}'.format(field, group_name)] += value[field]
-        return result
-
-    @classmethod
-    def calls_summary(cls, calls):
-        """Wrapper for getting calls summary."""
-        result = cls.summary(calls, ('price', 'length'))
-        result.update(
-            cls.summary_group(
-                calls, ('length',), 'direction', ('in', 'out', 'redirected')
-            )
-        )
-        result['count'] = len(calls)
-        result['count_in'] = cls.count_direction(calls, 'in')
-        result['count_out'] = cls.count_direction(calls, 'out')
-        return result
-
-    @classmethod
-    def sms_summary(cls, messages):
-        """Wrapper for getting sms summary."""
-        result = cls.summary(messages, ('price',))
-        result['count'] = len(messages)
-        result['count_in'] = cls.count_direction(messages, 'in')
-        result['count_out'] = cls.count_direction(messages, 'out')
-        return result
-
-    @classmethod
-    def data_summary(cls, data_usage):
-        """Wrapper for getting data summary."""
-        return cls.summary(
-            data_usage,
-            ('bytes_total', 'bytes_down', 'bytes_up', 'price')
-        )
-
-    @staticmethod
-    def count_direction(values, direction):
-        """Counts items with matching direction"""
-        return len(
-            [value for value in values if value['direction'] == direction]
         )
 
     def println(self, line):
