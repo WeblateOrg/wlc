@@ -1,0 +1,81 @@
+{
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "branch": "master",
+            "file_format": "aresource",
+            "filemask": "android/values-*/strings.xml",
+            "git_export": "",
+            "license": "",
+            "license_url": "",
+            "lock_url": "http://example.com/api/components/hello/android/lock/",
+            "name": "Android",
+            "new_base": "",
+            "project": {
+                "components_list_url": "http://example.com/api/projects/hello/components/",
+                "name": "Hello",
+                "repository_url": "http://example.com/api/projects/hello/repository/",
+                "slug": "hello",
+                "source_language": {
+                    "code": "en",
+                    "direction": "ltr",
+                    "name": "English",
+                    "nplurals": 2,
+                    "pluralequation": "n != 1",
+                    "url": "http://example.com/api/languages/en/",
+                    "web_url": "http://example.com/languages/en/"
+                },
+                "url": "http://example.com/api/projects/hello/",
+                "web": "http://weblate.org/",
+                "web_url": "http://example.com/projects/hello/"
+            },
+            "repo": "https://github.com/nijel/weblate-test.git",
+            "repository_url": "http://example.com/api/components/hello/android/repository/",
+            "slug": "android",
+            "template": "android/values/strings.xml",
+            "translations_url": "http://example.com/api/components/hello/android/translations/",
+            "url": "http://example.com/api/components/hello/android/",
+            "vcs": "git",
+            "web_url": "http://example.com/projects/hello/android/"
+        },
+        {
+            "branch": "master",
+            "file_format": "po",
+            "filemask": "po/*.po",
+            "git_export": "",
+            "license": "",
+            "license_url": "",
+            "lock_url": "http://example.com/api/components/hello/weblate/lock/",
+            "name": "Weblate",
+            "new_base": "",
+            "project": {
+                "components_list_url": "http://example.com/api/projects/hello/components/",
+                "name": "Hello",
+                "repository_url": "http://example.com/api/projects/hello/repository/",
+                "slug": "hello",
+                "source_language": {
+                    "code": "en",
+                    "direction": "ltr",
+                    "name": "English",
+                    "nplurals": 2,
+                    "pluralequation": "n != 1",
+                    "url": "http://example.com/api/languages/en/",
+                    "web_url": "http://example.com/languages/en/"
+                },
+                "url": "http://example.com/api/projects/hello/",
+                "web": "http://weblate.org/",
+                "web_url": "http://example.com/projects/hello/"
+            },
+            "repo": "file:///home/nijel/work/weblate-hello",
+            "repository_url": "http://example.com/api/components/hello/weblate/repository/",
+            "slug": "weblate",
+            "template": "",
+            "translations_url": "http://example.com/api/components/hello/weblate/translations/",
+            "url": "http://example.com/api/components/hello/weblate/",
+            "vcs": "git",
+            "web_url": "http://example.com/projects/hello/weblate/"
+        }
+    ]
+}

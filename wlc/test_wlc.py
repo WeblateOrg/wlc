@@ -43,7 +43,7 @@ def register_uri(path, domain='http://127.0.0.1:8000/api'):
 def register_uris():
     """Register URIs for httpretty."""
     paths = (
-        'projects',
+        'projects', 'components',
     )
     for path in paths:
         register_uri(path)
@@ -63,5 +63,14 @@ class WeblateTest(TestCase):
         register_uris()
         self.assertEqual(
             len(Weblate().list_projects()),
+            2,
+        )
+
+    @httpretty.activate
+    def test_components(self):
+        """Test listing components."""
+        register_uris()
+        self.assertEqual(
+            len(Weblate().list_components()),
             2,
         )

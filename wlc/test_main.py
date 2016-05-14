@@ -172,3 +172,14 @@ class TestCommands(TestCase):
             ],
         )
         self.assertIn('Hello', output)
+
+    @httpretty.activate
+    def test_list_components(self):
+        """Project listing."""
+        register_uris()
+        output = execute(
+            [
+                'list-components'
+            ],
+        )
+        self.assertIn('/hello/weblate', output)
