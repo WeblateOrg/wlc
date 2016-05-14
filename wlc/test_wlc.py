@@ -29,7 +29,7 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
 
 def register_uri(path, domain='http://127.0.0.1:8000/api'):
     """Simplified URL registration"""
-    filename = os.path.join(DATA_TEST_BASE, path)
+    filename = os.path.join(DATA_TEST_BASE, path.replace('/', '-'))
     url = '/'.join((domain, path, ''))
     with open(filename, 'rb') as handle:
         httpretty.register_uri(
@@ -44,6 +44,9 @@ def register_uris():
     """Register URIs for httpretty."""
     paths = (
         'projects', 'components', 'translations',
+        'projects/hello',
+        'components/hello/weblate',
+        'translations/hello/weblate/cs',
     )
     for path in paths:
         register_uri(path)
@@ -82,4 +85,34 @@ class WeblateTest(TestCase):
         self.assertEqual(
             len(Weblate().list_translations()),
             20,
+        )
+
+    @httpretty.activate
+    def test_project(self):
+        """Test getting project."""
+        register_uris()
+        project = Weblate().get_object('hello')
+        self.assertEqual(
+            project.name,
+            'Hello',
+        )
+
+    @httpretty.activate
+    def test_component(self):
+        """Test getting component."""
+        register_uris()
+        component = Weblate().get_object('hello/weblate')
+        self.assertEqual(
+            component.name,
+            'Weblate',
+        )
+
+    @httpretty.activate
+    def test_translation(self):
+        """Test getting translation."""
+        register_uris()
+        translation = Weblate().get_object('hello/weblate/cs')
+        self.assertEqual(
+            translation.language.code,
+            'cs',
         )

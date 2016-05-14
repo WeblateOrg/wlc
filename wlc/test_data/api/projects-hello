@@ -1,0 +1,18 @@
+{
+    "components_list_url": "http://example.com/api/projects/hello/components/",
+    "name": "Hello",
+    "repository_url": "http://example.com/api/projects/hello/repository/",
+    "slug": "hello",
+    "source_language": {
+        "code": "en",
+        "direction": "ltr",
+        "name": "English",
+        "nplurals": 2,
+        "pluralequation": "n != 1",
+        "url": "http://example.com/api/languages/en/",
+        "web_url": "http://example.com/languages/en/"
+    },
+    "url": "http://example.com/api/projects/hello/",
+    "web": "http://weblate.org/",
+    "web_url": "http://example.com/projects/hello/"
+}
