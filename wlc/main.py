@@ -154,11 +154,6 @@ class Command(object):
                 writer.writerow(
                     {k: self.format_value(v) for k, v in row.items()}
                 )
-        elif isinstance(list(value.items())[0][1], dict):
-            for key, data in sorted_items(value):
-                self.println(self.format_value(key))
-                self.print_csv(data, None)
-                self.println(self.format_value(''))
         else:
             writer = csv.writer(self.stdout)
             for key, data in sorted_items(value):
@@ -185,10 +180,6 @@ class Command(object):
                 self.println('    </tr>')
             self.println('  </tbody>')
             self.println('</table>')
-        elif isinstance(list(value.items())[0][1], dict):
-            for key, data in sorted_items(value):
-                self.println('<h1>{0}</h1>'.format(key))
-                self.print_html(data, None)
         else:
             self.println('<table>')
             for key, data in sorted_items(value):
@@ -207,11 +198,6 @@ class Command(object):
                     self.println('{0}: {1}'.format(
                         key, self.format_value(getattr(item, key))
                     ))
-                self.println('')
-        elif isinstance(list(value.items())[0][1], dict):
-            for key, data in sorted_items(value):
-                self.println(key)
-                self.print_text(data, None)
                 self.println('')
         else:
             for key, data in sorted_items(value):
