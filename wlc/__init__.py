@@ -78,6 +78,7 @@ class Weblate(object):
                 raise WeblateException(
                     'HTTP error {0}: {1}'.format(error.code, error.reason)
                 )
+            raise
         try:
             result = json.loads(content.decode('utf-8'))
         except ValueError:
