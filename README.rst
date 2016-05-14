@@ -55,7 +55,7 @@ Command line usage:
     wlc commit
     wlc push
 
-Configuration is stored in ``~/.config/weblatae``:
+Configuration is stored in ``~/.config/weblate``:
 
 .. code-block:: ini
 
