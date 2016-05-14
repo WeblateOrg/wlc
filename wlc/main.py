@@ -501,7 +501,11 @@ class CommitObject(ObjectCommand):
     def run(self):
         """Executor"""
         obj = self.get_object()
-        self.print(obj.commit())
+        result = obj.commit()
+        if not result['result']:
+            raise CommandError(
+                'Failed to commit changes!'
+            )
 
 
 def main(settings=None, stdout=None, args=None):
