@@ -150,7 +150,7 @@ class Weblate(object):
         return self._list_factory('languages/', Language)
 
 
-class LazyObject(object):
+class LazyObject(dict):
     """Object which supports deferred loading"""
     _params = ()
     _mappings = {}
@@ -202,6 +202,9 @@ class LazyObject(object):
 
     def __getitem__(self, name):
         return self.__getattr__(name)
+
+    def __len__(self):
+        return len(self._params)
 
     def keys(self):
         return self._params
