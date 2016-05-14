@@ -102,6 +102,18 @@ class TestSettings(TestCase):
         )
         self.assertIn('Hello', output)
 
+    @httpretty.activate
+    def test_config_cwd(self):
+        """Test loading settings from current dir"""
+        register_uris()
+        current = os.path.abspath('.')
+        try:
+            os.chdir(os.path.join(os.path.dirname(__file__), 'test_data'))
+            output = execute(['show'], settings=False)
+            self.assertIn('Weblate', output)
+        finally:
+            os.chdir(current)
+
     def test_parsing(self):
         """Test config file parsing."""
         config = WeblateConfig()
