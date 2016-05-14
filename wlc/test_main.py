@@ -225,3 +225,16 @@ class TestCommands(TestCase):
             ],
         )
         self.assertIn('/hello/weblate/cs/', output)
+
+    @httpretty.activate
+    def test_show(self):
+        """Project listing."""
+        register_uris()
+        output = execute(['show', 'hello'])
+        self.assertIn('Hello', output)
+
+        output = execute(['show', 'hello/weblate'])
+        self.assertIn('Weblate', output)
+
+        output = execute(['show', 'hello/weblate/cs'])
+        self.assertIn('/hello/weblate/cs/', output)
