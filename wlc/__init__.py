@@ -259,6 +259,12 @@ class Component(LazyObject):
             self._attribs['translations_url']
         )
 
+    def commit(self):
+        return self._weblate.post(
+            self._attribs['repository_url'],
+            operation='commit'
+        )
+
 
 class Translation(LazyObject):
     """Translation object"""
@@ -279,3 +285,9 @@ class Translation(LazyObject):
 
     def list(self):
         return self
+
+    def commit(self):
+        return self._weblate.post(
+            self._attribs['repository_url'],
+            operation='commit'
+        )
