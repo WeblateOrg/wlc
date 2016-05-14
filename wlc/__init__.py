@@ -182,6 +182,10 @@ class LazyObject(object):
         for key in kwargs:
             self._attribs[key] = kwargs[key]
 
+    def ensure_loaded(self):
+        if not self._loaded:
+            self._lazy_load()
+
     def _lazy_load(self):
         if self._loaded:
             raise WeblateException('Failed to load')
@@ -222,18 +226,21 @@ class Language(LazyObject):
 class RepoMixin(object):
     """Repository mixin providing generic repository wide operations"""
     def commit(self):
+        self.ensure_loaded()
         return self._weblate.post(
             self._attribs['repository_url'],
             operation='commit'
         )
 
     def push(self):
+        self.ensure_loaded()
         return self._weblate.post(
             self._attribs['repository_url'],
             operation='push'
         )
 
     def pull(self):
+        self.ensure_loaded()
         return self._weblate.post(
             self._attribs['repository_url'],
             operation='pull'
@@ -252,6 +259,7 @@ class Project(LazyObject, RepoMixin):
     }
 
     def list(self):
+        self.ensure_loaded()
         return self._weblate.list_components(
             self._attribs['components_list_url']
         )
@@ -270,6 +278,7 @@ class Component(LazyObject, RepoMixin):
     }
 
     def list(self):
+        self.ensure_loaded()
         return self._weblate.list_translations(
             self._attribs['translations_url']
         )
@@ -293,4 +302,5 @@ class Translation(LazyObject, RepoMixin):
     }
 
     def list(self):
+        self.ensure_loaded()
         return self
