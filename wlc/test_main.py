@@ -177,6 +177,11 @@ class TestOutput(TestCase):
 
 
 class TestCommands(TestCase):
+    def test_version_bare(self):
+        """Test version printing."""
+        output = execute(['version', '--bare'])
+        self.assertEqual('{0}\n'.format(wlc.__version__), output)
+
     @httpretty.activate
     def test_ls(self):
         """Project listing."""
