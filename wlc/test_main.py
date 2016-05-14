@@ -35,16 +35,13 @@ TEST_CONFIG = os.path.join(os.path.dirname(__file__), 'test_data', 'wlc')
 TEST_SECTION = os.path.join(os.path.dirname(__file__), 'test_data', 'section')
 
 
-def execute(args, binary=False, settings=None, stdout=None):
+def execute(args, settings=None, stdout=None):
     """Execute command and return output."""
     if settings is None:
         settings = ()
     elif not settings:
         settings = None
-    if binary and sys.version_info < (3, 0):
-        output = BytesIO()
-    else:
-        output = StringIO()
+    output = StringIO()
     backup = sys.stdout
     try:
         sys.stdout = output
@@ -135,13 +132,13 @@ class TestOutput(TestCase):
 
     def test_version_json(self):
         """Test version printing."""
-        output = execute(['--format', 'json', 'version'], True)
+        output = execute(['--format', 'json', 'version'])
         values = json.loads(output)
         self.assertEqual({'version': wlc.__version__}, values)
 
     def test_version_csv(self):
         """Test version printing."""
-        output = execute(['--format', 'csv', 'version'], True)
+        output = execute(['--format', 'csv', 'version'])
         self.assertIn('version,{0}'.format(wlc.__version__), output)
 
     def test_version_html(self):
@@ -160,7 +157,7 @@ class TestOutput(TestCase):
     def test_projects_json(self):
         """Test projects printing."""
         register_uris()
-        output = execute(['--format', 'json', 'list-projects'], True)
+        output = execute(['--format', 'json', 'list-projects'])
         values = json.loads(output)
         self.assertEqual(2, len(values))
 
@@ -168,7 +165,7 @@ class TestOutput(TestCase):
     def test_projects_csv(self):
         """Test projects printing."""
         register_uris()
-        output = execute(['--format', 'csv', 'list-projects'], True)
+        output = execute(['--format', 'csv', 'list-projects'])
         self.assertIn('Hello', output)
 
     @httpretty.activate

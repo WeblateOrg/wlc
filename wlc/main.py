@@ -145,14 +145,6 @@ class Command(object):
             return value.to_value()
         return value
 
-    @classmethod
-    def format_csv_value(cls, value):
-        """Format value for rendering in CSV."""
-        value = cls.format_value(value)
-        if sys.version_info < (3, 0):
-            return value.encode('utf-8')
-        return value
-
     def print_csv(self, value, header):
         """CSV print."""
         if header is not None:
@@ -160,17 +152,17 @@ class Command(object):
             writer.writeheader()
             for row in value:
                 writer.writerow(
-                    {k: self.format_csv_value(v) for k, v in row.items()}
+                    {k: self.format_value(v) for k, v in row.items()}
                 )
         elif isinstance(list(value.items())[0][1], dict):
             for key, data in sorted_items(value):
-                self.println(self.format_csv_value(key))
+                self.println(self.format_value(key))
                 self.print_csv(data, None)
-                self.println(self.format_csv_value(''))
+                self.println(self.format_value(''))
         else:
             writer = csv.writer(self.stdout)
             for key, data in sorted_items(value):
-                writer.writerow((key, self.format_csv_value(data)))
+                writer.writerow((key, self.format_value(data)))
 
     def print_html(self, value, header):
         """HTML print."""
