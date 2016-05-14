@@ -149,6 +149,35 @@ class TestOutput(TestCase):
         output = execute(['--format', 'html', 'version'])
         self.assertIn(wlc.__version__, output)
 
+    @httpretty.activate
+    def test_projects_text(self):
+        """Test projects printing."""
+        register_uris()
+        output = execute(['--format', 'text', 'list-projects'])
+        self.assertIn('name: {0}'.format('Hello'), output)
+
+    @httpretty.activate
+    def test_projects_json(self):
+        """Test projects printing."""
+        register_uris()
+        output = execute(['--format', 'json', 'list-projects'], True)
+        values = json.loads(output)
+        self.assertEqual(2, len(values))
+
+    @httpretty.activate
+    def test_projects_csv(self):
+        """Test projects printing."""
+        register_uris()
+        output = execute(['--format', 'csv', 'list-projects'], True)
+        self.assertIn('Hello', output)
+
+    @httpretty.activate
+    def test_projects_html(self):
+        """Test projects printing."""
+        register_uris()
+        output = execute(['--format', 'html', 'list-projects'])
+        self.assertIn('Hello', output)
+
 
 class TestCommands(TestCase):
     @httpretty.activate
