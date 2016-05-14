@@ -34,7 +34,7 @@ Install using pip:
 
 .. code-block:: sh
 
-    pip install wlc
+    pip3 install wlc
 
 Sources are available at <https://github.com/nijel/wlc>.
 
@@ -50,14 +50,20 @@ Command line usage:
     wlc list-projects
     wlc list-subprojects
     wlc list-translations
+    wlc show
+    wlc ls
+    wlc commit
+    wlc push
 
-Configuration is stored in ``~/.config/wlc``:
+Configuration is stored in ``~/.config/weblatae``:
 
 .. code-block:: ini
 
-    [wlc]
+    [weblate]
     url = https://hosted.weblate.org/api/
-    key = APIKEY
+
+    [keys]
+    https://hosted.weblate.org/api/ = APIKEY
 
 .. _Weblate's REST API: https://docs.weblate.org/en/latest/api.html
 .. _Weblate documentation: https://docs.weblate.org/en/latest/wlc.html
