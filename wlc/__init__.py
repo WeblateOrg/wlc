@@ -219,7 +219,28 @@ class Language(LazyObject):
     _id = 'code'
 
 
-class Project(LazyObject):
+class RepoMixin(object):
+    """Repository mixin providing generic repository wide operations"""
+    def commit(self):
+        return self._weblate.post(
+            self._attribs['repository_url'],
+            operation='commit'
+        )
+
+    def push(self):
+        return self._weblate.post(
+            self._attribs['repository_url'],
+            operation='push'
+        )
+
+    def pull(self):
+        return self._weblate.post(
+            self._attribs['repository_url'],
+            operation='pull'
+        )
+
+
+class Project(LazyObject, RepoMixin):
     """Project object"""
     _params = (
         'url', 'web_url',
@@ -235,13 +256,7 @@ class Project(LazyObject):
             self._attribs['components_list_url']
         )
 
-    def commit(self):
-        return self._weblate.post(
-            self._attribs['repository_url'],
-            operation='commit'
-        )
-
-class Component(LazyObject):
+class Component(LazyObject, RepoMixin):
     """Component object"""
     _params = (
         'url', 'web_url',
@@ -259,14 +274,8 @@ class Component(LazyObject):
             self._attribs['translations_url']
         )
 
-    def commit(self):
-        return self._weblate.post(
-            self._attribs['repository_url'],
-            operation='commit'
-        )
 
-
-class Translation(LazyObject):
+class Translation(LazyObject, RepoMixin):
     """Translation object"""
     _params = (
         'url', 'web_url',
@@ -285,9 +294,3 @@ class Translation(LazyObject):
 
     def list(self):
         return self
-
-    def commit(self):
-        return self._weblate.post(
-            self._attribs['repository_url'],
-            operation='commit'
-        )

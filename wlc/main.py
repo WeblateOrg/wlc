@@ -508,6 +508,46 @@ class CommitObject(ObjectCommand):
             )
 
 
+@register_command
+class PushObject(ObjectCommand):
+    """Pushes object"""
+
+    name = 'push'
+    description = (
+        "Pushes changes from Weblate to repository "
+        "in translation, component or project from Weblate"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        result = obj.push()
+        if not result['result']:
+            raise CommandError(
+                'Failed to push changes!'
+            )
+
+
+@register_command
+class PullObject(ObjectCommand):
+    """Pulls object"""
+
+    name = 'pull'
+    description = (
+        "Pulls changes to Weblate from repository "
+        "in translation, component or project"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        result = obj.pull()
+        if not result['result']:
+            raise CommandError(
+                'Failed to pull changes!'
+            )
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()
