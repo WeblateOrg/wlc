@@ -60,6 +60,7 @@ class WeblateConfig(RawConfigParser):
             conf_name = os.path.join(cwd, '.weblate')
             if os.path.exists(conf_name):
                 self.read(conf_name)
+                break
             prev = cwd
             cwd = os.path.dirname(cwd)
 
