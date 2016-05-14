@@ -141,7 +141,7 @@ class Weblate(object):
         """Lists components in the instance"""
         return self._list_factory(path, Component)
 
-    def list_translations(self, path='translation/'):
+    def list_translations(self, path='translations/'):
         """Lists translations in the instance"""
         return self._list_factory(path, Translation)
 

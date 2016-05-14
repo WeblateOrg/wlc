@@ -183,3 +183,14 @@ class TestCommands(TestCase):
             ],
         )
         self.assertIn('/hello/weblate', output)
+
+    @httpretty.activate
+    def test_list_translations(self):
+        """Project listing."""
+        register_uris()
+        output = execute(
+            [
+                'list-translations'
+            ],
+        )
+        self.assertIn('/hello/weblate/cs/', output)
