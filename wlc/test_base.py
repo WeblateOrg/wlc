@@ -84,6 +84,7 @@ def register_uris():
         'projects/hello',
         'projects/invalid',
         'components/hello/weblate',
+        'components/hello/android',
         'translations/hello/weblate/cs',
         'projects/hello/repository',
         'components/hello/weblate/repository',

@@ -179,12 +179,10 @@ class TestCommands(APITest):
 
     def test_ls(self):
         """Project listing."""
-        output = execute(
-            [
-                'ls'
-            ],
-        )
+        output = execute(['ls'])
         self.assertIn('Hello', output)
+        output = execute(['ls', 'hello'])
+        self.assertIn('Weblate', output)
 
     def test_list_languages(self):
         """Language listing."""

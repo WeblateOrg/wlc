@@ -1,0 +1,37 @@
+{
+    "branch": "master",
+    "file_format": "aresource",
+    "filemask": "android/values-*/strings.xml",
+    "git_export": "",
+    "license": "",
+    "license_url": "",
+    "lock_url": "http://127.0.0.1:8000/api/components/hello/android/lock/",
+    "name": "Android",
+    "new_base": "",
+    "project": {
+        "components_list_url": "http://127.0.0.1:8000/api/projects/hello/components/",
+        "name": "Hello",
+        "repository_url": "http://127.0.0.1:8000/api/projects/hello/repository/",
+        "slug": "hello",
+        "source_language": {
+            "code": "en",
+            "direction": "ltr",
+            "name": "English",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/en/",
+            "web_url": "http://127.0.0.1:8000/languages/en/"
+        },
+        "url": "http://127.0.0.1:8000/api/projects/hello/",
+        "web": "http://weblate.org/",
+        "web_url": "http://127.0.0.1:8000/projects/hello/"
+    },
+    "repo": "https://github.com/nijel/weblate-test.git",
+    "repository_url": "http://127.0.0.1:8000/api/components/hello/android/repository/",
+    "slug": "android",
+    "template": "android/values/strings.xml",
+    "translations_url": "http://127.0.0.1:8000/api/components/hello/android/translations/",
+    "url": "http://127.0.0.1:8000/api/components/hello/android/",
+    "vcs": "git",
+    "web_url": "http://127.0.0.1:8000/projects/hello/android/"
+}
