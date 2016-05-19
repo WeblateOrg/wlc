@@ -210,7 +210,7 @@ class TestCommands(APITest):
         self.assertIn('/hello/weblate/cs/', output)
 
     def test_show(self):
-        """Project listing."""
+        """Project show."""
         output = execute(['show', 'hello'])
         self.assertIn('Hello', output)
 
@@ -219,3 +219,14 @@ class TestCommands(APITest):
 
         output = execute(['show', 'hello/weblate/cs'])
         self.assertIn('/hello/weblate/cs/', output)
+
+    def test_commit(self):
+        """Project commit."""
+        output = execute(['commit', 'hello'])
+        self.assertEqual('', output)
+
+        output = execute(['commit', 'hello/weblate'])
+        self.assertEqual('', output)
+
+        output = execute(['commit', 'hello/weblate/cs'])
+        self.assertEqual('', output)

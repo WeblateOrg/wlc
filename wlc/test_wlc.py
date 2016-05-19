@@ -112,6 +112,13 @@ class ObjectTest(object):
             repository.needs_commit
         )
 
+    def test_commit(self):
+        obj = self.get()
+        self.assertEqual(
+            obj.commit(),
+            {'result': True}
+        )
+
 
 class ProjectTest(ObjectTest, APITest):
     _name = 'hello'
