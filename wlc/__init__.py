@@ -250,6 +250,12 @@ class RepoMixin(object):
             operation='pull'
         )
 
+    def repo_status(self):
+        self.ensure_loaded()
+        return self._weblate.get(
+            self._attribs['repository_url']
+        )
+
 
 class Project(LazyObject, RepoMixin):
     """Project object"""

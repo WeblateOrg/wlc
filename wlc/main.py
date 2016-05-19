@@ -426,6 +426,22 @@ class PullObject(ObjectCommand):
             )
 
 
+@register_command
+class RepoObject(ObjectCommand):
+    """Displays repository status for object"""
+
+    name = 'repo'
+    description = (
+        "Displays status of Weblate repository "
+        "for translation, component or project"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        self.print(obj.repo_status())
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()
