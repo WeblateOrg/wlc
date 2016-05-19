@@ -79,6 +79,8 @@ def register_uris():
         'projects/hello/repository',
         'components/hello/weblate/repository',
         'translations/hello/weblate/cs/repository',
+        'projects/hello/components',
+        'components/hello/weblate/translations',
     )
     for path in paths:
         register_uri(path)
@@ -173,6 +175,10 @@ class WeblateTest(TestCase):
         self.assertFalse(
             repository.needs_commit
         )
+        self.assertEqual(
+            len(project.list()),
+            2
+        )
 
     @httpretty.activate
     def test_component(self):
@@ -187,6 +193,10 @@ class WeblateTest(TestCase):
         self.assertFalse(
             repository.needs_commit
         )
+        self.assertEqual(
+            len(component.list()),
+            20 # TODO: Should return 33 with pagination
+        )
 
     @httpretty.activate
     def test_translation(self):
@@ -200,4 +210,8 @@ class WeblateTest(TestCase):
         repository = translation.repository()
         self.assertFalse(
             repository.needs_commit
+        )
+        self.assertEqual(
+            translation.list(),
+            translation
         )
