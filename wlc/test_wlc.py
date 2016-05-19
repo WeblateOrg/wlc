@@ -119,6 +119,13 @@ class ObjectTest(object):
             {'result': True}
         )
 
+    def test_pull(self):
+        obj = self.get()
+        self.assertEqual(
+            obj.pull(),
+            {'result': True}
+        )
+
     def test_push(self):
         obj = self.get()
         self.assertEqual(

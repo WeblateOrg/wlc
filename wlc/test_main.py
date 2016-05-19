@@ -246,3 +246,14 @@ class TestCommands(APITest):
 
         output = execute(['push', 'hello/weblate/cs'], expected=1)
         self.assertEqual(msg, output)
+
+    def test_pull(self):
+        """Project pull."""
+        output = execute(['pull', 'hello'])
+        self.assertEqual('', output)
+
+        output = execute(['pull', 'hello/weblate'])
+        self.assertEqual('', output)
+
+        output = execute(['pull', 'hello/weblate/cs'])
+        self.assertEqual('', output)
