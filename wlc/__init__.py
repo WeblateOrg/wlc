@@ -189,11 +189,9 @@ class LazyObject(dict):
         if attrib and attrib in self._data or attrib in self._attribs:
             return
         if not self._loaded:
-            self._lazy_load()
+            self.refresh()
 
-    def _lazy_load(self):
-        if self._loaded:
-            raise WeblateException('Failed to load')
+    def refresh(self):
         data = self._weblate.get(self._url)
         self._load_params(**data)
         self._loaded = True
@@ -202,7 +200,7 @@ class LazyObject(dict):
         if name not in self._params:
             raise AttributeError()
         if name not in self._data:
-            self._lazy_load()
+            self.refresh()
         return self._data[name]
 
     def __getitem__(self, name):
