@@ -54,6 +54,7 @@ Command line usage:
     wlc ls
     wlc commit
     wlc push
+    wlc repo
 
 Configuration is stored in ``~/.config/weblate``:
 
