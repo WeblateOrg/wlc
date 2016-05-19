@@ -82,8 +82,11 @@ def get_parser():
 
 
 class CommandError(Exception):
-
     """Generic error from command line."""
+    def __init__(self, message, detail=None):
+        if detail is not None:
+            message = '\n'.join((message, detail))
+        super(CommandError, self).__init__(message)
 
 
 def sort_key(value):
@@ -382,7 +385,8 @@ class CommitObject(ObjectCommand):
         result = obj.commit()
         if not result['result']:
             raise CommandError(
-                'Failed to commit changes!'
+                'Failed to commit changes!',
+                result['detail'],
             )
 
 
@@ -402,7 +406,8 @@ class PushObject(ObjectCommand):
         result = obj.push()
         if not result['result']:
             raise CommandError(
-                'Failed to push changes!'
+                'Failed to push changes!',
+                result['detail'],
             )
 
 
@@ -422,7 +427,8 @@ class PullObject(ObjectCommand):
         result = obj.pull()
         if not result['result']:
             raise CommandError(
-                'Failed to pull changes!'
+                'Failed to pull changes!',
+                result['detail'],
             )
 
 

@@ -237,7 +237,10 @@ class TestCommands(APITest):
 
     def test_push(self):
         """Project push."""
-        msg = 'Error: Failed to push changes!\n'
+        msg = (
+            'Error: Failed to push changes!\n'
+            'Push is disabled for Hello/Weblate.\n'
+        )
         output = execute(['push', 'hello'], expected=1)
         self.assertEqual(msg, output)
 
