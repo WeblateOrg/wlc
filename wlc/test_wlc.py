@@ -112,6 +112,14 @@ class ObjectTest(object):
             repository.needs_commit
         )
 
+    def test_repository_commit(self):
+        obj = self.get()
+        repository = obj.repository()
+        self.assertEqual(
+            repository.commit(),
+            {'result': True}
+        )
+
     def test_commit(self):
         obj = self.get()
         self.assertEqual(
