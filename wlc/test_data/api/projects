@@ -13,11 +13,11 @@
                 "nplurals": 2,
                 "pluralequation": "n != 1",
                 "direction": "ltr",
-                "web_url": "http://example.com/languages/en/",
-                "url": "http://example.com/api/languages/en/"
+                "web_url": "http://127.0.0.1:8000/languages/en/",
+                "url": "http://127.0.0.1:8000/api/languages/en/"
             },
-            "web_url": "http://example.com/projects/acl/",
-            "url": "http://example.com/api/projects/acl/"
+            "web_url": "http://127.0.0.1:8000/projects/acl/",
+            "url": "http://127.0.0.1:8000/api/projects/acl/"
         },
         {
             "name": "Hello",
@@ -29,11 +29,11 @@
                 "nplurals": 2,
                 "pluralequation": "n != 1",
                 "direction": "ltr",
-                "web_url": "http://example.com/languages/en/",
-                "url": "http://example.com/api/languages/en/"
+                "web_url": "http://127.0.0.1:8000/languages/en/",
+                "url": "http://127.0.0.1:8000/api/languages/en/"
             },
-            "web_url": "http://example.com/projects/hello/",
-            "url": "http://example.com/api/projects/hello/"
+            "web_url": "http://127.0.0.1:8000/projects/hello/",
+            "url": "http://127.0.0.1:8000/api/projects/hello/"
         }
     ]
 }

@@ -10,13 +10,13 @@
             "git_export": "",
             "license": "",
             "license_url": "",
-            "lock_url": "http://example.com/api/components/hello/android/lock/",
+            "lock_url": "http://127.0.0.1:8000/api/components/hello/android/lock/",
             "name": "Android",
             "new_base": "",
             "project": {
-                "components_list_url": "http://example.com/api/projects/hello/components/",
+                "components_list_url": "http://127.0.0.1:8000/api/projects/hello/components/",
                 "name": "Hello",
-                "repository_url": "http://example.com/api/projects/hello/repository/",
+                "repository_url": "http://127.0.0.1:8000/api/projects/hello/repository/",
                 "slug": "hello",
                 "source_language": {
                     "code": "en",
@@ -24,21 +24,21 @@
                     "name": "English",
                     "nplurals": 2,
                     "pluralequation": "n != 1",
-                    "url": "http://example.com/api/languages/en/",
-                    "web_url": "http://example.com/languages/en/"
+                    "url": "http://127.0.0.1:8000/api/languages/en/",
+                    "web_url": "http://127.0.0.1:8000/languages/en/"
                 },
-                "url": "http://example.com/api/projects/hello/",
+                "url": "http://127.0.0.1:8000/api/projects/hello/",
                 "web": "http://weblate.org/",
-                "web_url": "http://example.com/projects/hello/"
+                "web_url": "http://127.0.0.1:8000/projects/hello/"
             },
             "repo": "https://github.com/nijel/weblate-test.git",
-            "repository_url": "http://example.com/api/components/hello/android/repository/",
+            "repository_url": "http://127.0.0.1:8000/api/components/hello/android/repository/",
             "slug": "android",
             "template": "android/values/strings.xml",
-            "translations_url": "http://example.com/api/components/hello/android/translations/",
-            "url": "http://example.com/api/components/hello/android/",
+            "translations_url": "http://127.0.0.1:8000/api/components/hello/android/translations/",
+            "url": "http://127.0.0.1:8000/api/components/hello/android/",
             "vcs": "git",
-            "web_url": "http://example.com/projects/hello/android/"
+            "web_url": "http://127.0.0.1:8000/projects/hello/android/"
         },
         {
             "branch": "master",
@@ -47,13 +47,13 @@
             "git_export": "",
             "license": "",
             "license_url": "",
-            "lock_url": "http://example.com/api/components/hello/weblate/lock/",
+            "lock_url": "http://127.0.0.1:8000/api/components/hello/weblate/lock/",
             "name": "Weblate",
             "new_base": "",
             "project": {
-                "components_list_url": "http://example.com/api/projects/hello/components/",
+                "components_list_url": "http://127.0.0.1:8000/api/projects/hello/components/",
                 "name": "Hello",
-                "repository_url": "http://example.com/api/projects/hello/repository/",
+                "repository_url": "http://127.0.0.1:8000/api/projects/hello/repository/",
                 "slug": "hello",
                 "source_language": {
                     "code": "en",
@@ -61,21 +61,21 @@
                     "name": "English",
                     "nplurals": 2,
                     "pluralequation": "n != 1",
-                    "url": "http://example.com/api/languages/en/",
-                    "web_url": "http://example.com/languages/en/"
+                    "url": "http://127.0.0.1:8000/api/languages/en/",
+                    "web_url": "http://127.0.0.1:8000/languages/en/"
                 },
-                "url": "http://example.com/api/projects/hello/",
+                "url": "http://127.0.0.1:8000/api/projects/hello/",
                 "web": "http://weblate.org/",
-                "web_url": "http://example.com/projects/hello/"
+                "web_url": "http://127.0.0.1:8000/projects/hello/"
             },
             "repo": "file:///home/nijel/work/weblate-hello",
-            "repository_url": "http://example.com/api/components/hello/weblate/repository/",
+            "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
             "slug": "weblate",
             "template": "",
-            "translations_url": "http://example.com/api/components/hello/weblate/translations/",
-            "url": "http://example.com/api/components/hello/weblate/",
+            "translations_url": "http://127.0.0.1:8000/api/components/hello/weblate/translations/",
+            "url": "http://127.0.0.1:8000/api/components/hello/weblate/",
             "vcs": "git",
-            "web_url": "http://example.com/projects/hello/weblate/"
+            "web_url": "http://127.0.0.1:8000/projects/hello/weblate/"
         }
     ]
 }

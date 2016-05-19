@@ -1,0 +1,22 @@
+{
+    "merge_failure": null,
+    "needs_commit": false,
+    "needs_merge": false,
+    "needs_push": true,
+    "remote_commit": {
+        "author": "Michal \u010ciha\u0159 <michal@cihar.com>",
+        "author_email": "michal@cihar.com",
+        "author_name": "Michal \u010ciha\u0159",
+        "authordate": "2014-11-19T12:50:24+01:00",
+        "commit": "Michal \u010ciha\u0159 <michal@cihar.com>",
+        "commit_email": "michal@cihar.com",
+        "commit_name": "Michal \u010ciha\u0159",
+        "commitdate": "2014-11-19T12:50:24+01:00",
+        "message": "Add Arabic\n\nSigned-off-by: Michal \u010ciha\u0159 <michal@cihar.com>",
+        "revision": "8ba2d7e113dd58a3695d1b196f24e37a7b5bcb80",
+        "shortrevision": "8ba2d7e",
+        "summary": "Add Arabic"
+    },
+    "status": "On branch master\nYour branch is ahead of 'origin/master' by 1 commit.\n  (use \"git push\" to publish your local commits)\nnothing to commit, working directory clean\n",
+    "url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/"
+}

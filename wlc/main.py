@@ -439,7 +439,7 @@ class RepoObject(ObjectCommand):
     def run(self):
         """Executor"""
         obj = self.get_object()
-        self.print(obj.repo_status())
+        self.print(obj.repository())
 
 
 def main(settings=None, stdout=None, args=None):

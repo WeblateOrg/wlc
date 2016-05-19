@@ -106,7 +106,7 @@ class Weblate(object):
         ]
 
     def _get_factory(self, prefix, path, parser):
-        """Wrapper for listing objects"""
+        """Wrapper for getting objects"""
         data = self.get('/'.join((prefix, path, '')))
         return parser(weblate=self, **data)
 
@@ -229,35 +229,54 @@ class Language(LazyObject):
 
 class RepoMixin(object):
     """Repository mixin providing generic repository wide operations"""
-    def commit(self):
+    def _get_repo_url(self):
         self.ensure_loaded()
+        return self._attribs['repository_url']
+
+    def commit(self):
         return self._weblate.post(
-            self._attribs['repository_url'],
+            self._get_repo_url(),
             operation='commit'
         )
 
     def push(self):
-        self.ensure_loaded()
         return self._weblate.post(
-            self._attribs['repository_url'],
+            self._get_repo_url(),
             operation='push'
         )
 
     def pull(self):
-        self.ensure_loaded()
         return self._weblate.post(
-            self._attribs['repository_url'],
+            self._get_repo_url(),
             operation='pull'
         )
 
-    def repo_status(self):
-        self.ensure_loaded()
-        return self._weblate.get(
-            self._attribs['repository_url']
+
+class ProjectRepository(LazyObject, RepoMixin):
+    """Repository object"""
+    _params = ('url', 'needs_commit', 'needs_merge', 'needs_push')
+
+    def _get_repo_url(self):
+        return self._data['url']
+
+class Repository(ProjectRepository):
+    _params = (
+        'url', 'needs_commit', 'needs_merge', 'needs_push',
+        'status', 'merge_failure', 'remote_commit',
+    )
+
+
+class RepoObjectMixin(RepoMixin):
+    _repository_class = ProjectRepository
+
+    def repository(self):
+        data = self._weblate.get(
+            self._get_repo_url()
         )
+        return self._repository_class(weblate=self._weblate, **data)
 
 
-class Project(LazyObject, RepoMixin):
+class Project(LazyObject, RepoObjectMixin):
     """Project object"""
     _params = (
         'url', 'web_url',
@@ -274,7 +293,7 @@ class Project(LazyObject, RepoMixin):
             self._attribs['components_list_url']
         )
 
-class Component(LazyObject, RepoMixin):
+class Component(LazyObject, RepoObjectMixin):
     """Component object"""
     _params = (
         'url', 'web_url',
@@ -286,6 +305,7 @@ class Component(LazyObject, RepoMixin):
     _mappings = {
         'project': Project,
     }
+    _repository_class = Repository
 
     def list(self):
         self.ensure_loaded()
@@ -294,7 +314,7 @@ class Component(LazyObject, RepoMixin):
         )
 
 
-class Translation(LazyObject, RepoMixin):
+class Translation(LazyObject, RepoObjectMixin):
     """Translation object"""
     _params = (
         'url', 'web_url',
@@ -310,6 +330,7 @@ class Translation(LazyObject, RepoMixin):
         'language': Language,
         'component': Component,
     }
+    _repository_class = Repository
 
     def list(self):
         self.ensure_loaded()

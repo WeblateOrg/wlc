@@ -1,7 +1,7 @@
 {
-    "components_list_url": "http://example.com/api/projects/hello/components/",
+    "components_list_url": "http://127.0.0.1:8000/api/projects/hello/components/",
     "name": "Hello",
-    "repository_url": "http://example.com/api/projects/hello/repository/",
+    "repository_url": "http://127.0.0.1:8000/api/projects/hello/repository/",
     "slug": "hello",
     "source_language": {
         "code": "en",
@@ -9,10 +9,10 @@
         "name": "English",
         "nplurals": 2,
         "pluralequation": "n != 1",
-        "url": "http://example.com/api/languages/en/",
-        "web_url": "http://example.com/languages/en/"
+        "url": "http://127.0.0.1:8000/api/languages/en/",
+        "web_url": "http://127.0.0.1:8000/languages/en/"
     },
-    "url": "http://example.com/api/projects/hello/",
+    "url": "http://127.0.0.1:8000/api/projects/hello/",
     "web": "http://weblate.org/",
-    "web_url": "http://example.com/projects/hello/"
+    "web_url": "http://127.0.0.1:8000/projects/hello/"
 }

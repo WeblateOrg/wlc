@@ -47,6 +47,9 @@ def register_uris():
         'projects/hello',
         'components/hello/weblate',
         'translations/hello/weblate/cs',
+        'projects/hello/repository',
+        'components/hello/weblate/repository',
+        'translations/hello/weblate/cs/repository',
     )
     for path in paths:
         register_uri(path)
@@ -57,8 +60,6 @@ def register_uris():
 class WeblateTest(TestCase):
 
     """Testing of Weblate class."""
-
-    weblate = None
 
     @httpretty.activate
     def test_projects(self):
@@ -96,6 +97,10 @@ class WeblateTest(TestCase):
             project.name,
             'Hello',
         )
+        repository = project.repository()
+        self.assertFalse(
+            repository.needs_commit
+        )
 
     @httpretty.activate
     def test_component(self):
@@ -106,6 +111,10 @@ class WeblateTest(TestCase):
             component.name,
             'Weblate',
         )
+        repository = component.repository()
+        self.assertFalse(
+            repository.needs_commit
+        )
 
     @httpretty.activate
     def test_translation(self):
@@ -115,4 +124,8 @@ class WeblateTest(TestCase):
         self.assertEqual(
             translation.language.code,
             'cs',
+        )
+        repository = translation.repository()
+        self.assertFalse(
+            repository.needs_commit
         )
