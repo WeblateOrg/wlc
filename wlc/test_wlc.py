@@ -20,7 +20,9 @@
 """Test the module."""
 from .test_base import APITest
 
-from wlc import Weblate, WeblateException
+from wlc import (
+    Weblate, WeblateException, Project, Component, Translation
+)
 
 
 class WeblateErrorTest(APITest):
@@ -78,55 +80,90 @@ class WeblateTest(APITest):
         )
 
 
-class ProjectTest(APITest):
-    def test_project(self):
+class ObjectTest(object):
+    _name = None
+    _cls = None
+
+    def get(self):
+        return Weblate().get_object(self._name)
+
+    def test_get(self):
         """Test getting project."""
-        project = Weblate().get_object('hello')
+        obj = self.get()
+        self.assertIsInstance(obj, self._cls)
+        self.check_object(obj)
+
+    def check_object(self, obj):
+        raise NotImplementedError()
+
+    def check_list(self, obj):
+        raise NotImplementedError()
+
+    def test_list(self):
+        obj = self.get()
+        self.check_list(
+            obj.list()
+        )
+
+    def test_repository(self):
+        obj = self.get()
+        repository = obj.repository()
+        self.assertFalse(
+            repository.needs_commit
+        )
+
+
+class ProjectTest(ObjectTest, APITest):
+    _name = 'hello'
+    _cls = Project
+
+    def test_get(self):
+        """Test getting project."""
+        project = Weblate().get_object(self._name)
+
+    def check_object(self, obj):
         self.assertEqual(
-            project.name,
+            obj.name,
             'Hello',
         )
-        repository = project.repository()
-        self.assertFalse(
-            repository.needs_commit
-        )
+
+    def check_list(self, obj):
+        lst = list(obj)
         self.assertEqual(
-            len(project.list()),
+            len(lst),
             2
         )
+        self.assertIsInstance(lst[0], Component)
 
 
-class ComponentTest(APITest):
-    def test_component(self):
-        """Test getting component."""
-        component = Weblate().get_object('hello/weblate')
+class ComponentTest(ObjectTest, APITest):
+    _name = 'hello/weblate'
+    _cls = Component
+
+    def check_object(self, obj):
         self.assertEqual(
-            component.name,
+            obj.name,
             'Weblate',
         )
-        repository = component.repository()
-        self.assertFalse(
-            repository.needs_commit
-        )
+
+    def check_list(self, obj):
+        lst = list(obj)
         self.assertEqual(
-            len(component.list()),
+            len(lst),
             20 # TODO: Should return 33 with pagination
         )
+        self.assertIsInstance(lst[0], Translation)
 
 
-class TranslationTest(APITest):
-    def test_translation(self):
-        """Test getting translation."""
-        translation = Weblate().get_object('hello/weblate/cs')
+class TranslationTest(ObjectTest, APITest):
+    _name = 'hello/weblate/cs'
+    _cls = Translation
+
+    def check_object(self, obj):
         self.assertEqual(
-            translation.language.code,
+            obj.language.code,
             'cs',
         )
-        repository = translation.repository()
-        self.assertFalse(
-            repository.needs_commit
-        )
-        self.assertEqual(
-            translation.list(),
-            translation
-        )
+
+    def check_list(self, obj):
+        self.assertIsInstance(obj, Translation)
