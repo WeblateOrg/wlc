@@ -19,7 +19,6 @@
 #
 """Test command line interface."""
 
-from unittest import TestCase
 from io import StringIO, BytesIO
 import httpretty
 import json
@@ -29,7 +28,7 @@ import os
 import wlc
 from wlc.main import main
 from wlc.config import WeblateConfig
-from wlc.test_wlc import register_uris
+from .test_base import APITest
 
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), 'test_data', 'wlc')
 TEST_SECTION = os.path.join(os.path.dirname(__file__), 'test_data', 'section')
@@ -53,45 +52,35 @@ def execute(args, settings=None, stdout=None):
     return output.getvalue()
 
 
-class TestSettings(TestCase):
+class TestSettings(APITest):
 
     """Test settings handling."""
 
-    @httpretty.activate
     def test_commandline(self):
         """Configuration using commandline."""
-        register_uris()
         output = execute(['--url', 'https://example.net/', 'list-projects'])
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_stdout(self):
         """Configuration using params."""
-        register_uris()
         output = execute(['list-projects'], stdout=True)
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_settings(self):
         """Configuration using settings param."""
-        register_uris()
         output = execute(
             ['list-projects'],
             settings=(('weblate', 'url', 'https://example.net/'),)
         )
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_config(self):
         """Configuration using custom config file."""
-        register_uris()
         output = execute(['--config', TEST_CONFIG, 'list-projects'], settings=False)
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_config_section(self):
         """Configuration using custom config file section."""
-        register_uris()
         output = execute(
             [
                 '--config', TEST_SECTION,
@@ -102,10 +91,8 @@ class TestSettings(TestCase):
         )
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_config_cwd(self):
         """Test loading settings from current dir"""
-        register_uris()
         current = os.path.abspath('.')
         try:
             os.chdir(os.path.join(os.path.dirname(__file__), 'test_data'))
@@ -133,7 +120,7 @@ class TestSettings(TestCase):
             sys.argv = backup
 
 
-class TestOutput(TestCase):
+class TestOutput(APITest):
 
     """Test output formatting."""
 
@@ -158,46 +145,36 @@ class TestOutput(TestCase):
         output = execute(['--format', 'html', 'version'])
         self.assertIn(wlc.__version__, output)
 
-    @httpretty.activate
     def test_projects_text(self):
         """Test projects printing."""
-        register_uris()
         output = execute(['--format', 'text', 'list-projects'])
         self.assertIn('name: {0}'.format('Hello'), output)
 
-    @httpretty.activate
     def test_projects_json(self):
         """Test projects printing."""
-        register_uris()
         output = execute(['--format', 'json', 'list-projects'])
         values = json.loads(output)
         self.assertEqual(2, len(values))
 
-    @httpretty.activate
     def test_projects_csv(self):
         """Test projects printing."""
-        register_uris()
         output = execute(['--format', 'csv', 'list-projects'])
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_projects_html(self):
         """Test projects printing."""
-        register_uris()
         output = execute(['--format', 'html', 'list-projects'])
         self.assertIn('Hello', output)
 
 
-class TestCommands(TestCase):
+class TestCommands(APITest):
     def test_version_bare(self):
         """Test version printing."""
         output = execute(['version', '--bare'])
         self.assertEqual('{0}\n'.format(wlc.__version__), output)
 
-    @httpretty.activate
     def test_ls(self):
         """Project listing."""
-        register_uris()
         output = execute(
             [
                 'ls'
@@ -205,10 +182,8 @@ class TestCommands(TestCase):
         )
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_list_projects(self):
         """Project listing."""
-        register_uris()
         output = execute(
             [
                 'list-projects'
@@ -216,10 +191,8 @@ class TestCommands(TestCase):
         )
         self.assertIn('Hello', output)
 
-    @httpretty.activate
     def test_list_components(self):
         """Project listing."""
-        register_uris()
         output = execute(
             [
                 'list-components'
@@ -227,10 +200,8 @@ class TestCommands(TestCase):
         )
         self.assertIn('/hello/weblate', output)
 
-    @httpretty.activate
     def test_list_translations(self):
         """Project listing."""
-        register_uris()
         output = execute(
             [
                 'list-translations'
@@ -238,10 +209,8 @@ class TestCommands(TestCase):
         )
         self.assertIn('/hello/weblate/cs/', output)
 
-    @httpretty.activate
     def test_show(self):
         """Project listing."""
-        register_uris()
         output = execute(['show', 'hello'])
         self.assertIn('Hello', output)
 
