@@ -267,3 +267,14 @@ class TestCommands(APITest):
 
         output = execute(['pull', 'hello/weblate/cs'])
         self.assertEqual('', output)
+
+    def test_repo(self):
+        """Project repo."""
+        output = execute(['repo', 'hello'])
+        self.assertIn('needs_commit', output)
+
+        output = execute(['repo', 'hello/weblate'])
+        self.assertIn('needs_commit', output)
+
+        output = execute(['repo', 'hello/weblate/cs'])
+        self.assertIn('needs_commit', output)
