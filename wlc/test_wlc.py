@@ -20,7 +20,7 @@
 """Test the module."""
 from unittest import TestCase
 
-from wlc import Weblate
+from wlc import Weblate, WeblateException
 import httpretty
 import os
 
@@ -40,11 +40,22 @@ def register_uri(path, domain='http://127.0.0.1:8000/api'):
         )
 
 
+def register_error(path, code, domain='http://127.0.0.1:8000/api'):
+    """Simplified URL error registration"""
+    url = '/'.join((domain, path, ''))
+    httpretty.register_uri(
+        httpretty.GET,
+        url,
+        status=code
+    )
+
+
 def register_uris():
     """Register URIs for httpretty."""
     paths = (
         'projects', 'components', 'translations',
         'projects/hello',
+        'projects/invalid',
         'components/hello/weblate',
         'translations/hello/weblate/cs',
         'projects/hello/repository',
@@ -55,6 +66,49 @@ def register_uris():
         register_uri(path)
 
     register_uri('projects', domain='https://example.net')
+    register_error('projects/nonexisting', 404)
+    register_error('projects/denied', 403)
+    register_error('projects/throttled', 429)
+    register_error('projects/error', 500)
+
+
+class WeblateErrorTest(TestCase):
+    """Testing error handling"""
+
+    @httpretty.activate
+    def test_nonexisting(self):
+        """Test listing projects."""
+        register_uris()
+        with self.assertRaisesRegex(WeblateException, 'not found'):
+            Weblate().get_object('nonexisting')
+
+    @httpretty.activate
+    def test_denied(self):
+        """Test listing projects."""
+        register_uris()
+        with self.assertRaisesRegex(WeblateException, 'permission'):
+            Weblate().get_object('denied')
+
+    @httpretty.activate
+    def test_throttled(self):
+        """Test listing projects."""
+        register_uris()
+        with self.assertRaisesRegex(WeblateException, 'Throttling'):
+            Weblate().get_object('throttled')
+
+    @httpretty.activate
+    def test_error(self):
+        """Test listing projects."""
+        register_uris()
+        with self.assertRaisesRegex(WeblateException, '500'):
+            Weblate().get_object('error')
+
+    @httpretty.activate
+    def test_invalid(self):
+        """Test listing projects."""
+        register_uris()
+        with self.assertRaisesRegex(WeblateException, 'invalid JSON'):
+            Weblate().get_object('invalid')
 
 
 class WeblateTest(TestCase):
