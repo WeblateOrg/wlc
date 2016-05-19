@@ -21,4 +21,6 @@
 """Simple wrapper to execute wlc commandline"""
 
 import wlc.main
-wlc.main.main()
+import sys
+
+sys.exit(wlc.main.main())

@@ -464,6 +464,7 @@ def main(settings=None, stdout=None, args=None):
     command = COMMANDS[args.cmd](args, config, stdout)
     try:
         command.run()
+        return 0
     except (CommandError, wlc.WeblateException) as error:
         print('Error: {0}'.format(error), file=sys.stderr)
-        sys.exit(1)
+        return 1

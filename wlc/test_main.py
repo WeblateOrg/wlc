@@ -34,7 +34,7 @@ TEST_CONFIG = os.path.join(os.path.dirname(__file__), 'test_data', 'wlc')
 TEST_SECTION = os.path.join(os.path.dirname(__file__), 'test_data', 'section')
 
 
-def execute(args, settings=None, stdout=None):
+def execute(args, settings=None, stdout=None, expected=0):
     """Execute command and return output."""
     if settings is None:
         settings = ()
@@ -42,13 +42,17 @@ def execute(args, settings=None, stdout=None):
         settings = None
     output = StringIO()
     backup = sys.stdout
+    backup_err = sys.stderr
     try:
         sys.stdout = output
+        sys.stderr = output
         if stdout:
             stdout = output
-        main(args=args, settings=settings, stdout=stdout)
+        result = main(args=args, settings=settings, stdout=stdout)
+        assert result == expected
     finally:
         sys.stdout = backup
+        sys.stderr = backup_err
     return output.getvalue()
 
 
@@ -230,3 +234,15 @@ class TestCommands(APITest):
 
         output = execute(['commit', 'hello/weblate/cs'])
         self.assertEqual('', output)
+
+    def test_push(self):
+        """Project push."""
+        msg = 'Error: Failed to push changes!\n'
+        output = execute(['push', 'hello'], expected=1)
+        self.assertEqual(msg, output)
+
+        output = execute(['push', 'hello/weblate'], expected=1)
+        self.assertEqual(msg, output)
+
+        output = execute(['push', 'hello/weblate/cs'], expected=1)
+        self.assertEqual(msg, output)

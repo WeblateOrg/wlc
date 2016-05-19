@@ -119,6 +119,16 @@ class ObjectTest(object):
             {'result': True}
         )
 
+    def test_push(self):
+        obj = self.get()
+        self.assertEqual(
+            obj.push(),
+            {
+                'result': False,
+                'detail': 'Push is disabled for Hello/Weblate.',
+            }
+        )
+
 
 class ProjectTest(ObjectTest, APITest):
     _name = 'hello'
