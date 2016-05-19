@@ -96,6 +96,12 @@ class ObjectTest(object):
     def check_object(self, obj):
         raise NotImplementedError()
 
+    def test_refresh(self):
+        obj = self.get()
+        obj.refresh()
+        self.assertIsInstance(obj, self._cls)
+        self.check_object(obj)
+
     def check_list(self, obj):
         raise NotImplementedError()
 
