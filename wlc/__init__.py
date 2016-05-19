@@ -183,7 +183,9 @@ class LazyObject(dict):
         for key in kwargs:
             self._attribs[key] = kwargs[key]
 
-    def ensure_loaded(self):
+    def ensure_loaded(self, attrib):
+        if attrib and attrib in self._data or attrib in self._attribs:
+            return
         if not self._loaded:
             self._lazy_load()
 
@@ -230,7 +232,7 @@ class Language(LazyObject):
 class RepoMixin(object):
     """Repository mixin providing generic repository wide operations"""
     def _get_repo_url(self):
-        self.ensure_loaded()
+        self.ensure_loaded('repository_url')
         return self._attribs['repository_url']
 
     def commit(self):
@@ -288,7 +290,7 @@ class Project(LazyObject, RepoObjectMixin):
     }
 
     def list(self):
-        self.ensure_loaded()
+        self.ensure_loaded('components_list_url')
         return self._weblate.list_components(
             self._attribs['components_list_url']
         )
@@ -308,7 +310,7 @@ class Component(LazyObject, RepoObjectMixin):
     _repository_class = Repository
 
     def list(self):
-        self.ensure_loaded()
+        self.ensure_loaded('translations_url')
         return self._weblate.list_translations(
             self._attribs['translations_url']
         )
@@ -333,5 +335,5 @@ class Translation(LazyObject, RepoObjectMixin):
     _repository_class = Repository
 
     def list(self):
-        self.ensure_loaded()
+        self.ensure_loaded('last_author')
         return self
