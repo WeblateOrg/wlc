@@ -97,7 +97,7 @@ class Weblate(object):
         """Perform GET request on the API."""
         return self.request(path)
 
-    def _list_factory(self, path, parser):
+    def list_factory(self, path, parser):
         """Wrapper for listing objects"""
         while path is not None:
             data = self.get(path)
@@ -138,19 +138,19 @@ class Weblate(object):
 
     def list_projects(self, path='projects/'):
         """Lists projects in the instance"""
-        return self._list_factory(path, Project)
+        return self.list_factory(path, Project)
 
     def list_components(self, path='components/'):
         """Lists components in the instance"""
-        return self._list_factory(path, Component)
+        return self.list_factory(path, Component)
 
     def list_translations(self, path='translations/'):
         """Lists translations in the instance"""
-        return self._list_factory(path, Translation)
+        return self.list_factory(path, Translation)
 
     def list_languages(self):
         """Lists languages in the instance"""
-        return self._list_factory('languages/', Language)
+        return self.list_factory('languages/', Language)
 
 
 class LazyObject(dict):
@@ -158,14 +158,14 @@ class LazyObject(dict):
     _params = ()
     _mappings = {}
     _url = None
-    _weblate = None
+    weblate = None
     _loaded = False
     _data = None
     _attribs = None
     _id = 'url'
 
     def __init__(self, weblate, url, **kwargs):
-        self._weblate = weblate
+        self.weblate = weblate
         self._url = url
         self._data = {}
         self._attribs = {}
@@ -177,7 +177,7 @@ class LazyObject(dict):
             if param in kwargs:
                 if param in self._mappings:
                     self._data[param] = self._mappings[param](
-                        self._weblate, **kwargs[param]
+                        self.weblate, **kwargs[param]
                     )
                 else:
                     self._data[param] = kwargs[param]
@@ -192,7 +192,7 @@ class LazyObject(dict):
             self.refresh()
 
     def refresh(self):
-        data = self._weblate.get(self._url)
+        data = self.weblate.get(self._url)
         self._load_params(**data)
         self._loaded = True
 
@@ -236,19 +236,19 @@ class RepoMixin(object):
         return self._attribs['repository_url']
 
     def commit(self):
-        return self._weblate.post(
+        return self.weblate.post(
             self._get_repo_url(),
             operation='commit'
         )
 
     def push(self):
-        return self._weblate.post(
+        return self.weblate.post(
             self._get_repo_url(),
             operation='push'
         )
 
     def pull(self):
-        return self._weblate.post(
+        return self.weblate.post(
             self._get_repo_url(),
             operation='pull'
         )
@@ -272,10 +272,10 @@ class RepoObjectMixin(RepoMixin):
     _repository_class = ProjectRepository
 
     def repository(self):
-        data = self._weblate.get(
+        data = self.weblate.get(
             self._get_repo_url()
         )
-        return self._repository_class(weblate=self._weblate, **data)
+        return self._repository_class(weblate=self.weblate, **data)
 
 
 class Project(LazyObject, RepoObjectMixin):
@@ -291,7 +291,7 @@ class Project(LazyObject, RepoObjectMixin):
 
     def list(self):
         self.ensure_loaded('components_list_url')
-        return self._weblate.list_components(
+        return self.weblate.list_components(
             self._attribs['components_list_url']
         )
 
@@ -311,13 +311,13 @@ class Component(LazyObject, RepoObjectMixin):
 
     def list(self):
         self.ensure_loaded('translations_url')
-        return self._weblate.list_translations(
+        return self.weblate.list_translations(
             self._attribs['translations_url']
         )
 
     def statistics(self):
         self.ensure_loaded('statistics_url')
-        return self._weblate._list_factory(
+        return self.weblate.list_factory(
             self._attribs['statistics_url'], Statistics
         )
 
@@ -346,8 +346,8 @@ class Translation(LazyObject, RepoObjectMixin):
 
     def statistics(self):
         self.ensure_loaded('statistics_url')
-        data = self._weblate.get(self._attribs['statistics_url'])
-        return Statistics(weblate=self._weblate, **data)
+        data = self.weblate.get(self._attribs['statistics_url'])
+        return Statistics(weblate=self.weblate, **data)
 
 
 class Statistics(LazyObject):
