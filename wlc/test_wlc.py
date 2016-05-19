@@ -155,10 +155,6 @@ class ProjectTest(ObjectTest, APITest):
     _name = 'hello'
     _cls = Project
 
-    def test_get(self):
-        """Test getting project."""
-        project = Weblate().get_object(self._name)
-
     def check_object(self, obj):
         self.assertEqual(
             obj.name,
