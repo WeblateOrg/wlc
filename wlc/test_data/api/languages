@@ -1,0 +1,187 @@
+{
+    "count": 47,
+    "next": "http://127.0.0.1:8000/api/languages/?page=2",
+    "previous": null,
+    "results": [
+        {
+            "code": "ach",
+            "direction": "ltr",
+            "name": "Acholi",
+            "nplurals": 2,
+            "pluralequation": "(n > 1)",
+            "url": "http://127.0.0.1:8000/api/languages/ach/",
+            "web_url": "http://127.0.0.1:8000/languages/ach/"
+        },
+        {
+            "code": "af",
+            "direction": "ltr",
+            "name": "Afrikaans",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/af/",
+            "web_url": "http://127.0.0.1:8000/languages/af/"
+        },
+        {
+            "code": "ak",
+            "direction": "ltr",
+            "name": "Akan",
+            "nplurals": 2,
+            "pluralequation": "n > 1",
+            "url": "http://127.0.0.1:8000/api/languages/ak/",
+            "web_url": "http://127.0.0.1:8000/languages/ak/"
+        },
+        {
+            "code": "sq",
+            "direction": "ltr",
+            "name": "Albanian",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/sq/",
+            "web_url": "http://127.0.0.1:8000/languages/sq/"
+        },
+        {
+            "code": "am",
+            "direction": "ltr",
+            "name": "Amharic",
+            "nplurals": 2,
+            "pluralequation": "n > 1",
+            "url": "http://127.0.0.1:8000/api/languages/am/",
+            "web_url": "http://127.0.0.1:8000/languages/am/"
+        },
+        {
+            "code": "anp",
+            "direction": "ltr",
+            "name": "Angika",
+            "nplurals": 2,
+            "pluralequation": "(n != 1)",
+            "url": "http://127.0.0.1:8000/api/languages/anp/",
+            "web_url": "http://127.0.0.1:8000/languages/anp/"
+        },
+        {
+            "code": "ar",
+            "direction": "rtl",
+            "name": "Arabic",
+            "nplurals": 6,
+            "pluralequation": "n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 && n%100<=10 ? 3 : n%100>=11 ? 4 : 5",
+            "url": "http://127.0.0.1:8000/api/languages/ar/",
+            "web_url": "http://127.0.0.1:8000/languages/ar/"
+        },
+        {
+            "code": "hy",
+            "direction": "ltr",
+            "name": "Armenian",
+            "nplurals": 2,
+            "pluralequation": "(n != 1)",
+            "url": "http://127.0.0.1:8000/api/languages/hy/",
+            "web_url": "http://127.0.0.1:8000/languages/hy/"
+        },
+        {
+            "code": "ast",
+            "direction": "ltr",
+            "name": "Asturian",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/ast/",
+            "web_url": "http://127.0.0.1:8000/languages/ast/"
+        },
+        {
+            "code": "de_AT",
+            "direction": "ltr",
+            "name": "Austrian German",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/de_AT/",
+            "web_url": "http://127.0.0.1:8000/languages/de_AT/"
+        },
+        {
+            "code": "ay",
+            "direction": "ltr",
+            "name": "Aymar\u00e1",
+            "nplurals": 1,
+            "pluralequation": "0",
+            "url": "http://127.0.0.1:8000/api/languages/ay/",
+            "web_url": "http://127.0.0.1:8000/languages/ay/"
+        },
+        {
+            "code": "az",
+            "direction": "ltr",
+            "name": "Azerbaijani",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/az/",
+            "web_url": "http://127.0.0.1:8000/languages/az/"
+        },
+        {
+            "code": "ba",
+            "direction": "ltr",
+            "name": "Bashkir",
+            "nplurals": 2,
+            "pluralequation": "(n != 1)",
+            "url": "http://127.0.0.1:8000/api/languages/ba/",
+            "web_url": "http://127.0.0.1:8000/languages/ba/"
+        },
+        {
+            "code": "bs",
+            "direction": "ltr",
+            "name": "Bosnian",
+            "nplurals": 3,
+            "pluralequation": "n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2",
+            "url": "http://127.0.0.1:8000/api/languages/bs/",
+            "web_url": "http://127.0.0.1:8000/languages/bs/"
+        },
+        {
+            "code": "ca",
+            "direction": "ltr",
+            "name": "Catalan",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/ca/",
+            "web_url": "http://127.0.0.1:8000/languages/ca/"
+        },
+        {
+            "code": "zh_CN",
+            "direction": "ltr",
+            "name": "Chinese (China)",
+            "nplurals": 1,
+            "pluralequation": "0",
+            "url": "http://127.0.0.1:8000/api/languages/zh_CN/",
+            "web_url": "http://127.0.0.1:8000/languages/zh_CN/"
+        },
+        {
+            "code": "zh_TW",
+            "direction": "ltr",
+            "name": "Chinese (Taiwan)",
+            "nplurals": 1,
+            "pluralequation": "0",
+            "url": "http://127.0.0.1:8000/api/languages/zh_TW/",
+            "web_url": "http://127.0.0.1:8000/languages/zh_TW/"
+        },
+        {
+            "code": "cs",
+            "direction": "ltr",
+            "name": "Czech",
+            "nplurals": 3,
+            "pluralequation": "(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2",
+            "url": "http://127.0.0.1:8000/api/languages/cs/",
+            "web_url": "http://127.0.0.1:8000/languages/cs/"
+        },
+        {
+            "code": "da",
+            "direction": "ltr",
+            "name": "Danish",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/da/",
+            "web_url": "http://127.0.0.1:8000/languages/da/"
+        },
+        {
+            "code": "nl",
+            "direction": "ltr",
+            "name": "Dutch",
+            "nplurals": 2,
+            "pluralequation": "n != 1",
+            "url": "http://127.0.0.1:8000/api/languages/nl/",
+            "web_url": "http://127.0.0.1:8000/languages/nl/"
+        }
+    ]
+}

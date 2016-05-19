@@ -58,6 +58,13 @@ class WeblateTest(APITest):
 
     """Testing of Weblate class."""
 
+    def test_languages(self):
+        """Test listing projects."""
+        self.assertEqual(
+            len(list(Weblate().list_languages())),
+            47,
+        )
+
     def test_projects(self):
         """Test listing projects."""
         self.assertEqual(

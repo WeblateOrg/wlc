@@ -186,6 +186,15 @@ class TestCommands(APITest):
         )
         self.assertIn('Hello', output)
 
+    def test_list_languages(self):
+        """Language listing."""
+        output = execute(
+            [
+                'list-languages'
+            ],
+        )
+        self.assertIn('Turkish', output)
+
     def test_list_projects(self):
         """Project listing."""
         output = execute(

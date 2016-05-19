@@ -90,6 +90,7 @@ def register_uris():
         'translations/hello/weblate/cs/repository',
         'projects/hello/components',
         'components/hello/weblate/translations',
+        'languages',
     )
     for path in paths:
         register_uri(path)
