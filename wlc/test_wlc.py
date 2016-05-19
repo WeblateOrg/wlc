@@ -195,6 +195,10 @@ class ComponentTest(ObjectTest, APITest):
         )
         self.assertIsInstance(lst[0], Translation)
 
+    def test_statistics(self):
+        obj = self.get()
+        self.assertEqual(33, len(list(obj.statistics())))
+
 
 class TranslationTest(ObjectTest, APITest):
     _name = 'hello/weblate/cs'
@@ -208,3 +212,11 @@ class TranslationTest(ObjectTest, APITest):
 
     def check_list(self, obj):
         self.assertIsInstance(obj, Translation)
+
+    def test_statistics(self):
+        obj = self.get()
+        data = obj.statistics()
+        self.assertEqual(
+            data.name,
+            'Czech',
+        )

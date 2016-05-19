@@ -29,6 +29,7 @@
     "repo": "https://github.com/nijel/weblate-test.git",
     "repository_url": "http://127.0.0.1:8000/api/components/hello/android/repository/",
     "slug": "android",
+    "statistics_url": "http://127.0.0.1:8000/api/components/hello/android/statistics/",
     "template": "android/values/strings.xml",
     "translations_url": "http://127.0.0.1:8000/api/components/hello/android/translations/",
     "url": "http://127.0.0.1:8000/api/components/hello/android/",

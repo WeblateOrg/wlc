@@ -448,6 +448,27 @@ class RepoObject(ObjectCommand):
         self.print(obj.repository())
 
 
+@register_command
+class StatsObject(ObjectCommand):
+    """Displays repository statistics for object"""
+
+    name = 'stats'
+    description = (
+        "Displays statistics "
+        "for translation, component or project"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        if isinstance(obj, wlc.Project):
+            raise CommandError('Not supported')
+        elif isinstance(obj, wlc.Component):
+            self.print(list(obj.statistics()))
+        else:
+            self.print(obj.statistics())
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()

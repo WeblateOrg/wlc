@@ -186,7 +186,7 @@ class LazyObject(dict):
             self._attribs[key] = kwargs[key]
 
     def ensure_loaded(self, attrib):
-        if attrib and attrib in self._data or attrib in self._attribs:
+        if attrib in self._data or attrib in self._attribs:
             return
         if not self._loaded:
             self.refresh()
@@ -198,7 +198,7 @@ class LazyObject(dict):
 
     def __getattr__(self, name):
         if name not in self._params:
-            raise AttributeError()
+            raise AttributeError(name)
         if name not in self._data:
             self.refresh()
         return self._data[name]
@@ -315,6 +315,12 @@ class Component(LazyObject, RepoObjectMixin):
             self._attribs['translations_url']
         )
 
+    def statistics(self):
+        self.ensure_loaded('statistics_url')
+        return self._weblate._list_factory(
+            self._attribs['statistics_url'], Statistics
+        )
+
 
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object"""
@@ -337,3 +343,16 @@ class Translation(LazyObject, RepoObjectMixin):
     def list(self):
         self.ensure_loaded('last_author')
         return self
+
+    def statistics(self):
+        self.ensure_loaded('statistics_url')
+        data = self._weblate.get(self._attribs['statistics_url'])
+        return Statistics(weblate=self._weblate, **data)
+
+
+class Statistics(LazyObject):
+    _params = (
+        'last_author', 'code', 'failing_percent', 'url', 'translated_percent',
+        'total_words', 'failing', 'translated_words', 'url_translate',
+        'fuzzy_percent', 'translated', 'fuzzy', 'total', 'last_change', 'name',
+    )

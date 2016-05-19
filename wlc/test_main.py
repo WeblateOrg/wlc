@@ -278,3 +278,14 @@ class TestCommands(APITest):
 
         output = execute(['repo', 'hello/weblate/cs'])
         self.assertIn('needs_commit', output)
+
+    def test_stats(self):
+        """Project stats."""
+        output = execute(['stats', 'hello'], expected=1)
+        self.assertIn('Not supported', output)
+
+        output = execute(['stats', 'hello/weblate'])
+        self.assertIn('failing_percent', output)
+
+        output = execute(['stats', 'hello/weblate/cs'])
+        self.assertIn('failing_percent', output)

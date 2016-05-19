@@ -1,0 +1,17 @@
+{
+    "code": "cs",
+    "failing": 3,
+    "failing_percent": 75.0,
+    "fuzzy": 0,
+    "fuzzy_percent": 0.0,
+    "last_author": "Weblate Admin",
+    "last_change": "2016-03-07T10:20:05.499",
+    "name": "Czech",
+    "total": 4,
+    "total_words": 15,
+    "translated": 4,
+    "translated_percent": 100.0,
+    "translated_words": 15,
+    "url": "http://127.0.0.1:8000/engage/hello/cs/",
+    "url_translate": "http://127.0.0.1:8000/projects/hello/weblate/cs/"
+}
