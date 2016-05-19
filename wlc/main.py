@@ -300,7 +300,7 @@ class ListProjects(Command):
 
     def run(self):
         """Main execution of the command."""
-        self.print(self.wlc.list_projects())
+        self.print(list(self.wlc.list_projects()))
 
 
 @register_command
@@ -312,7 +312,7 @@ class ListComponents(Command):
 
     def run(self):
         """Main execution of the command."""
-        self.print(self.wlc.list_components())
+        self.print(list(self.wlc.list_components()))
 
 
 @register_command
@@ -324,7 +324,7 @@ class ListLanguages(Command):
 
     def run(self):
         """Main execution of the command."""
-        self.print(self.wlc.list_languages())
+        self.print(list(self.wlc.list_languages()))
 
 
 @register_command
@@ -336,7 +336,7 @@ class ListTranslations(Command):
 
     def run(self):
         """Main execution of the command."""
-        self.print(self.wlc.list_translations())
+        self.print(list(self.wlc.list_translations()))
 
 
 @register_command
@@ -362,7 +362,7 @@ class ListObject(ObjectCommand):
         """Executor"""
         try:
             obj = self.get_object()
-            self.print(obj.list())
+            self.print(list(obj.list()))
         except CommandError:
             # Called without params
             lsproj = ListProjects(self.args, self.config, self.stdout)

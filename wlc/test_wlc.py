@@ -61,22 +61,22 @@ class WeblateTest(APITest):
     def test_projects(self):
         """Test listing projects."""
         self.assertEqual(
-            len(Weblate().list_projects()),
+            len(list(Weblate().list_projects())),
             2,
         )
 
     def test_components(self):
         """Test listing components."""
         self.assertEqual(
-            len(Weblate().list_components()),
+            len(list(Weblate().list_components())),
             2,
         )
 
     def test_translations(self):
         """Test listing translations."""
         self.assertEqual(
-            len(Weblate().list_translations()),
-            20,
+            len(list(Weblate().list_translations())),
+            50,
         )
 
 
@@ -157,7 +157,7 @@ class ComponentTest(ObjectTest, APITest):
         lst = list(obj)
         self.assertEqual(
             len(lst),
-            20 # TODO: Should return 33 with pagination
+            33
         )
         self.assertIsInstance(lst[0], Translation)
 

@@ -99,11 +99,13 @@ class Weblate(object):
 
     def _list_factory(self, path, parser):
         """Wrapper for listing objects"""
-        data = self.get(path)
-        # TODO: handle pagination
-        return [
-            parser(weblate=self, **item) for item in data['results']
-        ]
+        while path is not None:
+            data = self.get(path)
+
+            for item in data['results']:
+                yield parser(weblate=self, **item)
+
+            path = data['next']
 
     def _get_factory(self, prefix, path, parser):
         """Wrapper for getting objects"""
