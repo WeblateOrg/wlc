@@ -116,7 +116,6 @@ class Weblate(object):
         """Returns object (project, component, translation) based on path
         """
         parts = path.strip('/').split('/')
-        print('GETOB', path, parts)
         if len(parts) == 3:
             return self.get_translation(path)
         elif len(parts) == 2:
