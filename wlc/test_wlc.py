@@ -27,6 +27,24 @@ import os
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
 
 
+class ResponseHandler(object):
+    def __init__(self, body, filename):
+        self.body = body
+        self.filename = filename
+
+    def __call__(self, request, uri, headers):
+        filename = None
+        if request.method != 'GET':
+            filename = '--'.join(self.filename, request.method)
+        elif '?' in request.path:
+            filename = '?'.join(self.filename, request.path.split('?', 1)[-1])
+
+        if filename is not None:
+            with open(filename, 'rb') as handle:
+                return (200, headers, handle.read())
+        return (200, headers, self.body)
+
+
 def register_uri(path, domain='http://127.0.0.1:8000/api'):
     """Simplified URL registration"""
     filename = os.path.join(DATA_TEST_BASE, path.replace('/', '-'))
@@ -35,7 +53,7 @@ def register_uri(path, domain='http://127.0.0.1:8000/api'):
         httpretty.register_uri(
             httpretty.GET,
             url,
-            body=handle.read(),
+            body=ResponseHandler(handle.read(), filename),
             content_type='application/json'
         )
 
