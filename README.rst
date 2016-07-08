@@ -3,16 +3,16 @@ wlc
 
 `Weblate`_ commandline client using `Weblate's REST API`_.
 
-.. image:: https://travis-ci.org/nijel/wlc.svg?branch=master
-    :target: https://travis-ci.org/nijel/wlc
+.. image:: https://travis-ci.org/WeblateOrg/wlc.svg?branch=master
+    :target: https://travis-ci.org/WeblateOrg/wlc
     :alt: Build Status
 
-.. image:: https://landscape.io/github/nijel/wlc/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/nijel/wlc/master
+.. image:: https://landscape.io/github/WeblateOrg/wlc/master/landscape.svg?style=flat
+    :target: https://landscape.io/github/WeblateOrg/wlc/master
     :alt: Code Health
 
-.. image:: http://codecov.io/github/nijel/wlc/coverage.svg?branch=master
-    :target: http://codecov.io/github/nijel/wlc?branch=master
+.. image:: http://codecov.io/github/WeblateOrg/wlc/coverage.svg?branch=master
+    :target: http://codecov.io/github/WeblateOrg/wlc?branch=master
     :alt: Code coverage
 
 .. image:: https://img.shields.io/pypi/dm/wlc.svg
@@ -36,7 +36,7 @@ Install using pip:
 
     pip3 install wlc
 
-Sources are available at <https://github.com/nijel/wlc>.
+Sources are available at <https://github.com/WeblateOrg/wlc>.
 
 Usage
 -----

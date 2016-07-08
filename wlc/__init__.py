@@ -2,7 +2,7 @@
 #
 # Copyright © 2016 Michal Čihař <michal@cihar.com>
 #
-# This file is part of Weblate Client <https://github.com/nijel/wlc>
+# This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import json
 __version__ = '0.4'
 
 URL = 'https://weblate.org/'
-DEVEL_URL = 'https://github.com/nijel/wlc'
+DEVEL_URL = 'https://github.com/WeblateOrg/wlc'
 API_URL = 'http://127.0.0.1:8000/api/'
 USER_AGENT = 'wlc/{0}'.format(__version__)
 

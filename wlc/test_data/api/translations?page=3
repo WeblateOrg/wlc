@@ -32,7 +32,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -105,7 +105,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -178,7 +178,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -251,7 +251,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -324,7 +324,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -397,7 +397,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -470,7 +470,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -543,7 +543,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "https://github.com/nijel/weblate-test.git",
+                "repo": "https://github.com/WeblateOrg/test.git",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/android/repository/",
                 "slug": "android",
                 "template": "android/values/strings.xml",
@@ -616,7 +616,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",
@@ -689,7 +689,7 @@
                     "web": "http://weblate.org/",
                     "web_url": "http://127.0.0.1:8000/projects/hello/"
                 },
-                "repo": "file:///home/nijel/work/weblate-hello",
+                "repo": "file:///home/WeblateOrg/work/weblate-hello",
                 "repository_url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/",
                 "slug": "weblate",
                 "template": "",

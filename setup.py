@@ -3,7 +3,7 @@
 #
 # Copyright © 2016 Michal Čihař <michal@cihar.com>
 #
-# This file is part of Weblate Client <https://github.com/nijel/wlc>
+# This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ setup(
     keywords='i18n l10n gettext git mercurial translate',
     url='https://weblate.org/',
     download_url='https://pypi.python.org/pypi/wlc',
-    bugtrack_url='https://github.com/nijel/wlc/issues',
+    bugtrack_url='https://github.com/WeblateOrg/wlc/issues',
     platforms=['any'],
     packages=[
         'wlc',
