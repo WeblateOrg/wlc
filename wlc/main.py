@@ -227,7 +227,7 @@ class Command(object):
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class ObjectCommand(Command):
@@ -264,7 +264,7 @@ class ObjectCommand(Command):
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 @register_command
