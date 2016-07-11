@@ -93,6 +93,7 @@ def register_uris():
         'translations/hello/weblate/cs/statistics',
         'projects/hello/components',
         'components/hello/weblate/translations',
+        'components/hello/weblate/lock',
         'languages',
     )
     for path in paths:

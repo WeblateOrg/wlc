@@ -199,6 +199,27 @@ class ComponentTest(ObjectTest, APITest):
         obj = self.get()
         self.assertEqual(33, len(list(obj.statistics())))
 
+    def test_lock_status(self):
+        obj = self.get()
+        self.assertEqual(
+            {'locked': False},
+            obj.lock_status()
+        )
+
+    def test_lock(self):
+        obj = self.get()
+        self.assertEqual(
+            {'locked': True},
+            obj.lock_status()
+        )
+
+    def test_lock(self):
+        obj = self.get()
+        self.assertEqual(
+            {'locked': False},
+            obj.lock_status()
+        )
+
 
 class TranslationTest(ObjectTest, APITest):
     _name = 'hello/weblate/cs'

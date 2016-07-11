@@ -289,3 +289,18 @@ class TestCommands(APITest):
 
         output = execute(['stats', 'hello/weblate/cs'])
         self.assertIn('failing_percent', output)
+
+    def test_locks(self):
+        """Project locks."""
+        output = execute(['lock-status', 'hello'], expected=1)
+        self.assertIn('Not supported', output)
+
+        output = execute(['lock-status', 'hello/weblate'])
+        self.assertIn('locked', output)
+        output = execute(['lock', 'hello/weblate'])
+        self.assertEqual('', output)
+        output = execute(['unlock', 'hello/weblate'])
+        self.assertEqual('', output)
+
+        output = execute(['lock-status', 'hello/weblate/cs'], expected=1)
+        self.assertIn('Not supported', output)

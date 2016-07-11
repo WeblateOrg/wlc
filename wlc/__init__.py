@@ -321,6 +321,27 @@ class Component(LazyObject, RepoObjectMixin):
             self._attribs['statistics_url'], Statistics
         )
 
+    def _get_lock_url(self):
+        self.ensure_loaded('lock_url')
+        return self._attribs['lock_url']
+
+    def lock(self):
+        return self.weblate.post(
+            self._get_lock_url(),
+            lock=1
+        )
+
+    def unlock(self):
+        return self.weblate.post(
+            self._get_lock_url(),
+            lock=0
+        )
+
+    def lock_status(self):
+        return self.weblate.get(
+            self._get_lock_url(),
+        )
+
 
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object"""

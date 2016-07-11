@@ -469,6 +469,60 @@ class StatsObject(ObjectCommand):
             self.print(obj.statistics())
 
 
+class ComponentCommand(ObjectCommand):
+    """Wrapper to allow only component objects"""
+    def get_object(self):
+        obj = super(ComponentCommand, self).get_object()
+        if not isinstance(obj, wlc.Component):
+            raise CommandError('Not supported')
+        return obj
+
+
+@register_command
+class LockStatusObject(ComponentCommand):
+    """Shows lock status"""
+
+    name = 'lock-status'
+    description = (
+        "Shows component lock status"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        self.print(obj.lock_status())
+
+
+@register_command
+class LockObject(ComponentCommand):
+    """Locks component for transaltion"""
+
+    name = 'lock'
+    description = (
+        "Locks componets from translations"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        obj.lock()
+
+
+@register_command
+class UnlockObject(ComponentCommand):
+    """Unocks component for transaltion"""
+
+    name = 'unlock'
+    description = (
+        "Unlocks componets from translations"
+    )
+
+    def run(self):
+        """Executor"""
+        obj = self.get_object()
+        obj.unlock()
+
+
 def main(settings=None, stdout=None, args=None):
     """Execution entry point."""
     parser = get_parser()
