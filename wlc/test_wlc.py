@@ -210,14 +210,14 @@ class ComponentTest(ObjectTest, APITest):
         obj = self.get()
         self.assertEqual(
             {'locked': True},
-            obj.lock_status()
+            obj.lock()
         )
 
-    def test_lock(self):
+    def test_unlock(self):
         obj = self.get()
         self.assertEqual(
             {'locked': False},
-            obj.lock_status()
+            obj.unlock()
         )
 
 
