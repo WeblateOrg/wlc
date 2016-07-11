@@ -407,7 +407,7 @@ class PushObject(ObjectCommand):
         if not result['result']:
             raise CommandError(
                 'Failed to push changes!',
-                result['detail'],
+                result['detail'] if 'detail' in result else '',
             )
 
 
