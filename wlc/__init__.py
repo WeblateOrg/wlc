@@ -45,6 +45,25 @@ class Weblate(object):
             self.key = key
             self.url = url
 
+    def process_error(self, error)
+        """Raises WeblateException for known HTTP errors"""
+        if hasattr(error, 'code'):
+            if error.code == 429:
+                raise WeblateException(
+                    'Throttling on the server'
+                )
+            elif error.code == 404:
+                raise WeblateException(
+                    'Object not found on the server'
+                )
+            elif error.code == 403:
+                raise WeblateException(
+                    'You don\'t have permission to access this object'
+                )
+            raise WeblateException(
+                'HTTP error {0}: {1}'.format(error.code, error.reason)
+            )
+
     def request(self, path, params=None):
         """Constructs request object"""
         if not path.startswith('http'):
@@ -62,22 +81,7 @@ class Weblate(object):
             handle = urlopen(request, params)
             content = handle.read()
         except IOError as error:
-            if hasattr(error, 'code'):
-                if error.code == 429:
-                    raise WeblateException(
-                        'Throttling on the server'
-                    )
-                elif error.code == 404:
-                    raise WeblateException(
-                        'Object not found on the server'
-                    )
-                elif error.code == 403:
-                    raise WeblateException(
-                        'You don\'t have permission to access this object'
-                    )
-                raise WeblateException(
-                    'HTTP error {0}: {1}'.format(error.code, error.reason)
-                )
+            self.process_error(error)
             raise
         try:
             result = json.loads(content.decode('utf-8'))
