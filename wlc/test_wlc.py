@@ -55,7 +55,6 @@ class WeblateErrorTest(APITest):
 
 
 class WeblateTest(APITest):
-
     """Testing of Weblate class."""
 
     def test_languages(self):
@@ -88,6 +87,8 @@ class WeblateTest(APITest):
 
 
 class ObjectTest(object):
+    """Base class for objects testing"""
+
     _name = None
     _cls = None
 
@@ -159,6 +160,8 @@ class ObjectTest(object):
 
 
 class ProjectTest(ObjectTest, APITest):
+    """Project object tests"""
+
     _name = 'hello'
     _cls = Project
 
@@ -178,6 +181,8 @@ class ProjectTest(ObjectTest, APITest):
 
 
 class ComponentTest(ObjectTest, APITest):
+    """Component object tests"""
+
     _name = 'hello/weblate'
     _cls = Component
 
@@ -222,6 +227,8 @@ class ComponentTest(ObjectTest, APITest):
 
 
 class TranslationTest(ObjectTest, APITest):
+    """Translation object tests"""
+
     _name = 'hello/weblate/cs'
     _cls = Translation
 

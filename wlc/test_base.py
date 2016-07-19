@@ -27,6 +27,7 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
 
 
 class ResponseHandler(object):
+    """httpretty response handler"""
     def __init__(self, body, filename):
         self.body = body
         self.filename = filename
@@ -115,6 +116,7 @@ def register_uris():
 
 
 class APITest(TestCase):
+    """Base class for API testing"""
     def setUp(self):
         httpretty.enable()
         register_uris()
