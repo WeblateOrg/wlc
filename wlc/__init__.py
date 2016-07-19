@@ -45,7 +45,8 @@ class Weblate(object):
             self.key = key
             self.url = url
 
-    def process_error(self, error):
+    @staticmethod
+    def process_error(error):
         """Raises WeblateException for known HTTP errors"""
         if hasattr(error, 'code'):
             if error.code == 429:
