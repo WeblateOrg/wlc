@@ -31,6 +31,7 @@ class ResponseHandler(object):
     """httpretty response handler."""
 
     def __init__(self, body, filename):
+        """Construct response handler object."""
         self.body = body
         self.filename = filename
 
@@ -58,6 +59,7 @@ class ResponseHandler(object):
         return self.body
 
     def __call__(self, request, uri, headers):
+        """Function call interface for httpretty."""
         return (200, headers, self.get_content(request))
 
 

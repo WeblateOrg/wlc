@@ -96,6 +96,7 @@ class ObjectTest(object):
     _cls = None
 
     def get(self):
+        """Return remote object."""
         return Weblate().get_object(self._name)
 
     def test_get(self):
@@ -267,6 +268,7 @@ class TranslationTest(ObjectTest, APITest):
         self.assertIsInstance(obj, Translation)
 
     def test_statistics(self):
+        """Translation statistics test."""
         obj = self.get()
         data = obj.statistics()
         self.assertEqual(

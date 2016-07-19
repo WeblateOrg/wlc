@@ -86,6 +86,7 @@ class CommandError(Exception):
     """Generic error from command line."""
 
     def __init__(self, message, detail=None):
+        """Create CommandError exception."""
         if detail is not None:
             message = '\n'.join((message, detail))
         super(CommandError, self).__init__(message)
