@@ -31,7 +31,7 @@ class ResponseHandler(object):
         self.body = body
         self.filename = filename
 
-    def __call__(self, request, uri, headers):
+    def get_filename(self, request):
         filename = None
         if request.method != 'GET':
             filename = '--'.join(
@@ -41,11 +41,19 @@ class ResponseHandler(object):
             filename = '?'.join(
                 (self.filename, request.path.split('?', 1)[-1])
             )
+        return filename
+
+    def get_content(self, request):
+        filename = self.get_filename(request)
 
         if filename is not None:
             with open(filename, 'rb') as handle:
-                return (200, headers, handle.read())
-        return (200, headers, self.body)
+                return handle.read()
+
+        return self.body
+
+    def __call__(self, request, uri, headers):
+        return (200, headers, self.get_content(request))
 
 
 def register_uri(path, domain='http://127.0.0.1:8000/api'):
