@@ -169,6 +169,7 @@ class LazyObject(dict):
     _id = 'url'
 
     def __init__(self, weblate, url, **kwargs):
+        super(LazyObject, self).__init__()
         self.weblate = weblate
         self._url = url
         self._data = {}
@@ -265,6 +266,7 @@ class ProjectRepository(LazyObject, RepoMixin):
     def _get_repo_url(self):
         return self._data['url']
 
+
 class Repository(ProjectRepository):
     _params = (
         'url', 'needs_commit', 'needs_merge', 'needs_push',
@@ -298,6 +300,7 @@ class Project(LazyObject, RepoObjectMixin):
         return self.weblate.list_components(
             self._attribs['components_list_url']
         )
+
 
 class Component(LazyObject, RepoObjectMixin):
     """Component object"""

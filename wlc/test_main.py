@@ -19,8 +19,7 @@
 #
 """Test command line interface."""
 
-from io import StringIO, BytesIO
-import httpretty
+from io import StringIO
 import json
 import sys
 import os
@@ -80,7 +79,9 @@ class TestSettings(APITest):
 
     def test_config(self):
         """Configuration using custom config file."""
-        output = execute(['--config', TEST_CONFIG, 'list-projects'], settings=False)
+        output = execute(
+            ['--config', TEST_CONFIG, 'list-projects'], settings=False
+        )
         self.assertIn('Hello', output)
 
     def test_config_section(self):

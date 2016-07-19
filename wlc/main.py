@@ -477,6 +477,10 @@ class ComponentCommand(ObjectCommand):
             raise CommandError('Not supported')
         return obj
 
+    def run(self):
+        """Main execution of the command."""
+        raise NotImplementedError()
+
 
 @register_command
 class LockStatusObject(ComponentCommand):
