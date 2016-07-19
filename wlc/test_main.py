@@ -56,6 +56,7 @@ def execute(args, settings=None, stdout=None, expected=0):
 
 
 class TestSettings(APITest):
+
     """Test settings handling."""
 
     def test_commandline(self):
@@ -125,6 +126,7 @@ class TestSettings(APITest):
 
 
 class TestOutput(APITest):
+
     """Test output formatting."""
 
     def test_version_text(self):
@@ -171,6 +173,7 @@ class TestOutput(APITest):
 
 
 class TestCommands(APITest):
+
     """Individual command tests."""
 
     def test_version_bare(self):

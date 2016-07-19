@@ -26,6 +26,7 @@ from wlc import (
 
 
 class WeblateErrorTest(APITest):
+
     """Testing error handling."""
 
     def test_nonexisting(self):
@@ -55,6 +56,7 @@ class WeblateErrorTest(APITest):
 
 
 class WeblateTest(APITest):
+
     """Testing of Weblate class."""
 
     def test_languages(self):
@@ -87,6 +89,7 @@ class WeblateTest(APITest):
 
 
 class ObjectTest(object):
+
     """Base class for objects testing."""
 
     _name = None
@@ -102,7 +105,7 @@ class ObjectTest(object):
         self.check_object(obj)
 
     def check_object(self, obj):
-        """Verifies object is valid."""
+        """Perform verification whether object is valid."""
         raise NotImplementedError()
 
     def test_refresh(self):
@@ -113,7 +116,7 @@ class ObjectTest(object):
         self.check_object(obj)
 
     def check_list(self, obj):
-        """Verifies listing is valid."""
+        """Perform verification whether listing is valid."""
         raise NotImplementedError()
 
     def test_list(self):
@@ -169,20 +172,21 @@ class ObjectTest(object):
 
 
 class ProjectTest(ObjectTest, APITest):
+
     """Project object tests."""
 
     _name = 'hello'
     _cls = Project
 
     def check_object(self, obj):
-        """Verifies object is valid."""
+        """Perform verification whether object is valid."""
         self.assertEqual(
             obj.name,
             'Hello',
         )
 
     def check_list(self, obj):
-        """Verifies listing is valid."""
+        """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(
             len(lst),
@@ -192,20 +196,21 @@ class ProjectTest(ObjectTest, APITest):
 
 
 class ComponentTest(ObjectTest, APITest):
+
     """Component object tests."""
 
     _name = 'hello/weblate'
     _cls = Component
 
     def check_object(self, obj):
-        """Verifies object is valid."""
+        """Perform verification whether object is valid."""
         self.assertEqual(
             obj.name,
             'Weblate',
         )
 
     def check_list(self, obj):
-        """Verifies listing is valid."""
+        """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(
             len(lst),
@@ -244,20 +249,21 @@ class ComponentTest(ObjectTest, APITest):
 
 
 class TranslationTest(ObjectTest, APITest):
+
     """Translation object tests."""
 
     _name = 'hello/weblate/cs'
     _cls = Translation
 
     def check_object(self, obj):
-        """Verifies object is valid."""
+        """Perform verification whether object is valid."""
         self.assertEqual(
             obj.language.code,
             'cs',
         )
 
     def check_list(self, obj):
-        """Verifies listing is valid."""
+        """Perform verification whether listing is valid."""
         self.assertIsInstance(obj, Translation)
 
     def test_statistics(self):

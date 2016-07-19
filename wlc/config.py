@@ -31,6 +31,7 @@ __all__ = ['NoOptionError', 'WeblateConfig']
 
 
 class WeblateConfig(RawConfigParser):
+
     """Configuration parser wrapper with defaults."""
 
     def __init__(self, section='weblate'):
@@ -64,7 +65,7 @@ class WeblateConfig(RawConfigParser):
             cwd = os.path.dirname(cwd)
 
     def get_url_key(self):
-        """Returns API URL and key"""
+        """Get API URL and key."""
         url = self.get(self.section, 'url')
         key = self.get(self.section, 'key')
         if not key:

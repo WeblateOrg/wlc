@@ -27,13 +27,15 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
 
 
 class ResponseHandler(object):
+
     """httpretty response handler."""
+
     def __init__(self, body, filename):
         self.body = body
         self.filename = filename
 
     def get_filename(self, request):
-        """Returns filename for given request."""
+        """Return filename for given request."""
         filename = None
         if request.method != 'GET':
             filename = '--'.join(
@@ -46,7 +48,7 @@ class ResponseHandler(object):
         return filename
 
     def get_content(self, request):
-        """Returns content for given request."""
+        """Return content for given request."""
         filename = self.get_filename(request)
 
         if filename is not None:
@@ -118,13 +120,15 @@ def register_uris():
 
 
 class APITest(TestCase):
+
     """Base class for API testing."""
+
     def setUp(self):
-        """Enables httpretty and registers url."""
+        """Enable httpretty and register urls."""
         httpretty.enable()
         register_uris()
 
     def tearDown(self):
-        """Disables httpretty."""
+        """Disable httpretty."""
         httpretty.disable()
         httpretty.reset()

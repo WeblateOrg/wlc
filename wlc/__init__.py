@@ -33,11 +33,14 @@ USER_AGENT = 'wlc/{0}'.format(__version__)
 
 
 class WeblateException(Exception):
+
     """Generic error."""
 
 
 class Weblate(object):
+
     """Weblate API wrapper object."""
+
     def __init__(self, key='', url=API_URL, config=None):
         """Create the object, storing key and API url."""
         if config is not None:
@@ -48,7 +51,7 @@ class Weblate(object):
 
     @staticmethod
     def process_error(error):
-        """Raises WeblateException for known HTTP errors."""
+        """Raise WeblateException for known HTTP errors."""
         if hasattr(error, 'code'):
             if error.code == 429:
                 raise WeblateException(
@@ -67,7 +70,7 @@ class Weblate(object):
             )
 
     def request(self, path, params=None):
-        """Constructs request object."""
+        """Construct request object."""
         if not path.startswith('http'):
             path = '{0}{1}'.format(self.url, path)
         request = Request(path)
@@ -119,7 +122,9 @@ class Weblate(object):
         return parser(weblate=self, **data)
 
     def get_object(self, path):
-        """Returns object (project, component, translation) based on path.
+        """Return object based on path.
+
+        Operates on (project, component or translation objects.
         """
         parts = path.strip('/').split('/')
         if len(parts) == 3:
@@ -131,36 +136,38 @@ class Weblate(object):
         raise ValueError('Not supported path: {0}'.format(path))
 
     def get_project(self, path):
-        """Returns project of given path."""
+        """Return project of given path."""
         return self._get_factory('projects', path, Project)
 
     def get_component(self, path):
-        """Returns component of given path."""
+        """Return component of given path."""
         return self._get_factory('components', path, Component)
 
     def get_translation(self, path):
-        """Returns translation of given path."""
+        """Return translation of given path."""
         return self._get_factory('translations', path, Translation)
 
     def list_projects(self, path='projects/'):
-        """Lists projects in the instance."""
+        """List projects in the instance."""
         return self.list_factory(path, Project)
 
     def list_components(self, path='components/'):
-        """Lists components in the instance."""
+        """List components in the instance."""
         return self.list_factory(path, Component)
 
     def list_translations(self, path='translations/'):
-        """Lists translations in the instance."""
+        """List translations in the instance."""
         return self.list_factory(path, Translation)
 
     def list_languages(self):
-        """Lists languages in the instance."""
+        """List languages in the instance."""
         return self.list_factory('languages/', Language)
 
 
 class LazyObject(dict):
+
     """Object which supports deferred loading."""
+
     _params = ()
     _mappings = {}
     _url = None
@@ -171,6 +178,7 @@ class LazyObject(dict):
     _id = 'url'
 
     def __init__(self, weblate, url, **kwargs):
+        """Construct object for given Weblate instance."""
         super(LazyObject, self).__init__()
         self.weblate = weblate
         self._url = url
@@ -193,14 +201,14 @@ class LazyObject(dict):
             self._attribs[key] = kwargs[key]
 
     def ensure_loaded(self, attrib):
-        """Ensures attrbiute is loaded from remote."""
+        """Ensure attrbiute is loaded from remote."""
         if attrib in self._data or attrib in self._attribs:
             return
         if not self._loaded:
             self.refresh()
 
     def refresh(self):
-        """Reads object again from remote."""
+        """Read object again from remote."""
         data = self.weblate.get(self._url)
         self._load_params(**data)
         self._loaded = True
@@ -219,6 +227,7 @@ class LazyObject(dict):
         return len(self._params)
 
     def keys(self):
+        """Return list of attributes."""
         return self._params
 
     def items(self):
@@ -227,12 +236,14 @@ class LazyObject(dict):
             yield key, self.__getattr__(key)
 
     def to_value(self):
-        """Returns identifier for the object."""
+        """Return identifier for the object."""
         return self.__getattr__(self._id)
 
 
 class Language(LazyObject):
+
     """Language object."""
+
     _params = (
         'url', 'web_url',
         'code', 'name', 'nplurals', 'pluralequation', 'direction',
@@ -241,27 +252,29 @@ class Language(LazyObject):
 
 
 class RepoMixin(object):
+
     """Repository mixin providing generic repository wide operations."""
+
     def _get_repo_url(self):
         self.ensure_loaded('repository_url')
         return self._attribs['repository_url']
 
     def commit(self):
-        """Commits Weblate changes."""
+        """Commit Weblate changes."""
         return self.weblate.post(
             self._get_repo_url(),
             operation='commit'
         )
 
     def push(self):
-        """Pushes Weblate changes upstream."""
+        """Push Weblate changes upstream."""
         return self.weblate.post(
             self._get_repo_url(),
             operation='push'
         )
 
     def pull(self):
-        """Pulls upstream changes into Weblate."""
+        """Pull upstream changes into Weblate."""
         return self.weblate.post(
             self._get_repo_url(),
             operation='pull'
@@ -269,15 +282,20 @@ class RepoMixin(object):
 
 
 class ProjectRepository(LazyObject, RepoMixin):
+
     """Repository object."""
+
     _params = ('url', 'needs_commit', 'needs_merge', 'needs_push')
 
     def _get_repo_url(self):
-        """Returns repository url."""
+        """Return repository url."""
         return self._data['url']
 
 
 class Repository(ProjectRepository):
+
+    """Repository object."""
+
     _params = (
         'url', 'needs_commit', 'needs_merge', 'needs_push',
         'status', 'merge_failure', 'remote_commit',
@@ -285,10 +303,13 @@ class Repository(ProjectRepository):
 
 
 class RepoObjectMixin(RepoMixin):
+
+    """Repository mixin."""
+
     _repository_class = ProjectRepository
 
     def repository(self):
-        """Returns repository object."""
+        """Return repository object."""
         data = self.weblate.get(
             self._get_repo_url()
         )
@@ -296,7 +317,9 @@ class RepoObjectMixin(RepoMixin):
 
 
 class Project(LazyObject, RepoObjectMixin):
+
     """Project object."""
+
     _params = (
         'url', 'web_url',
         'name', 'slug', 'web', 'source_language'
@@ -307,7 +330,7 @@ class Project(LazyObject, RepoObjectMixin):
     }
 
     def list(self):
-        """Lists components in the project."""
+        """List components in the project."""
         self.ensure_loaded('components_list_url')
         return self.weblate.list_components(
             self._attribs['components_list_url']
@@ -315,7 +338,9 @@ class Project(LazyObject, RepoObjectMixin):
 
 
 class Component(LazyObject, RepoObjectMixin):
+
     """Component object."""
+
     _params = (
         'url', 'web_url',
         'name', 'slug', 'project', 'vcs', 'repo', 'git_export', 'branch',
@@ -329,14 +354,14 @@ class Component(LazyObject, RepoObjectMixin):
     _repository_class = Repository
 
     def list(self):
-        """Lists translations in the component."""
+        """List translations in the component."""
         self.ensure_loaded('translations_url')
         return self.weblate.list_translations(
             self._attribs['translations_url']
         )
 
     def statistics(self):
-        """Returns statistics for component."""
+        """Return statistics for component."""
         self.ensure_loaded('statistics_url')
         return self.weblate.list_factory(
             self._attribs['statistics_url'], Statistics
@@ -347,28 +372,30 @@ class Component(LazyObject, RepoObjectMixin):
         return self._attribs['lock_url']
 
     def lock(self):
-        """Locks component from translations."""
+        """Lock component from translations."""
         return self.weblate.post(
             self._get_lock_url(),
             lock=1
         )
 
     def unlock(self):
-        """Unlocks component from translations."""
+        """Unlock component from translations."""
         return self.weblate.post(
             self._get_lock_url(),
             lock=0
         )
 
     def lock_status(self):
-        """Returns component lock status."""
+        """Return component lock status."""
         return self.weblate.get(
             self._get_lock_url(),
         )
 
 
 class Translation(LazyObject, RepoObjectMixin):
+
     """Translation object."""
+
     _params = (
         'url', 'web_url',
         'language', 'component', 'translated', 'fuzzy', 'total',
@@ -391,13 +418,16 @@ class Translation(LazyObject, RepoObjectMixin):
         return self
 
     def statistics(self):
-        """Returns statistics for translation."""
+        """Return statistics for translation."""
         self.ensure_loaded('statistics_url')
         data = self.weblate.get(self._attribs['statistics_url'])
         return Statistics(weblate=self.weblate, **data)
 
 
 class Statistics(LazyObject):
+
+    """Statistics object."""
+
     _params = (
         'last_author', 'code', 'failing_percent', 'url', 'translated_percent',
         'total_words', 'failing', 'translated_words', 'url_translate',

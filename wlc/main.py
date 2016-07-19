@@ -82,7 +82,9 @@ def get_parser():
 
 
 class CommandError(Exception):
+
     """Generic error from command line."""
+
     def __init__(self, message, detail=None):
         if detail is not None:
             message = '\n'.join((message, detail))
@@ -231,6 +233,7 @@ class Command(object):
 
 
 class ObjectCommand(Command):
+
     """Command to require path to object."""
 
     @classmethod
@@ -248,7 +251,7 @@ class ObjectCommand(Command):
         return parser
 
     def get_object(self):
-        """Returns object."""
+        """Return object."""
         if self.args.object:
             path = self.args.object[0]
         else:
@@ -296,7 +299,8 @@ class Version(Command):
 
 @register_command
 class ListProjects(Command):
-    """Lists projects."""
+
+    """List projects."""
 
     name = 'list-projects'
     description = "Lists all projects"
@@ -308,7 +312,8 @@ class ListProjects(Command):
 
 @register_command
 class ListComponents(Command):
-    """Lists components."""
+
+    """List components."""
 
     name = 'list-components'
     description = "Lists all components"
@@ -320,7 +325,8 @@ class ListComponents(Command):
 
 @register_command
 class ListLanguages(Command):
-    """Lists languages."""
+
+    """List languages."""
 
     name = 'list-languages'
     description = "Lists all languages"
@@ -332,7 +338,8 @@ class ListLanguages(Command):
 
 @register_command
 class ListTranslations(Command):
-    """Lists translations."""
+
+    """List translations."""
 
     name = 'list-translations'
     description = "Lists all translations"
@@ -344,7 +351,8 @@ class ListTranslations(Command):
 
 @register_command
 class ShowObject(ObjectCommand):
-    """Shows object."""
+
+    """Show object."""
 
     name = 'show'
     description = "Shows translation, component or project"
@@ -356,7 +364,8 @@ class ShowObject(ObjectCommand):
 
 @register_command
 class ListObject(ObjectCommand):
-    """Lists object."""
+
+    """List object."""
 
     name = 'ls'
     description = "List content of translation, component or project"
@@ -374,7 +383,8 @@ class ListObject(ObjectCommand):
 
 @register_command
 class CommitObject(ObjectCommand):
-    """Commits object."""
+
+    """Commit object."""
 
     name = 'commit'
     description = "Commits changes in translation, component or project"
@@ -392,7 +402,8 @@ class CommitObject(ObjectCommand):
 
 @register_command
 class PushObject(ObjectCommand):
-    """Pushes object."""
+
+    """Push object."""
 
     name = 'push'
     description = (
@@ -413,7 +424,8 @@ class PushObject(ObjectCommand):
 
 @register_command
 class PullObject(ObjectCommand):
-    """Pulls object."""
+
+    """Pull object."""
 
     name = 'pull'
     description = (
@@ -434,7 +446,8 @@ class PullObject(ObjectCommand):
 
 @register_command
 class RepoObject(ObjectCommand):
-    """Displays repository status for object."""
+
+    """Display repository status for object."""
 
     name = 'repo'
     description = (
@@ -450,7 +463,8 @@ class RepoObject(ObjectCommand):
 
 @register_command
 class StatsObject(ObjectCommand):
-    """Displays repository statistics for object."""
+
+    """Display repository statistics for object."""
 
     name = 'stats'
     description = (
@@ -470,10 +484,11 @@ class StatsObject(ObjectCommand):
 
 
 class ComponentCommand(ObjectCommand):
+
     """Wrapper to allow only component objects."""
 
     def get_object(self):
-        """Returns component object."""
+        """Return component object."""
         obj = super(ComponentCommand, self).get_object()
         if not isinstance(obj, wlc.Component):
             raise CommandError('Not supported')
@@ -486,7 +501,8 @@ class ComponentCommand(ObjectCommand):
 
 @register_command
 class LockStatusObject(ComponentCommand):
-    """Shows lock status."""
+
+    """Show lock status."""
 
     name = 'lock-status'
     description = (
@@ -501,7 +517,8 @@ class LockStatusObject(ComponentCommand):
 
 @register_command
 class LockObject(ComponentCommand):
-    """Locks component for transaltion."""
+
+    """Lock component for transaltion."""
 
     name = 'lock'
     description = (
@@ -516,7 +533,8 @@ class LockObject(ComponentCommand):
 
 @register_command
 class UnlockObject(ComponentCommand):
-    """Unocks component for transaltion."""
+
+    """Unock component for transaltion."""
 
     name = 'unlock'
     description = (
