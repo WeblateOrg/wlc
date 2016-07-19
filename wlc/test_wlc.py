@@ -26,7 +26,7 @@ from wlc import (
 
 
 class WeblateErrorTest(APITest):
-    """Testing error handling"""
+    """Testing error handling."""
 
     def test_nonexisting(self):
         """Test listing projects."""
@@ -87,7 +87,7 @@ class WeblateTest(APITest):
 
 
 class ObjectTest(object):
-    """Base class for objects testing"""
+    """Base class for objects testing."""
 
     _name = None
     _cls = None
@@ -102,24 +102,29 @@ class ObjectTest(object):
         self.check_object(obj)
 
     def check_object(self, obj):
+        """Verifies object is valid."""
         raise NotImplementedError()
 
     def test_refresh(self):
+        """Object refreshing test."""
         obj = self.get()
         obj.refresh()
         self.assertIsInstance(obj, self._cls)
         self.check_object(obj)
 
     def check_list(self, obj):
+        """Verifies listing is valid."""
         raise NotImplementedError()
 
     def test_list(self):
+        """Item listing test."""
         obj = self.get()
         self.check_list(
             obj.list()
         )
 
     def test_repository(self):
+        """Repository get test."""
         obj = self.get()
         repository = obj.repository()
         self.assertFalse(
@@ -127,6 +132,7 @@ class ObjectTest(object):
         )
 
     def test_repository_commit(self):
+        """Repository commit test."""
         obj = self.get()
         repository = obj.repository()
         self.assertEqual(
@@ -135,6 +141,7 @@ class ObjectTest(object):
         )
 
     def test_commit(self):
+        """Direct commit test."""
         obj = self.get()
         self.assertEqual(
             obj.commit(),
@@ -142,6 +149,7 @@ class ObjectTest(object):
         )
 
     def test_pull(self):
+        """Direct pull test."""
         obj = self.get()
         self.assertEqual(
             obj.pull(),
@@ -149,6 +157,7 @@ class ObjectTest(object):
         )
 
     def test_push(self):
+        """Direct push test."""
         obj = self.get()
         self.assertEqual(
             obj.push(),
@@ -160,18 +169,20 @@ class ObjectTest(object):
 
 
 class ProjectTest(ObjectTest, APITest):
-    """Project object tests"""
+    """Project object tests."""
 
     _name = 'hello'
     _cls = Project
 
     def check_object(self, obj):
+        """Verifies object is valid."""
         self.assertEqual(
             obj.name,
             'Hello',
         )
 
     def check_list(self, obj):
+        """Verifies listing is valid."""
         lst = list(obj)
         self.assertEqual(
             len(lst),
@@ -181,18 +192,20 @@ class ProjectTest(ObjectTest, APITest):
 
 
 class ComponentTest(ObjectTest, APITest):
-    """Component object tests"""
+    """Component object tests."""
 
     _name = 'hello/weblate'
     _cls = Component
 
     def check_object(self, obj):
+        """Verifies object is valid."""
         self.assertEqual(
             obj.name,
             'Weblate',
         )
 
     def check_list(self, obj):
+        """Verifies listing is valid."""
         lst = list(obj)
         self.assertEqual(
             len(lst),
@@ -201,10 +214,12 @@ class ComponentTest(ObjectTest, APITest):
         self.assertIsInstance(lst[0], Translation)
 
     def test_statistics(self):
+        """Component statistics test."""
         obj = self.get()
         self.assertEqual(33, len(list(obj.statistics())))
 
     def test_lock_status(self):
+        """Component lock status test."""
         obj = self.get()
         self.assertEqual(
             {'locked': False},
@@ -212,6 +227,7 @@ class ComponentTest(ObjectTest, APITest):
         )
 
     def test_lock(self):
+        """Component lock test."""
         obj = self.get()
         self.assertEqual(
             {'locked': True},
@@ -219,6 +235,7 @@ class ComponentTest(ObjectTest, APITest):
         )
 
     def test_unlock(self):
+        """Component unlock test."""
         obj = self.get()
         self.assertEqual(
             {'locked': False},
@@ -227,18 +244,20 @@ class ComponentTest(ObjectTest, APITest):
 
 
 class TranslationTest(ObjectTest, APITest):
-    """Translation object tests"""
+    """Translation object tests."""
 
     _name = 'hello/weblate/cs'
     _cls = Translation
 
     def check_object(self, obj):
+        """Verifies object is valid."""
         self.assertEqual(
             obj.language.code,
             'cs',
         )
 
     def check_list(self, obj):
+        """Verifies listing is valid."""
         self.assertIsInstance(obj, Translation)
 
     def test_statistics(self):

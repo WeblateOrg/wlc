@@ -27,12 +27,13 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
 
 
 class ResponseHandler(object):
-    """httpretty response handler"""
+    """httpretty response handler."""
     def __init__(self, body, filename):
         self.body = body
         self.filename = filename
 
     def get_filename(self, request):
+        """Returns filename for given request."""
         filename = None
         if request.method != 'GET':
             filename = '--'.join(
@@ -45,6 +46,7 @@ class ResponseHandler(object):
         return filename
 
     def get_content(self, request):
+        """Returns content for given request."""
         filename = self.get_filename(request)
 
         if filename is not None:
@@ -58,7 +60,7 @@ class ResponseHandler(object):
 
 
 def register_uri(path, domain='http://127.0.0.1:8000/api'):
-    """Simplified URL registration"""
+    """Simplified URL registration."""
     filename = os.path.join(DATA_TEST_BASE, path.replace('/', '-'))
     url = '/'.join((domain, path, ''))
     with open(filename, 'rb') as handle:
@@ -77,7 +79,7 @@ def register_uri(path, domain='http://127.0.0.1:8000/api'):
 
 
 def register_error(path, code, domain='http://127.0.0.1:8000/api'):
-    """Simplified URL error registration"""
+    """Simplified URL error registration."""
     url = '/'.join((domain, path, ''))
     httpretty.register_uri(
         httpretty.GET,
@@ -116,11 +118,13 @@ def register_uris():
 
 
 class APITest(TestCase):
-    """Base class for API testing"""
+    """Base class for API testing."""
     def setUp(self):
+        """Enables httpretty and registers url."""
         httpretty.enable()
         register_uris()
 
     def tearDown(self):
+        """Disables httpretty."""
         httpretty.disable()
         httpretty.reset()

@@ -31,7 +31,6 @@ __all__ = ['NoOptionError', 'WeblateConfig']
 
 
 class WeblateConfig(RawConfigParser):
-
     """Configuration parser wrapper with defaults."""
 
     def __init__(self, section='weblate'):

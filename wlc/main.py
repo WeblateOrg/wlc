@@ -231,7 +231,7 @@ class Command(object):
 
 
 class ObjectCommand(Command):
-    """Command to require path to object"""
+    """Command to require path to object."""
 
     @classmethod
     def add_parser(cls, subparser):
@@ -248,7 +248,7 @@ class ObjectCommand(Command):
         return parser
 
     def get_object(self):
-        """Returns object"""
+        """Returns object."""
         if self.args.object:
             path = self.args.object[0]
         else:
@@ -344,25 +344,25 @@ class ListTranslations(Command):
 
 @register_command
 class ShowObject(ObjectCommand):
-    """Shows object"""
+    """Shows object."""
 
     name = 'show'
     description = "Shows translation, component or project"
 
     def run(self):
-        """Executor"""
+        """Executor."""
         self.print(self.get_object())
 
 
 @register_command
 class ListObject(ObjectCommand):
-    """Lists object"""
+    """Lists object."""
 
     name = 'ls'
     description = "List content of translation, component or project"
 
     def run(self):
-        """Executor"""
+        """Executor."""
         try:
             obj = self.get_object()
             self.print(list(obj.list()))
@@ -374,13 +374,13 @@ class ListObject(ObjectCommand):
 
 @register_command
 class CommitObject(ObjectCommand):
-    """Commits object"""
+    """Commits object."""
 
     name = 'commit'
     description = "Commits changes in translation, component or project"
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         result = obj.commit()
         if not result['result']:
@@ -392,7 +392,7 @@ class CommitObject(ObjectCommand):
 
 @register_command
 class PushObject(ObjectCommand):
-    """Pushes object"""
+    """Pushes object."""
 
     name = 'push'
     description = (
@@ -401,7 +401,7 @@ class PushObject(ObjectCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         result = obj.push()
         if not result['result']:
@@ -413,7 +413,7 @@ class PushObject(ObjectCommand):
 
 @register_command
 class PullObject(ObjectCommand):
-    """Pulls object"""
+    """Pulls object."""
 
     name = 'pull'
     description = (
@@ -422,7 +422,7 @@ class PullObject(ObjectCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         result = obj.pull()
         if not result['result']:
@@ -434,7 +434,7 @@ class PullObject(ObjectCommand):
 
 @register_command
 class RepoObject(ObjectCommand):
-    """Displays repository status for object"""
+    """Displays repository status for object."""
 
     name = 'repo'
     description = (
@@ -443,14 +443,14 @@ class RepoObject(ObjectCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         self.print(obj.repository())
 
 
 @register_command
 class StatsObject(ObjectCommand):
-    """Displays repository statistics for object"""
+    """Displays repository statistics for object."""
 
     name = 'stats'
     description = (
@@ -459,7 +459,7 @@ class StatsObject(ObjectCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         if isinstance(obj, wlc.Project):
             raise CommandError('Not supported')
@@ -470,8 +470,10 @@ class StatsObject(ObjectCommand):
 
 
 class ComponentCommand(ObjectCommand):
-    """Wrapper to allow only component objects"""
+    """Wrapper to allow only component objects."""
+
     def get_object(self):
+        """Returns component object."""
         obj = super(ComponentCommand, self).get_object()
         if not isinstance(obj, wlc.Component):
             raise CommandError('Not supported')
@@ -484,7 +486,7 @@ class ComponentCommand(ObjectCommand):
 
 @register_command
 class LockStatusObject(ComponentCommand):
-    """Shows lock status"""
+    """Shows lock status."""
 
     name = 'lock-status'
     description = (
@@ -492,14 +494,14 @@ class LockStatusObject(ComponentCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         self.print(obj.lock_status())
 
 
 @register_command
 class LockObject(ComponentCommand):
-    """Locks component for transaltion"""
+    """Locks component for transaltion."""
 
     name = 'lock'
     description = (
@@ -507,14 +509,14 @@ class LockObject(ComponentCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         obj.lock()
 
 
 @register_command
 class UnlockObject(ComponentCommand):
-    """Unocks component for transaltion"""
+    """Unocks component for transaltion."""
 
     name = 'unlock'
     description = (
@@ -522,7 +524,7 @@ class UnlockObject(ComponentCommand):
     )
 
     def run(self):
-        """Executor"""
+        """Executor."""
         obj = self.get_object()
         obj.unlock()
 

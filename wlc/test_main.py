@@ -96,7 +96,7 @@ class TestSettings(APITest):
         self.assertIn('Hello', output)
 
     def test_config_cwd(self):
-        """Test loading settings from current dir"""
+        """Test loading settings from current dir."""
         current = os.path.abspath('.')
         try:
             os.chdir(os.path.join(os.path.dirname(__file__), 'test_data'))
@@ -171,7 +171,7 @@ class TestOutput(APITest):
 
 
 class TestCommands(APITest):
-    """Individual command tests"""
+    """Individual command tests."""
 
     def test_version_bare(self):
         """Test version printing."""
