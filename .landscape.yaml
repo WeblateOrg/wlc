@@ -4,7 +4,7 @@ python-targets:
 pep8:
   full: true
 test-warnings: true
-test-docs: true
+doc-warnings: true
 strictness: veryhigh
 max-line-length: 79
 autodetect: yes
