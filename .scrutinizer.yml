@@ -7,4 +7,4 @@ build:
         python: '3.5.0'
     dependencies:
         before:
-            - pip install requirements-test.txt
+            - pip install -r requirements-test.txt
