@@ -1,9 +1,20 @@
+os:
+  - linux
+  - osx
 language: python
 python:
   - "3.3"
   - "3.4"
   - "3.5"
   - "pypy3"
+matrix:
+  exclude:
+    - os: osx
+      python: "pypy3"
+    - os: osx
+      python: "3.3"
+    - os: osx
+      python: "3.4"
 sudo: false
 # commands to install dependencies
 install: 
