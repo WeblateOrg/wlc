@@ -21,7 +21,7 @@ install:
   - pip install -r requirements-test.txt
 # commands to run tests
 script: 
-  - py.test --cov=wlc
+  - py.test --cov=wlc wlc
 after_script:
   - codecov
 # trigger Buildtime Trend Service to parse Travis CI log
