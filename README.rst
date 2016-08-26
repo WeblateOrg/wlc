@@ -8,7 +8,7 @@ wlc
     :alt: Build Status
 
 .. image:: https://ci.appveyor.com/api/projects/status/e9a8n9qhvd6ulibw/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/nijel/wlc/branch/master)
+    :target: https://ci.appveyor.com/project/nijel/wlc/branch/master
     :alt: Build status
 
 .. image:: https://landscape.io/github/WeblateOrg/wlc/master/landscape.svg?style=flat
