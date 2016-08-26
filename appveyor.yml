@@ -10,20 +10,21 @@ environment:
     - PYTHON: "C:\\Python35-x64"
 
 install:
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
   # We need wheel installed to build wheels
-  - "%PYTHON%\\python.exe -m pip install wheel"
-  - "%PYTHON%\\python.exe -m pip install codecov"
-  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
-  - "%PYTHON%\\python.exe -m pip install -r requirements-test.txt"
+  - "python.exe -m pip install wheel"
+  - "python.exe -m pip install codecov"
+  - "python.exe -m pip install -r requirements.txt"
+  - "python.exe -m pip install -r requirements-test.txt"
 
 build: off
 
 test_script:
-  - "%PYTHON%\\Scripts\\py.test --cov=wlc"
+  - "py.test --cov=wlc"
 
 after_test:
-  - "%PYTHON%\\Scripts\\codecov"
-  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+  - "codecov"
+  - "python.exe setup.py bdist_wheel"
 
 artifacts:
   # bdist_wheel puts your built wheel in the dist directory
