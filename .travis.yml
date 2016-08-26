@@ -5,7 +5,7 @@ python:
   - "3.5"
   - "pypy3"
 matrix:
-  inlcude:
+  include:
     - os: osx
       language: generic
 sudo: false
