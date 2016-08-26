@@ -1,0 +1,30 @@
+version: "{build}"
+
+clone_depth: 100
+
+environment:
+  matrix:
+    - PYTHON: "C:\\Python33"
+    - PYTHON: "C:\\Python34"
+    - PYTHON: "C:\\Python35"
+    - PYTHON: "C:\\Python35-x64"
+
+install:
+  # We need wheel installed to build wheels
+  - "%PYTHON%\\python.exe -m pip install wheel"
+  - "%PYTHON%\\python.exe -m pip install codecov"
+  - "%PYTHON%\\python.exe -m pip install -r requirements.txt"
+  - "%PYTHON%\\python.exe -m pip install -r requirements-test.txt"
+
+build: off
+
+test_script:
+  - "%PYTHON%\\Scripts\\py.test --cov=wlc"
+
+after_test:
+  - "%PYTHON%\\Scripts\\codecov --cov=wlc"
+  - "%PYTHON%\\python.exe setup.py bdist_wheel"
+
+artifacts:
+  # bdist_wheel puts your built wheel in the dist directory
+  - path: dist\*
