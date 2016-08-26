@@ -43,8 +43,8 @@ class ResponseHandler(object):
                 (self.filename, request.method, request.body.decode('ascii'))
             )
         elif '?' in request.path:
-            filename = '?'.join(
-                (self.filename, request.path.split('?', 1)[-1])
+            filename = '--'.join(
+                (self.filename, request.method, request.path.split('?', 1)[-1])
             )
         return filename
 
