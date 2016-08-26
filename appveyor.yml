@@ -22,7 +22,7 @@ test_script:
   - "%PYTHON%\\Scripts\\py.test --cov=wlc"
 
 after_test:
-  - "%PYTHON%\\Scripts\\codecov --cov=wlc"
+  - "%PYTHON%\\Scripts\\codecov"
   - "%PYTHON%\\python.exe setup.py bdist_wheel"
 
 artifacts:
