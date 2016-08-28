@@ -24,7 +24,7 @@ script:
   - py.test --cov=wlc wlc
 after_script:
   - codecov
-  - codacy-coverage
+  - python-codacy-coverage
 # trigger Buildtime Trend Service to parse Travis CI log
 notifications:
   webhooks:
