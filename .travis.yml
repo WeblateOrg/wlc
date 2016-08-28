@@ -23,6 +23,7 @@ install:
 script: 
   - py.test --cov=wlc wlc
 after_script:
+  - coverage xml
   - codecov
   - python-codacy-coverage
 # trigger Buildtime Trend Service to parse Travis CI log
