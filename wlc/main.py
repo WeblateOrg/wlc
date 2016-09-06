@@ -73,7 +73,12 @@ def get_parser():
         '--url', '-u',
         help='API URL',
     )
-    subparser = parser.add_subparsers(dest="cmd")
+    subparser = parser.add_subparsers(
+        title='subcommands',
+        description='Subcommands specify what action to perform.',
+        dest='cmd'
+    )
+    subparser.required = True
 
     for command in COMMANDS:
         COMMANDS[command].add_parser(subparser)
