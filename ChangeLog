@@ -1,6 +1,10 @@
 0.6
 ---
 
+* Released on 20th September, 2016.
+* Fixed error when invoked without command.
+* Tested on Windows and OS X (in addition to Linux).
+
 0.5
 ---
 
