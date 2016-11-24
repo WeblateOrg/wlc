@@ -280,6 +280,13 @@ class RepoMixin(object):
             operation='pull'
         )
 
+    def reset(self):
+        """Reset Weblate repository to upstream."""
+        return self.weblate.post(
+            self._get_repo_url(),
+            operation='reset'
+        )
+
 
 class ProjectRepository(LazyObject, RepoMixin):
 

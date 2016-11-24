@@ -451,6 +451,28 @@ class PullObject(ObjectCommand):
 
 
 @register_command
+class ResetObject(ObjectCommand):
+
+    """Reset object."""
+
+    name = 'reset'
+    description = (
+        "Resets all changes in Weblate repository to upstream "
+        "in translation, component or project"
+    )
+
+    def run(self):
+        """Executor."""
+        obj = self.get_object()
+        result = obj.reset()
+        if not result['result']:
+            raise CommandError(
+                'Failed to reset changes!',
+                result['detail'],
+            )
+
+
+@register_command
 class RepoObject(ObjectCommand):
 
     """Display repository status for object."""

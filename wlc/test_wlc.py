@@ -160,6 +160,14 @@ class ObjectTest(object):
             {'result': True}
         )
 
+    def test_reset(self):
+        """Direct reset test."""
+        obj = self.get()
+        self.assertEqual(
+            obj.reset(),
+            {'result': True}
+        )
+
     def test_push(self):
         """Direct push test."""
         obj = self.get()
