@@ -52,14 +52,19 @@ Command line usage:
 .. code-block:: sh
 
     wlc list-projects
-    wlc list-subprojects
+    wlc list-components
     wlc list-translations
+    wlc list-languages
     wlc show
     wlc ls
     wlc commit
     wlc push
+    wlc pull
     wlc repo
     wlc stats
+    wlc lock
+    wlc unlock
+    wlc lock-status
 
 Configuration is stored in ``~/.config/weblate``:
 
