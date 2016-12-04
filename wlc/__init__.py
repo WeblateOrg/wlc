@@ -108,13 +108,17 @@ class Weblate(object):
 
     def list_factory(self, path, parser):
         """Wrapper for listing objects."""
+        original_path = path
         while path is not None:
             data = self.get(path)
 
             for item in data['results']:
                 yield parser(weblate=self, **item)
 
-            path = data['next']
+            url_next = data['next']
+            if url_next and not original_path.startswith('http'):
+                url_next = '{0}{1}'.format(original_path, url_next.split('/')[-1])
+            path = url_next
 
     def _get_factory(self, prefix, path, parser):
         """Wrapper for getting objects."""
