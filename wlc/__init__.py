@@ -102,23 +102,43 @@ class Weblate(object):
         params = urlencode(kwargs)
         return self.request(path, params.encode('utf-8'))
 
+    def _replace_host(self, server_url, path, request):
+        if path.startswith('http') or server_url is None:
+            return request
+        server_host = server_url[:server_url.find('/api/') + 5]
+        for key, value in request.items():
+            if isinstance(value, dict):
+                request[key] = self._replace_host(server_url, path, value)
+            elif key.endswith('url') and value:
+                request[key] = value.replace(server_host, self.url)
+        return request
+
     def get(self, path):
         """Perform GET request on the API."""
-        return self.request(path)
+        request = self.request(path)
+        server_url = request.get('url')
+        self._replace_host(server_url, path, request)
+        return request
 
     def list_factory(self, path, parser):
         """Wrapper for listing objects."""
+        original_path = path
         while path is not None:
             data = self.get(path)
 
             for item in data['results']:
                 yield parser(weblate=self, **item)
 
-            path = data['next']
+            url_next = data['next']
+            if url_next and not original_path.startswith('http'):
+                url_next = '{0}{1}'.format(original_path, url_next.split('/')[-1])
+            path = url_next
 
     def _get_factory(self, prefix, path, parser):
         """Wrapper for getting objects."""
         data = self.get('/'.join((prefix, path, '')))
+        # if not path.startswith('http'):
+        #     data['url'] = "{0}{1}/{2}".format(self.url, prefix, path)
         return parser(weblate=self, **data)
 
     def get_object(self, path):
