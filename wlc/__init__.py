@@ -109,7 +109,7 @@ class Weblate(object):
         for key, value in request.items():
             if isinstance(value, dict):
                 request[key] = self._replace_host(server_url, path, value)
-            elif value and value.startswith(server_host):
+            elif isinstance(value, str) and value.startswith(server_host):
                 request[key] = value.replace(server_host, self.url)
         return request
 
