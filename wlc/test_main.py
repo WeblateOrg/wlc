@@ -296,8 +296,8 @@ class TestCommands(APITest):
 
     def test_stats(self):
         """Project stats."""
-        output = execute(['stats', 'hello'], expected=1)
-        self.assertIn('Not supported', output)
+        output = execute(['stats', 'hello'])
+        self.assertIn('translated_percent', output)
 
         output = execute(['stats', 'hello/weblate'])
         self.assertIn('failing_percent', output)

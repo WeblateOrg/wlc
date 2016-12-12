@@ -203,6 +203,11 @@ class ProjectTest(ObjectTest, APITest):
         )
         self.assertIsInstance(lst[0], Component)
 
+    def test_statistics(self):
+        """Component statistics test."""
+        obj = self.get()
+        self.assertEqual(2, len(list(obj.statistics())))
+
 
 class ComponentTest(ObjectTest, APITest):
 

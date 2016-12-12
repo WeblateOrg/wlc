@@ -504,7 +504,7 @@ class StatsObject(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         if isinstance(obj, wlc.Project):
-            raise CommandError('Not supported')
+            self.print(list(obj.statistics()))
         elif isinstance(obj, wlc.Component):
             self.print(list(obj.statistics()))
         else:

@@ -13,6 +13,7 @@
         "web_url": "http://127.0.0.1:8000/languages/en/"
     },
     "url": "http://127.0.0.1:8000/api/projects/hello/",
+    "statistics_url": "http://127.0.0.1:8000/api/projects/hello/statistics/",
     "web": "http://weblate.org/",
     "web_url": "http://127.0.0.1:8000/projects/hello/"
 }

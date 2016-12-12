@@ -97,6 +97,7 @@ def register_uris():
     paths = (
         'projects', 'components', 'translations',
         'projects/hello',
+        'projects/hello/statistics',
         'projects/invalid',
         'components/hello/weblate',
         'components/hello/android',

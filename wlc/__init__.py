@@ -110,7 +110,6 @@ class Weblate(object):
         """Wrapper for listing objects."""
         while path is not None:
             data = self.get(path)
-
             for item in data['results']:
                 yield parser(weblate=self, **item)
 
@@ -251,6 +250,17 @@ class Language(LazyObject):
     _id = 'code'
 
 
+class LanguageStats(LazyObject):
+
+    """Language object."""
+
+    _params = (
+        'total', 'code', 'translated_words', 'language', 'translated',
+        'translated_percent', 'total_words', 'words_percent',
+    )
+    _id = 'code'
+
+
 class RepoMixin(object):
 
     """Repository mixin providing generic repository wide operations."""
@@ -342,6 +352,15 @@ class Project(LazyObject, RepoObjectMixin):
         return self.weblate.list_components(
             self._attribs['components_list_url']
         )
+
+    def statistics(self):
+        """Return statistics for component."""
+        self.ensure_loaded('statistics_url')
+        url = self._attribs['statistics_url']
+        return [
+            LanguageStats(self.weblate, url, **item)
+            for item in self.weblate.get(url)
+        ]
 
 
 class Component(LazyObject, RepoObjectMixin):
