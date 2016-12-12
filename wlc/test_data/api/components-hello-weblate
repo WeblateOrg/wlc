@@ -32,6 +32,7 @@
     "statistics_url": "http://127.0.0.1:8000/api/components/hello/weblate/statistics/",
     "template": "",
     "translations_url": "http://127.0.0.1:8000/api/components/hello/weblate/translations/",
+    "changes_list_url": "http://127.0.0.1:8000/api/components/hello/weblate/changes/",
     "url": "http://127.0.0.1:8000/api/components/hello/weblate/",
     "vcs": "git",
     "web_url": "http://127.0.0.1:8000/projects/hello/weblate/"

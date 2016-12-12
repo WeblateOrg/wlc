@@ -319,3 +319,14 @@ class TestCommands(APITest):
 
         output = execute(['lock-status', 'hello/weblate/cs'], expected=1)
         self.assertIn('Not supported', output)
+
+    def test_changes(self):
+        """Project changes."""
+        output = execute(['changes', 'hello'])
+        self.assertIn('action_name', output)
+
+        output = execute(['changes', 'hello/weblate'])
+        self.assertIn('action_name', output)
+
+        output = execute(['changes', 'hello/weblate/cs'])
+        self.assertIn('action_name', output)

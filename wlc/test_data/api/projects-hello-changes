@@ -1,0 +1,35 @@
+  {
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "unit": null,
+            "component": "http://127.0.0.1:8000/api/components/hello/android/",
+            "url": "http://127.0.0.1:8000/api/changes/1/",
+            "translation": null,
+            "dictionary": null,
+            "user": null,
+            "author": null,
+            "timestamp": "2016-11-18T10:47:01.355911Z",
+            "action": 20,
+            "target": "",
+            "id": 353,
+            "action_name": "Sloučen repozitář"
+        },
+        {
+            "unit": "http://127.0.0.1:8000/api/units/227/",
+            "component": "http://127.0.0.1:8000/api/components/hello/weblate/",
+            "url": "http://127.0.0.1:8000/api/changes/2/",
+            "translation": "http://127.0.0.1:8000/api/translations/hello/weblate/cs/",
+            "dictionary": null,
+            "user": 2,
+            "author": 2,
+            "timestamp": "2016-10-24T07:21:54.121348Z",
+            "action": 26,
+            "target": "",
+            "id": 350,
+            "action_name": "Odstraněn návrh"
+        }
+     ]
+  }

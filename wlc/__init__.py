@@ -154,6 +154,10 @@ class Weblate(object):
         """List components in the instance."""
         return self.list_factory(path, Component)
 
+    def list_changes(self, path='changes/'):
+        """List components in the instance."""
+        return self.list_factory(path, Change)
+
     def list_translations(self, path='translations/'):
         """List translations in the instance."""
         return self.list_factory(path, Translation)
@@ -189,12 +193,18 @@ class LazyObject(dict):
     def _load_params(self, **kwargs):
         for param in self._params:
             if param in kwargs:
-                if param in self._mappings:
-                    self._data[param] = self._mappings[param](
-                        self.weblate, **kwargs[param]
-                    )
+                value = kwargs[param]
+                if value is not None and param in self._mappings:
+                    if isinstance(value, str):
+                        self._data[param] = self._mappings[param](
+                            self.weblate, url=value
+                        )
+                    else:
+                        self._data[param] = self._mappings[param](
+                            self.weblate, **value
+                        )
                 else:
-                    self._data[param] = kwargs[param]
+                    self._data[param] = value
                 del kwargs[param]
         for key in kwargs:
             self._attribs[key] = kwargs[key]
@@ -236,6 +246,7 @@ class LazyObject(dict):
 
     def to_value(self):
         """Return identifier for the object."""
+        self.ensure_loaded(self._id)
         return self.__getattr__(self._id)
 
 
@@ -362,6 +373,13 @@ class Project(LazyObject, RepoObjectMixin):
             for item in self.weblate.get(url)
         ]
 
+    def changes(self):
+        """List changes in the project."""
+        self.ensure_loaded('changes_list_url')
+        return self.weblate.list_changes(
+            self._attribs['changes_list_url']
+        )
+
 
 class Component(LazyObject, RepoObjectMixin):
 
@@ -417,6 +435,13 @@ class Component(LazyObject, RepoObjectMixin):
             self._get_lock_url(),
         )
 
+    def changes(self):
+        """List changes in the project."""
+        self.ensure_loaded('changes_list_url')
+        return self.weblate.list_changes(
+            self._attribs['changes_list_url']
+        )
+
 
 class Translation(LazyObject, RepoObjectMixin):
 
@@ -431,7 +456,7 @@ class Translation(LazyObject, RepoObjectMixin):
         'is_template', 'translated_percent', 'fuzzy_percent',
         'failing_checks_percent', 'last_change', 'last_author',
     )
-    _id = 'slug'
+    _id = 'language_code'
     _mappings = {
         'language': Language,
         'component': Component,
@@ -449,6 +474,13 @@ class Translation(LazyObject, RepoObjectMixin):
         data = self.weblate.get(self._attribs['statistics_url'])
         return Statistics(weblate=self.weblate, **data)
 
+    def changes(self):
+        """List changes in the project."""
+        self.ensure_loaded('changes_list_url')
+        return self.weblate.list_changes(
+            self._attribs['changes_list_url']
+        )
+
 
 class Statistics(LazyObject):
 
@@ -459,3 +491,18 @@ class Statistics(LazyObject):
         'total_words', 'failing', 'translated_words', 'url_translate',
         'fuzzy_percent', 'translated', 'fuzzy', 'total', 'last_change', 'name',
     )
+
+
+class Change(LazyObject):
+
+    """Change object."""
+
+    _params = (
+        'url', 'unit', 'translation', 'component',
+        'timestamp', 'action_name', 'target',
+    )
+    _id = 'id'
+    _mappings = {
+        'translation': Translation,
+        'component': Component,
+    }

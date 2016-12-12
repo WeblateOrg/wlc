@@ -21,7 +21,8 @@
 from .test_base import APITest
 
 from wlc import (
-    Weblate, WeblateException, Project, Component, Translation
+    Weblate, WeblateException, Project, Component, Translation,
+    Change,
 )
 
 
@@ -126,6 +127,16 @@ class ObjectTest(object):
         self.check_list(
             obj.list()
         )
+
+    def test_changes(self):
+        """Item listing test."""
+        obj = self.get()
+        lst = list(obj.changes())
+        self.assertEqual(
+            len(lst),
+            2
+        )
+        self.assertIsInstance(lst[0], Change)
 
     def test_repository(self):
         """Repository get test."""

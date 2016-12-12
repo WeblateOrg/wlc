@@ -490,6 +490,23 @@ class RepoObject(ObjectCommand):
 
 
 @register_command
+class ChangesObject(ObjectCommand):
+
+    """Display repository status for object."""
+
+    name = 'changes'
+    description = (
+        "Displays list of changes "
+        "for translation, component or project"
+    )
+
+    def run(self):
+        """Executor."""
+        obj = self.get_object()
+        self.print(list(obj.changes()))
+
+
+@register_command
 class StatsObject(ObjectCommand):
 
     """Display repository statistics for object."""

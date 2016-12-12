@@ -95,8 +95,10 @@ def register_error(path, code, domain='http://127.0.0.1:8000/api'):
 def register_uris():
     """Register URIs for httpretty."""
     paths = (
+        'changes',
         'projects', 'components', 'translations',
         'projects/hello',
+        'projects/hello/changes',
         'projects/hello/statistics',
         'projects/invalid',
         'components/hello/weblate',
@@ -104,7 +106,9 @@ def register_uris():
         'translations/hello/weblate/cs',
         'projects/hello/repository',
         'components/hello/weblate/repository',
+        'components/hello/weblate/changes',
         'translations/hello/weblate/cs/repository',
+        'translations/hello/weblate/cs/changes',
         'components/hello/weblate/statistics',
         'translations/hello/weblate/cs/statistics',
         'projects/hello/components',

@@ -64,6 +64,7 @@
     "revision": "c0e48e09bd6d1c3a8502176d5f79c9c7e6463653",
     "share_url": "http://127.0.0.1:8000/engage/hello/cs/",
     "statistics_url": "http://127.0.0.1:8000/api/translations/hello/weblate/cs/statistics/",
+    "changes_list_url": "http://127.0.0.1:8000/api/translations/hello/weblate/cs/changes/",
     "total": 4,
     "total_words": 15,
     "translate_url": "http://127.0.0.1:8000/translate/hello/weblate/cs/",
