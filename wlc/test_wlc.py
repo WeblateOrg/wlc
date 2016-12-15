@@ -299,3 +299,19 @@ class TranslationTest(ObjectTest, APITest):
             data.name,
             'Czech',
         )
+
+    def test_download(self):
+        obj = self.get()
+        content = obj.download()
+        self.assertIn(
+            b'Plural-Forms:',
+            content
+        )
+
+    def test_download_csv(self):
+        obj = self.get()
+        content = obj.download('csv')
+        self.assertIn(
+            b'"location"',
+            content
+        )

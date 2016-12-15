@@ -1,0 +1,10 @@
+"location","source","target","id","fuzzy","context","translator_comments","developer_comments"
+"main.c:11","Hello, world!
+","fdfd
+","","False","","",""
+"main.c:12","Orangutan has %d banana.
+","Opička má %d banán.
+","","False","","",""
+"main.c:13","Try Weblate at <http://demo.weblate.org/>!
+","","","False","","",""
+"main.c:14","Thank you for using Weblate.","","","False","","",""

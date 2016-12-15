@@ -69,7 +69,7 @@ class Weblate(object):
                 'HTTP error {0}: {1}'.format(error.code, error.reason)
             )
 
-    def request(self, path, params=None):
+    def request(self, path, params=None, raw=False):
         """Construct request object."""
         if not path.startswith('http'):
             path = '{0}{1}'.format(self.url, path)
@@ -88,6 +88,8 @@ class Weblate(object):
         except IOError as error:
             self.process_error(error)
             raise
+        if raw:
+            return content
         try:
             result = json.loads(content.decode('utf-8'))
         except ValueError:
@@ -480,6 +482,17 @@ class Translation(LazyObject, RepoObjectMixin):
         return self.weblate.list_changes(
             self._attribs['changes_list_url']
         )
+
+    def download(self, convert=None):
+        """Downloads translation file"""
+        self.ensure_loaded('file_url')
+        url = self._attribs['file_url']
+        if convert is not None:
+            url = '{0}?{1}'.format(
+                url,
+                urlencode({'format': convert})
+            )
+        return self.weblate.request(url, raw=True)
 
 
 class Statistics(LazyObject):

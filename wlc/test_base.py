@@ -107,6 +107,7 @@ def register_uris():
         'projects/hello/repository',
         'components/hello/weblate/repository',
         'components/hello/weblate/changes',
+        'translations/hello/weblate/cs/file',
         'translations/hello/weblate/cs/repository',
         'translations/hello/weblate/cs/changes',
         'components/hello/weblate/statistics',
