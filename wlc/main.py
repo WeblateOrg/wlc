@@ -636,7 +636,7 @@ class Download(TranslationCommand):
         """Executor."""
         obj = self.get_object()
         content = obj.download(self.args.convert)
-        if self.args.output:
+        if self.args.output and self.args.output != '-':
             with open(self.args.output, 'wb') as handle:
                 handle.write(content)
         else:
