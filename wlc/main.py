@@ -637,7 +637,7 @@ class Download(TranslationCommand):
 
 
 def parse_settings(args, settings):
-    """Reads settings based on command line params"""
+    """Read settings based on command line params."""
     config = WeblateConfig(args.config_section)
     if settings is None:
         config.load(args.config)
