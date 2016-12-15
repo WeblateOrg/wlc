@@ -1,0 +1,20 @@
+{
+    "components_list_url": "http://127.0.0.1:8000/api/projects/acl/components/",
+    "name": "ACL",
+    "repository_url": "http://127.0.0.1:8000/api/projects/acl/repository/",
+    "slug": "acl",
+    "source_language": {
+        "code": "en",
+        "direction": "ltr",
+        "name": "English",
+        "nplurals": 2,
+        "pluralequation": "n != 1",
+        "url": "http://127.0.0.1:8000/api/languages/en/",
+        "web_url": "http://127.0.0.1:8000/languages/en/"
+    },
+    "url": "http://127.0.0.1:8000/api/projects/acl/",
+    "statistics_url": "http://127.0.0.1:8000/api/projects/acl/statistics/",
+    "changes_list_url": "http://127.0.0.1:8000/api/projects/acl/changes/",
+    "web": "http://weblate.org/",
+    "web_url": "http://127.0.0.1:8000/projects/acl/"
+}
