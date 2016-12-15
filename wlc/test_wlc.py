@@ -94,6 +94,7 @@ class WeblateTest(APITest):
         )
 
     def test_authentication(self):
+        """Test authentication against server."""
         with self.assertRaisesRegex(WeblateException, 'permission'):
             obj = Weblate().get_object('acl')
         obj = Weblate(key='KEY').get_object('acl')
@@ -312,6 +313,7 @@ class TranslationTest(ObjectTest, APITest):
         )
 
     def test_download(self):
+        """Test verbatim file download."""
         obj = self.get()
         content = obj.download()
         self.assertIn(
@@ -320,6 +322,7 @@ class TranslationTest(ObjectTest, APITest):
         )
 
     def test_download_csv(self):
+        """Test dowload of file converted to CSV."""
         obj = self.get()
         content = obj.download('csv')
         self.assertIn(
