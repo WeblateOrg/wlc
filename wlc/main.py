@@ -636,13 +636,8 @@ class Download(TranslationCommand):
             self.stdout.buffer.write(content)
 
 
-def main(settings=None, stdout=None, args=None):
-    """Execution entry point."""
-    parser = get_parser()
-    if args is None:
-        args = sys.argv[1:]
-    args = parser.parse_args(args)
-
+def parse_settings(args, settings):
+    """Reads settings based on command line params"""
     config = WeblateConfig(args.config_section)
     if settings is None:
         config.load(args.config)
@@ -654,6 +649,18 @@ def main(settings=None, stdout=None, args=None):
         value = getattr(args, override)
         if value is not None:
             config.set(args.config_section, override, value)
+
+    return config
+
+
+def main(settings=None, stdout=None, args=None):
+    """Execution entry point."""
+    parser = get_parser()
+    if args is None:
+        args = sys.argv[1:]
+    args = parser.parse_args(args)
+
+    config = parse_settings(args, settings)
 
     command = COMMANDS[args.cmd](args, config, stdout)
     try:
