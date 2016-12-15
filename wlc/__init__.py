@@ -485,7 +485,7 @@ class Translation(LazyObject, RepoObjectMixin):
         )
 
     def download(self, convert=None):
-        """Downloads translation file"""
+        """Download translation file from server."""
         self.ensure_loaded('file_url')
         url = self._attribs['file_url']
         if convert is not None:
