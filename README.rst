@@ -65,6 +65,7 @@ Command line usage:
     wlc lock
     wlc unlock
     wlc lock-status
+    wlc donwload
 
 Configuration is stored in ``~/.config/weblate``:
 

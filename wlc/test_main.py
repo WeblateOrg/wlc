@@ -19,9 +19,10 @@
 #
 """Test command line interface."""
 
-from io import StringIO
+from io import StringIO, BytesIO
 import json
 import sys
+from tempfile import NamedTemporaryFile
 import os
 
 import wlc
@@ -40,6 +41,7 @@ def execute(args, settings=None, stdout=None, expected=0):
     elif not settings:
         settings = None
     output = StringIO()
+    output.buffer = BytesIO()
     backup = sys.stdout
     backup_err = sys.stderr
     try:
@@ -52,7 +54,10 @@ def execute(args, settings=None, stdout=None, expected=0):
     finally:
         sys.stdout = backup
         sys.stderr = backup_err
-    return output.getvalue()
+    result = output.buffer.getvalue()
+    if not result:
+        result = output.getvalue()
+    return result
 
 
 class TestSettings(APITest):
@@ -330,3 +335,16 @@ class TestCommands(APITest):
 
         output = execute(['changes', 'hello/weblate/cs'])
         self.assertIn('action_name', output)
+
+    def test_download(self):
+        """Translation file downloads."""
+        output = execute(['download', 'hello/weblate/cs'])
+        self.assertIn(b'Plural-Forms:', output)
+
+        output = execute(['download', 'hello/weblate/cs', '--format', 'csv'])
+        self.assertIn(b'"location"', output)
+
+        with NamedTemporaryFile() as handle:
+            execute(['download', 'hello/weblate/cs', '-o', handle.name])
+            output = handle.read()
+            self.assertIn(b'Plural-Forms:', output)

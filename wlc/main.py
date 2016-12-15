@@ -544,6 +544,22 @@ class ComponentCommand(ObjectCommand):
         raise NotImplementedError()
 
 
+class TranslationCommand(ObjectCommand):
+
+    """Wrapper to allow only translation objects."""
+
+    def get_object(self):
+        """Return translation object."""
+        obj = super(TranslationCommand, self).get_object()
+        if not isinstance(obj, wlc.Translation):
+            raise CommandError('Not supported')
+        return obj
+
+    def run(self):
+        """Main execution of the command."""
+        raise NotImplementedError()
+
+
 @register_command
 class LockStatusObject(ComponentCommand):
 
@@ -590,6 +606,41 @@ class UnlockObject(ComponentCommand):
         """Executor."""
         obj = self.get_object()
         obj.unlock()
+
+
+@register_command
+class Download(TranslationCommand):
+    """Downloads translation file"""
+
+    name = 'download'
+    description = (
+        "Downloads translation file"
+    )
+
+    @classmethod
+    def add_parser(cls, subparser):
+        """Create parser for command line."""
+        parser = super(Download, cls).add_parser(subparser)
+        parser.add_argument(
+            '-f', '--format',
+            help='File format, if not specified not conversion happens on server'
+        )
+        parser.add_argument(
+            '-o', '--output',
+            help='File where to store output, if not specified file is printed to stdout'
+        )
+        return parser
+
+
+    def run(self):
+        """Executor."""
+        obj = self.get_object()
+        content = obj.download(self.args.format)
+        if self.args.output:
+            with open(self.args.output, 'wb') as handle:
+                handle.write(content)
+        else:
+            self.stdout.buffer.write(content)
 
 
 def main(settings=None, stdout=None, args=None):
