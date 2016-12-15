@@ -1,2 +1,6 @@
 [weblate]
 url = https://example.net/
+
+[withkey]
+url = https://127.0.0.1:8000/api/
+key = KEY

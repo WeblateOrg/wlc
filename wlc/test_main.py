@@ -101,6 +101,18 @@ class TestSettings(APITest):
         )
         self.assertIn('Hello', output)
 
+    def test_config_key(self):
+        """Configuration using custom config file section and key set."""
+        output = execute(
+            [
+                '--config', TEST_CONFIG,
+                '--config-section', 'withkey',
+                'show', 'acl'
+            ],
+            settings=False
+        )
+        self.assertIn('ACL', output)
+
     def test_config_cwd(self):
         """Test loading settings from current dir."""
         current = os.path.abspath('.')
