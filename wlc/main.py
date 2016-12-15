@@ -275,7 +275,8 @@ class ObjectCommand(Command):
         """Main execution of the command."""
         raise NotImplementedError()
 
-    def check_result(self, result, message):
+    @staticmethod
+    def check_result(result, message):
         """Checks result object"""
         if not result['result']:
             raise CommandError(
