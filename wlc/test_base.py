@@ -88,6 +88,7 @@ def register_uri(path, domain='http://127.0.0.1:8000/api', auth=False):
 
 def raise_error(request, uri, headers):
     """Raise IOError."""
+    # pylint: disable=W0613
     raise IOError('Some error')
 
 
