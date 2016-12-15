@@ -350,3 +350,6 @@ class TestCommands(APITest):
             with open(handle.name, 'rb') as tmp:
                 output = tmp.read()
             self.assertIn(b'Plural-Forms:', output)
+
+        output = execute(['download', 'hello/weblate'], expected=1)
+        self.assertIn('Not supported', output)
