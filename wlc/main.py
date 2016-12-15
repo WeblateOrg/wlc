@@ -276,6 +276,38 @@ class ObjectCommand(Command):
         raise NotImplementedError()
 
 
+class ComponentCommand(ObjectCommand):
+
+    """Wrapper to allow only component objects."""
+
+    def get_object(self):
+        """Return component object."""
+        obj = super(ComponentCommand, self).get_object()
+        if not isinstance(obj, wlc.Component):
+            raise CommandError('Not supported')
+        return obj
+
+    def run(self):
+        """Main execution of the command."""
+        raise NotImplementedError()
+
+
+class TranslationCommand(ObjectCommand):
+
+    """Wrapper to allow only translation objects."""
+
+    def get_object(self):
+        """Return translation object."""
+        obj = super(TranslationCommand, self).get_object()
+        if not isinstance(obj, wlc.Translation):
+            raise CommandError('Not supported')
+        return obj
+
+    def run(self):
+        """Main execution of the command."""
+        raise NotImplementedError()
+
+
 @register_command
 class Version(Command):
 
@@ -526,38 +558,6 @@ class Stats(ObjectCommand):
             self.print(list(obj.statistics()))
         else:
             self.print(obj.statistics())
-
-
-class ComponentCommand(ObjectCommand):
-
-    """Wrapper to allow only component objects."""
-
-    def get_object(self):
-        """Return component object."""
-        obj = super(ComponentCommand, self).get_object()
-        if not isinstance(obj, wlc.Component):
-            raise CommandError('Not supported')
-        return obj
-
-    def run(self):
-        """Main execution of the command."""
-        raise NotImplementedError()
-
-
-class TranslationCommand(ObjectCommand):
-
-    """Wrapper to allow only translation objects."""
-
-    def get_object(self):
-        """Return translation object."""
-        obj = super(TranslationCommand, self).get_object()
-        if not isinstance(obj, wlc.Translation):
-            raise CommandError('Not supported')
-        return obj
-
-    def run(self):
-        """Main execution of the command."""
-        raise NotImplementedError()
 
 
 @register_command
