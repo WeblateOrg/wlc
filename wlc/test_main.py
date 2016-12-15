@@ -345,6 +345,8 @@ class TestCommands(APITest):
         self.assertIn(b'"location"', output)
 
         with NamedTemporaryFile() as handle:
+            handle.close()
             execute(['download', 'hello/weblate/cs', '-o', handle.name])
-            output = handle.read()
+            with open(handle.name, 'rb') as tmp:
+                output = tmp.read()
             self.assertIn(b'Plural-Forms:', output)
