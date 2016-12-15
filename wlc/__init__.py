@@ -59,7 +59,8 @@ class Weblate(object):
                 )
             elif error.code == 404:
                 raise WeblateException(
-                    'Object not found on the server (maybe operation is not supported on the server)'
+                    'Object not found on the server '
+                    '(maybe operation is not supported on the server)'
                 )
             elif error.code == 403:
                 raise WeblateException(
