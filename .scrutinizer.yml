@@ -6,9 +6,8 @@ build:
     environment:
         python: '3.5.0'
     dependencies:
-        before:
+        override:
             - pip install -r requirements-test.txt
     tests:
         override:
-            -
-                command: py.test --cov=wlc wlc
+            - py.test --cov=wlc wlc
