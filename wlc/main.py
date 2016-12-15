@@ -275,6 +275,14 @@ class ObjectCommand(Command):
         """Main execution of the command."""
         raise NotImplementedError()
 
+    def check_result(self, result, message):
+        """Checks result object"""
+        if not result['result']:
+            raise CommandError(
+                message,
+                result['detail'] if 'detail' in result else '',
+            )
+
 
 class ComponentCommand(ObjectCommand):
 
@@ -431,11 +439,7 @@ class Commit(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.commit()
-        if not result['result']:
-            raise CommandError(
-                'Failed to commit changes!',
-                result['detail'],
-            )
+        self.check_result(result, 'Failed to commit changes!')
 
 
 @register_command
@@ -453,11 +457,7 @@ class Push(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.push()
-        if not result['result']:
-            raise CommandError(
-                'Failed to push changes!',
-                result['detail'] if 'detail' in result else '',
-            )
+        self.check_result(result, 'Failed to push changes!')
 
 
 @register_command
@@ -475,11 +475,7 @@ class Pull(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.pull()
-        if not result['result']:
-            raise CommandError(
-                'Failed to pull changes!',
-                result['detail'],
-            )
+        self.check_result(result, 'Failed to pull changes!')
 
 
 @register_command
@@ -497,11 +493,7 @@ class Reset(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.reset()
-        if not result['result']:
-            raise CommandError(
-                'Failed to reset changes!',
-                result['detail'],
-            )
+        self.check_result(result, 'Failed to reset changes!')
 
 
 @register_command
