@@ -622,8 +622,8 @@ class Download(TranslationCommand):
         """Create parser for command line."""
         parser = super(Download, cls).add_parser(subparser)
         parser.add_argument(
-            '-f', '--format',
-            help='File format, if not specified not conversion happens on server'
+            '-c', '--convert',
+            help='Convert file format, if not specified not conversion happens on server'
         )
         parser.add_argument(
             '-o', '--output',
@@ -635,7 +635,7 @@ class Download(TranslationCommand):
     def run(self):
         """Executor."""
         obj = self.get_object()
-        content = obj.download(self.args.format)
+        content = obj.download(self.args.convert)
         if self.args.output:
             with open(self.args.output, 'wb') as handle:
                 handle.write(content)

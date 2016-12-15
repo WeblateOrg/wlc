@@ -341,7 +341,7 @@ class TestCommands(APITest):
         output = execute(['download', 'hello/weblate/cs'])
         self.assertIn(b'Plural-Forms:', output)
 
-        output = execute(['download', 'hello/weblate/cs', '--format', 'csv'])
+        output = execute(['download', 'hello/weblate/cs', '--convert', 'csv'])
         self.assertIn(b'"location"', output)
 
         with NamedTemporaryFile() as handle:
