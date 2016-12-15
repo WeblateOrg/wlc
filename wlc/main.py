@@ -277,7 +277,7 @@ class ObjectCommand(Command):
 
     @staticmethod
     def check_result(result, message):
-        """Checks result object"""
+        """Check result json data."""
         if not result['result']:
             raise CommandError(
                 message,
