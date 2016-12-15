@@ -85,10 +85,10 @@ def register_uri(path, domain='http://127.0.0.1:8000/api', auth=False):
             content_type='application/json'
         )
 
+
 def raise_error(request, uri, headers):
     """Raise IOError."""
     raise IOError('Some error')
-
 
 
 def register_error(path, code, domain='http://127.0.0.1:8000/api', body=None):
