@@ -8,3 +8,7 @@ build:
     dependencies:
         before:
             - pip install -r requirements-test.txt
+    tests:
+        override:
+            -
+                command: py.test --cov=wlc wlc
