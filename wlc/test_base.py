@@ -85,13 +85,19 @@ def register_uri(path, domain='http://127.0.0.1:8000/api', auth=False):
             content_type='application/json'
         )
 
+def raise_error(request, uri, headers):
+    """Raise IOError."""
+    raise IOError('Some error')
 
-def register_error(path, code, domain='http://127.0.0.1:8000/api'):
+
+
+def register_error(path, code, domain='http://127.0.0.1:8000/api', body=None):
     """Simplified URL error registration."""
     url = '/'.join((domain, path, ''))
     httpretty.register_uri(
         httpretty.GET,
         url,
+        body=body,
         status=code
     )
 
@@ -131,6 +137,7 @@ def register_uris():
     register_error('projects/denied', 403)
     register_error('projects/throttled', 429)
     register_error('projects/error', 500)
+    register_error('projects/io', 500, body=raise_error)
 
 
 class APITest(TestCase):

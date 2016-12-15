@@ -50,6 +50,11 @@ class WeblateErrorTest(APITest):
         with self.assertRaisesRegex(WeblateException, '500'):
             Weblate().get_object('error')
 
+    def test_oserror(self):
+        """Test listing projects."""
+        with self.assertRaises(OSError):
+            Weblate().get_object('io')
+
     def test_invalid(self):
         """Test listing projects."""
         with self.assertRaisesRegex(WeblateException, 'invalid JSON'):
