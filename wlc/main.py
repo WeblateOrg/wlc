@@ -610,7 +610,8 @@ class UnlockObject(ComponentCommand):
 
 @register_command
 class Download(TranslationCommand):
-    """Downloads translation file"""
+
+    """Downloads translation file."""
 
     name = 'download'
     description = (
@@ -623,14 +624,13 @@ class Download(TranslationCommand):
         parser = super(Download, cls).add_parser(subparser)
         parser.add_argument(
             '-c', '--convert',
-            help='Convert file format, if not specified not conversion happens on server'
+            help='Convert file format on server (defaults to none)'
         )
         parser.add_argument(
             '-o', '--output',
-            help='File where to store output, if not specified file is printed to stdout'
+            help='File where to store output (defaults to stdout)'
         )
         return parser
-
 
     def run(self):
         """Executor."""
