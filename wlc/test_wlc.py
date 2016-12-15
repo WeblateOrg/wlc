@@ -93,6 +93,12 @@ class WeblateTest(APITest):
             50,
         )
 
+    def test_authentication(self):
+        with self.assertRaisesRegex(WeblateException, 'permission'):
+            obj = Weblate().get_object('acl')
+        obj = Weblate(key='KEY').get_object('acl')
+        self.assertEqual(obj.name, 'ACL')
+
 
 class ObjectTest(object):
 

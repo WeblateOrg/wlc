@@ -30,10 +30,11 @@ class ResponseHandler(object):
 
     """httpretty response handler."""
 
-    def __init__(self, body, filename):
+    def __init__(self, body, filename, auth=False):
         """Construct response handler object."""
         self.body = body
         self.filename = filename
+        self.auth = auth
 
     def get_filename(self, request):
         """Return filename for given request."""
@@ -60,10 +61,13 @@ class ResponseHandler(object):
 
     def __call__(self, request, uri, headers):
         """Function call interface for httpretty."""
+        if self.auth:
+            if request.headers['Authorization'] != 'Token KEY':
+                return (403, headers, '')
         return (200, headers, self.get_content(request))
 
 
-def register_uri(path, domain='http://127.0.0.1:8000/api'):
+def register_uri(path, domain='http://127.0.0.1:8000/api', auth=False):
     """Simplified URL registration."""
     filename = os.path.join(DATA_TEST_BASE, path.replace('/', '-'))
     url = '/'.join((domain, path, ''))
@@ -71,13 +75,13 @@ def register_uri(path, domain='http://127.0.0.1:8000/api'):
         httpretty.register_uri(
             httpretty.GET,
             url,
-            body=ResponseHandler(handle.read(), filename),
+            body=ResponseHandler(handle.read(), filename, auth),
             content_type='application/json'
         )
         httpretty.register_uri(
             httpretty.POST,
             url,
-            body=ResponseHandler(handle.read(), filename),
+            body=ResponseHandler(handle.read(), filename, auth),
             content_type='application/json'
         )
 
@@ -119,6 +123,8 @@ def register_uris():
     )
     for path in paths:
         register_uri(path)
+
+    register_uri('projects/acl', auth=True)
 
     register_uri('projects', domain='https://example.net')
     register_error('projects/nonexisting', 404)
