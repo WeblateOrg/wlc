@@ -52,7 +52,7 @@ class WeblateErrorTest(APITest):
 
     def test_oserror(self):
         """Test listing projects."""
-        with self.assertRaises(OSError):
+        with self.assertRaises(IOError):
             Weblate().get_object('io')
 
     def test_invalid(self):
