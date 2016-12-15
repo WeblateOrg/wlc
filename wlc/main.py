@@ -356,7 +356,7 @@ class ListTranslations(Command):
 
 
 @register_command
-class ShowObject(ObjectCommand):
+class Show(ObjectCommand):
 
     """Show object."""
 
@@ -369,7 +369,7 @@ class ShowObject(ObjectCommand):
 
 
 @register_command
-class ListObject(ObjectCommand):
+class List(ObjectCommand):
 
     """List object."""
 
@@ -388,7 +388,7 @@ class ListObject(ObjectCommand):
 
 
 @register_command
-class CommitObject(ObjectCommand):
+class Commit(ObjectCommand):
 
     """Commit object."""
 
@@ -407,7 +407,7 @@ class CommitObject(ObjectCommand):
 
 
 @register_command
-class PushObject(ObjectCommand):
+class Push(ObjectCommand):
 
     """Push object."""
 
@@ -429,7 +429,7 @@ class PushObject(ObjectCommand):
 
 
 @register_command
-class PullObject(ObjectCommand):
+class Pull(ObjectCommand):
 
     """Pull object."""
 
@@ -451,7 +451,7 @@ class PullObject(ObjectCommand):
 
 
 @register_command
-class ResetObject(ObjectCommand):
+class Reset(ObjectCommand):
 
     """Reset object."""
 
@@ -473,7 +473,7 @@ class ResetObject(ObjectCommand):
 
 
 @register_command
-class RepoObject(ObjectCommand):
+class Repo(ObjectCommand):
 
     """Display repository status for object."""
 
@@ -490,7 +490,7 @@ class RepoObject(ObjectCommand):
 
 
 @register_command
-class ChangesObject(ObjectCommand):
+class Changes(ObjectCommand):
 
     """Display repository status for object."""
 
@@ -507,7 +507,7 @@ class ChangesObject(ObjectCommand):
 
 
 @register_command
-class StatsObject(ObjectCommand):
+class Stats(ObjectCommand):
 
     """Display repository statistics for object."""
 
@@ -561,7 +561,7 @@ class TranslationCommand(ObjectCommand):
 
 
 @register_command
-class LockStatusObject(ComponentCommand):
+class LockStatus(ComponentCommand):
 
     """Show lock status."""
 
@@ -577,7 +577,7 @@ class LockStatusObject(ComponentCommand):
 
 
 @register_command
-class LockObject(ComponentCommand):
+class Lock(ComponentCommand):
 
     """Lock component for transaltion."""
 
@@ -593,7 +593,7 @@ class LockObject(ComponentCommand):
 
 
 @register_command
-class UnlockObject(ComponentCommand):
+class Unlock(ComponentCommand):
 
     """Unock component for transaltion."""
 
