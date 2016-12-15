@@ -60,6 +60,13 @@ class WeblateErrorTest(APITest):
         with self.assertRaises(ValueError):
             Weblate().get_object('a/b/c/d')
 
+    def test_invalid_attribute(self):
+        """Test attributes getting."""
+        obj = Weblate().get_object('hello')
+        self.assertEqual(obj.name, 'Hello')
+        with self.assertRaises(AttributeError):
+            obj.invalid_attribute
+
 
 class WeblateTest(APITest):
 
