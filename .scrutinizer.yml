@@ -10,4 +10,8 @@ build:
             - pip install -r requirements-test.txt
     tests:
         override:
-            - py.test --cov=wlc wlc
+            -
+                command:  py.test --cov=wlc wlc
+                coverage:
+                    file: '.coverage'
+                    format: 'py-cc'
