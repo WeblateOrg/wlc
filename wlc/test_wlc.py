@@ -55,6 +55,11 @@ class WeblateErrorTest(APITest):
         with self.assertRaisesRegex(WeblateException, 'invalid JSON'):
             Weblate().get_object('invalid')
 
+    def test_too_long(self):
+        """Test listing projects."""
+        with self.assertRaises(ValueError):
+            Weblate().get_object('a/b/c/d')
+
 
 class WeblateTest(APITest):
 
