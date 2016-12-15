@@ -113,6 +113,14 @@ class WeblateTest(APITest):
         obj = Weblate(key='KEY').get_object('acl')
         self.assertEqual(obj.name, 'ACL')
 
+    def test_ensure_loaded(self):
+        """Test lazy loading of attributes."""
+        obj = Weblate().get_object('hello')
+        obj.ensure_loaded('missing')
+        obj.ensure_loaded('missing')
+        with self.assertRaises(AttributeError):
+            getattr(obj, 'missing')
+
 
 class ObjectTest(object):
 
