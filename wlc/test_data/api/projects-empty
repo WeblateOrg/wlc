@@ -1,0 +1,20 @@
+{
+    "components_list_url": "http://127.0.0.1:8000/api/projects/empty/components/",
+    "name": "Empty",
+    "repository_url": "http://127.0.0.1:8000/api/projects/empty/repository/",
+    "slug": "empty",
+    "source_language": {
+        "code": "en",
+        "direction": "ltr",
+        "name": "English",
+        "nplurals": 2,
+        "pluralequation": "n != 1",
+        "url": "http://127.0.0.1:8000/api/languages/en/",
+        "web_url": "http://127.0.0.1:8000/languages/en/"
+    },
+    "url": "http://127.0.0.1:8000/api/projects/empty/",
+    "statistics_url": "http://127.0.0.1:8000/api/projects/empty/statistics/",
+    "changes_list_url": "http://127.0.0.1:8000/api/projects/empty/changes/",
+    "web": "http://weblate.org/",
+    "web_url": "http://127.0.0.1:8000/projects/empty/"
+}

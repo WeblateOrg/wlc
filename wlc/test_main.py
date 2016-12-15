@@ -204,6 +204,8 @@ class TestCommands(APITest):
         self.assertIn('Hello', output)
         output = execute(['ls', 'hello'])
         self.assertIn('Weblate', output)
+        output = execute(['ls', 'empty'])
+        self.assertEqual('', output)
 
     def test_list_languages(self):
         """Language listing."""
