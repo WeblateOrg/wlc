@@ -24,7 +24,7 @@ from urllib.parse import urlencode
 
 import json
 
-__version__ = '0.7'
+__version__ = '0.8'
 
 URL = 'https://weblate.org/'
 DEVEL_URL = 'https://github.com/WeblateOrg/wlc'
