@@ -1,5 +1,6 @@
 include README.rst
 include LICENSE
+include ChangeLog
 include MANIFEST.in
 include requirements.txt
 include requirements-test.txt
