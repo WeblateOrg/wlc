@@ -80,7 +80,7 @@ class Weblate(object):
         if self.key:
             request.add_header(
                 'Authorization',
-                'Token %s' % self.key
+                'Token {}'.format(self.key)
             )
 
         try:
