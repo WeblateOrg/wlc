@@ -61,9 +61,8 @@ class ResponseHandler(object):
 
     def __call__(self, request, uri, headers):
         """Function call interface for httpretty."""
-        if self.auth:
-            if request.headers['Authorization'] != 'Token KEY':
-                return (403, headers, '')
+        if self.auth and request.headers['Authorization'] != 'Token KEY':
+            return (403, headers, '')
         return (200, headers, self.get_content(request))
 
 
