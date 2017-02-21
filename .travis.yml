@@ -28,8 +28,4 @@ after_script:
   - coverage xml
   - codecov
   - python-codacy-coverage
-# trigger Buildtime Trend Service to parse Travis CI log
-notifications:
-  webhooks:
-    - https://buildtimetrend.herokuapp.com/travis
 cache: pip
