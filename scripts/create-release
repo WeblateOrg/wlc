@@ -1,0 +1,30 @@
+#!/bin/sh
+
+set -e
+
+if [ "x$1" = "x--help" -o "x$1" = "x-h" ] ; then
+    echo "Usage: ./scripts/create-release [--tag]"
+    exit 1
+fi
+
+if ! git diff --exit-code --quiet ; then
+    echo "There are not committed changes!"
+    exit 1
+fi
+
+# Grab version
+version=`python3 -c 'import wlc ; print(wlc.__version__)'`
+
+# What are we going to build?
+if [ "x$1" = "x--tag" ] ; then
+    git tag -s $version -m "Version $version"
+fi
+
+if [ "x$1" = "x--tag" ] ; then
+    # PyPi archive
+    fakeroot ./setup.py sdist upload
+    fakeroot ./setup.py bdist_wheel --universal upload
+else
+    # Create tarball
+    fakeroot ./setup.py sdist
+fi
