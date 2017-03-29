@@ -105,9 +105,23 @@ class Weblate(object):
         params = urlencode(kwargs)
         return self.request(path, params.encode('utf-8'))
 
+    def _replace_host(self, server_url, path, request):
+        if path.startswith('http') or server_url is None:
+            return request
+        server_host = server_url[:server_url.find('/api/') + 5]
+        for key, value in request.items():
+            if isinstance(value, dict):
+                request[key] = self._replace_host(server_url, path, value)
+            elif isinstance(value, str) and value.startswith(server_host):
+                request[key] = value.replace(server_host, self.url)
+        return request
+
     def get(self, path):
         """Perform GET request on the API."""
-        return self.request(path)
+        request = self.request(path)
+        server_url = request.get('url')
+        self._replace_host(server_url, path, request)
+        return request
 
     def list_factory(self, path, parser):
         """Wrapper for listing objects."""
