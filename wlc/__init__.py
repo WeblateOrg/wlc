@@ -213,7 +213,7 @@ class LazyObject(dict):
             self._attribs[key] = kwargs[key]
 
     def ensure_loaded(self, attrib):
-        """Ensure attrbiute is loaded from remote."""
+        """Ensure attribute is loaded from remote."""
         if attrib in self._data or attrib in self._attribs:
             return
         if not self._loaded:
