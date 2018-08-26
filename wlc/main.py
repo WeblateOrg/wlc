@@ -498,6 +498,24 @@ class Reset(ObjectCommand):
 
 
 @register_command
+class Cleanup(ObjectCommand):
+
+    """Cleanup object."""
+
+    name = 'cleanup'
+    description = (
+        "Cleanups all untracked changes in Weblate repository "
+        "in translation, component or project"
+    )
+
+    def run(self):
+        """Executor."""
+        obj = self.get_object()
+        result = obj.cleanup()
+        self.check_result(result, 'Failed to cleanup changes!')
+
+
+@register_command
 class Repo(ObjectCommand):
 
     """Display repository status for object."""

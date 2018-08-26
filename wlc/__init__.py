@@ -311,6 +311,13 @@ class RepoMixin(object):
             operation='reset'
         )
 
+    def cleanup(self):
+        """Cleanup Weblate repository from untracked files."""
+        return self.weblate.post(
+            self._get_repo_url(),
+            operation='cleanup'
+        )
+
 
 class ProjectRepository(LazyObject, RepoMixin):
 

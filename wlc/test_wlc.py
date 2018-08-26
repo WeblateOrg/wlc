@@ -212,6 +212,14 @@ class ObjectTest(object):
             {'result': True}
         )
 
+    def test_cleanup(self):
+        """Direct cleanup test."""
+        obj = self.get()
+        self.assertEqual(
+            obj.cleanup(),
+            {'result': True}
+        )
+
     def test_push(self):
         """Direct push test."""
         obj = self.get()

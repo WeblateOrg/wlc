@@ -302,6 +302,17 @@ class TestCommands(APITest):
         output = execute(['reset', 'hello/weblate/cs'])
         self.assertEqual('', output)
 
+    def test_cleanup(self):
+        """Project cleanup."""
+        output = execute(['cleanup', 'hello'])
+        self.assertEqual('', output)
+
+        output = execute(['cleanup', 'hello/weblate'])
+        self.assertEqual('', output)
+
+        output = execute(['cleanup', 'hello/weblate/cs'])
+        self.assertEqual('', output)
+
     def test_repo(self):
         """Project repo."""
         output = execute(['repo', 'hello'])
