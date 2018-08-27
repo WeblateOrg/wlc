@@ -2,7 +2,6 @@ language: python
 python:
   - "3.5"
   - "3.6"
-  - "3.7"
   - "pypy3"
 matrix:
   include:
@@ -12,6 +11,7 @@ matrix:
       before_install:
         - brew update
         - brew upgrade python3
+        - python3 -m pip install virtualenv
         - virtualenv venv -p python3
         - source venv/bin/activate
 sudo: false
