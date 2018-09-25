@@ -19,18 +19,17 @@
 #
 """Weblate API client library."""
 
-from urllib.request import Request, urlopen
-from urllib.parse import urlencode
+from urllib.parse import urlencode, urlparse
+import requests
+from requests import HTTPError
 
-import json
-
-__version__ = '0.9'
+__version__ = '0.10'
 
 URL = 'https://weblate.org/'
 DEVEL_URL = 'https://github.com/WeblateOrg/wlc'
 API_URL = 'http://127.0.0.1:8000/api/'
 USER_AGENT = 'wlc/{0}'.format(__version__)
-
+LOCALHOST_NETLOC = '127.0.0.1'
 
 class WeblateException(Exception):
 
@@ -52,47 +51,58 @@ class Weblate(object):
     @staticmethod
     def process_error(error):
         """Raise WeblateException for known HTTP errors."""
-        if hasattr(error, 'code'):
-            if error.code == 429:
+        if type(error) is HTTPError:
+            status_code = error.response.status_code
+
+            if status_code == 429:
                 raise WeblateException(
                     'Throttling on the server'
                 )
-            elif error.code == 404:
+            elif status_code == 404:
                 raise WeblateException(
                     'Object not found on the server '
                     '(maybe operation is not supported on the server)'
                 )
-            elif error.code == 403:
+            elif status_code == 403:
                 raise WeblateException(
                     'You don\'t have permission to access this object'
                 )
+
+            reason = error.response.reason
             raise WeblateException(
-                'HTTP error {0}: {1}'.format(error.code, error.reason)
+                'HTTP error {0}: {1}'.format(status_code, reason)
             )
 
-    def request(self, path, params=None, raw=False):
+    def request(self, method, path, params=None, raw=False):
         """Construct request object."""
         if not path.startswith('http'):
             path = '{0}{1}'.format(self.url, path)
-        request = Request(path)
-        request.add_header('User-Agent', USER_AGENT)
-        request.add_header('Accept', 'application/json')
+
+        headers = {'user-agent': USER_AGENT, 'Accept': 'application/json'}
+
         if self.key:
-            request.add_header(
-                'Authorization',
-                'Token {}'.format(self.key)
-            )
+            headers['Authorization'] = 'Token {}'.format(self.key)
+
+        verify_ssl = self._should_verify_ssl(path)
 
         try:
-            handle = urlopen(request, params)
-            content = handle.read()
-        except IOError as error:
+            if method == 'post':
+                r = requests.request(
+                    method, path, headers=headers, data=params, verify=verify_ssl
+                )
+            else:
+                r = requests.request(
+                    method, path, headers=headers, verify=verify_ssl
+                )
+
+            r.raise_for_status()
+        except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
         if raw:
-            return content
+            return r.content
         try:
-            result = json.loads(content.decode('utf-8'))
+            result = r.json()
         except ValueError:
             raise WeblateException(
                 'Server returned invalid JSON'
@@ -103,11 +113,11 @@ class Weblate(object):
     def post(self, path, **kwargs):
         """Perform POST request on the API."""
         params = urlencode(kwargs)
-        return self.request(path, params.encode('utf-8'))
+        return self.request('post', path, params.encode('utf-8'))
 
     def get(self, path):
         """Perform GET request on the API."""
-        return self.request(path)
+        return self.request('get', path)
 
     def list_factory(self, path, parser):
         """Wrapper for listing objects."""
@@ -169,6 +179,12 @@ class Weblate(object):
         """List languages in the instance."""
         return self.list_factory('languages/', Language)
 
+    def _should_verify_ssl(self, path):
+        """Cheks if it should verify ssl certificates."""
+        url = urlparse(path)
+        is_localhost = url.netloc.startswith(LOCALHOST_NETLOC)
+        verify_ssl = url.scheme == 'https' and (not is_localhost)
+        return verify_ssl
 
 class LazyObject(dict):
 
@@ -500,7 +516,7 @@ class Translation(LazyObject, RepoObjectMixin):
                 url,
                 urlencode({'format': convert})
             )
-        return self.weblate.request(url, raw=True)
+        return self.weblate.request('get', url, raw=True)
 
 
 class Statistics(LazyObject):
