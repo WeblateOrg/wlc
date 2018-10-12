@@ -26,7 +26,6 @@ from argparse import ArgumentParser
 import wlc
 from wlc.config import WeblateConfig, NoOptionError
 
-
 COMMANDS = {}
 
 SORT_ORDER = [
@@ -87,7 +86,6 @@ def get_parser():
 
 
 class CommandError(Exception):
-
     """Generic error from command line."""
 
     def __init__(self, message, detail=None):
@@ -112,13 +110,12 @@ def sorted_items(value):
 
 
 class Command(object):
-
     """Basic command object."""
 
     name = ''
     description = ''
 
-    def __init__(self, args, config, stdout=None):
+    def __init__(self, args, config, stdout=None, stdin=None):
         """Construct Command object."""
         self.args = args
         self.config = config
@@ -126,6 +123,12 @@ class Command(object):
             self.stdout = sys.stdout
         else:
             self.stdout = stdout
+
+        if stdin is None:
+            self.stdin = sys.stdin
+        else:
+            self.stdin = stdin
+
         self.wlc = wlc.Weblate(config=config)
 
     @classmethod
@@ -239,7 +242,6 @@ class Command(object):
 
 
 class ObjectCommand(Command):
-
     """Command to require path to object."""
 
     @classmethod
@@ -286,7 +288,6 @@ class ObjectCommand(Command):
 
 
 class ComponentCommand(ObjectCommand):
-
     """Wrapper to allow only component objects."""
 
     def get_object(self):
@@ -302,7 +303,6 @@ class ComponentCommand(ObjectCommand):
 
 
 class TranslationCommand(ObjectCommand):
-
     """Wrapper to allow only translation objects."""
 
     def get_object(self):
@@ -319,7 +319,6 @@ class TranslationCommand(ObjectCommand):
 
 @register_command
 class Version(Command):
-
     """Print version."""
 
     name = 'version'
@@ -346,7 +345,6 @@ class Version(Command):
 
 @register_command
 class ListProjects(Command):
-
     """List projects."""
 
     name = 'list-projects'
@@ -359,7 +357,6 @@ class ListProjects(Command):
 
 @register_command
 class ListComponents(Command):
-
     """List components."""
 
     name = 'list-components'
@@ -372,7 +369,6 @@ class ListComponents(Command):
 
 @register_command
 class ListLanguages(Command):
-
     """List languages."""
 
     name = 'list-languages'
@@ -385,7 +381,6 @@ class ListLanguages(Command):
 
 @register_command
 class ListTranslations(Command):
-
     """List translations."""
 
     name = 'list-translations'
@@ -398,7 +393,6 @@ class ListTranslations(Command):
 
 @register_command
 class Show(ObjectCommand):
-
     """Show object."""
 
     name = 'show'
@@ -411,7 +405,6 @@ class Show(ObjectCommand):
 
 @register_command
 class List(ObjectCommand):
-
     """List object."""
 
     name = 'ls'
@@ -430,7 +423,6 @@ class List(ObjectCommand):
 
 @register_command
 class Commit(ObjectCommand):
-
     """Commit object."""
 
     name = 'commit'
@@ -445,7 +437,6 @@ class Commit(ObjectCommand):
 
 @register_command
 class Push(ObjectCommand):
-
     """Push object."""
 
     name = 'push'
@@ -463,7 +454,6 @@ class Push(ObjectCommand):
 
 @register_command
 class Pull(ObjectCommand):
-
     """Pull object."""
 
     name = 'pull'
@@ -481,7 +471,6 @@ class Pull(ObjectCommand):
 
 @register_command
 class Reset(ObjectCommand):
-
     """Reset object."""
 
     name = 'reset'
@@ -499,7 +488,6 @@ class Reset(ObjectCommand):
 
 @register_command
 class Cleanup(ObjectCommand):
-
     """Cleanup object."""
 
     name = 'cleanup'
@@ -517,7 +505,6 @@ class Cleanup(ObjectCommand):
 
 @register_command
 class Repo(ObjectCommand):
-
     """Display repository status for object."""
 
     name = 'repo'
@@ -534,7 +521,6 @@ class Repo(ObjectCommand):
 
 @register_command
 class Changes(ObjectCommand):
-
     """Display repository status for object."""
 
     name = 'changes'
@@ -551,7 +537,6 @@ class Changes(ObjectCommand):
 
 @register_command
 class Stats(ObjectCommand):
-
     """Display repository statistics for object."""
 
     name = 'stats'
@@ -573,7 +558,6 @@ class Stats(ObjectCommand):
 
 @register_command
 class LockStatus(ComponentCommand):
-
     """Show lock status."""
 
     name = 'lock-status'
@@ -589,7 +573,6 @@ class LockStatus(ComponentCommand):
 
 @register_command
 class Lock(ComponentCommand):
-
     """Lock component for transaltion."""
 
     name = 'lock'
@@ -605,7 +588,6 @@ class Lock(ComponentCommand):
 
 @register_command
 class Unlock(ComponentCommand):
-
     """Unock component for transaltion."""
 
     name = 'unlock'
@@ -621,7 +603,6 @@ class Unlock(ComponentCommand):
 
 @register_command
 class Download(TranslationCommand):
-
     """Downloads translation file."""
 
     name = 'download'
@@ -654,8 +635,47 @@ class Download(TranslationCommand):
             self.stdout.buffer.write(content)
 
 
+@register_command
+class Upload(TranslationCommand):
+
+    """Uploads translation file."""
+
+    name = 'upload'
+    description = (
+        "Uploads translation file"
+    )
+
+    @classmethod
+    def add_parser(cls, subparser):
+        """Create parser for command line."""
+        parser = super(Upload, cls).add_parser(subparser)
+        parser.add_argument(
+            '-i', '--input',
+            help='File to upload (defaults to stdin)'
+        )
+        parser.add_argument(
+            '--overwrite',
+            action='store_true',
+            help='Overwrite existing translations (defaults to none)'
+        )
+        return parser
+
+    def run(self):
+        """Executor."""
+        obj = self.get_object()
+
+        if self.args.input and self.args.input != '-':
+            with open(self.args.input, 'rb') as handle:
+                result = obj.upload(handle, self.args.overwrite)
+        else:
+            result = obj.upload(self.stdin.buffer.read(), self.args.overwrite)
+
+        self.check_result(result, 'Failed to upload translations!')
+
+
 def parse_settings(args, settings):
     """Read settings based on command line params."""
+
     config = WeblateConfig(args.config_section)
     if settings is None:
         config.load(args.config)
@@ -671,7 +691,7 @@ def parse_settings(args, settings):
     return config
 
 
-def main(settings=None, stdout=None, args=None):
+def main(settings=None, stdout=None, stdin=None, args=None):
     """Execution entry point."""
     parser = get_parser()
     if args is None:
@@ -680,7 +700,7 @@ def main(settings=None, stdout=None, args=None):
 
     config = parse_settings(args, settings)
 
-    command = COMMANDS[args.cmd](args, config, stdout)
+    command = COMMANDS[args.cmd](args, config, stdout, stdin)
     try:
         command.run()
         return 0

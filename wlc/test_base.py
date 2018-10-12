@@ -18,16 +18,18 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 """Test helpers."""
+import collections
+import os
+import re
 from unittest import TestCase
 
 import httpretty
-import os
+from requests_toolbelt.multipart import decoder
 
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
 
 
 class ResponseHandler(object):
-
     """httpretty response handler."""
 
     def __init__(self, body, filename, auth=False):
@@ -36,18 +38,14 @@ class ResponseHandler(object):
         self.filename = filename
         self.auth = auth
 
-    def get_filename(self, request):
-        """Return filename for given request."""
-        filename = None
-        if request.method != 'GET':
-            filename = '--'.join(
-                (self.filename, request.method, request.body.decode('ascii'))
-            )
-        elif '?' in request.path:
-            filename = '--'.join(
-                (self.filename, request.method, request.path.split('?', 1)[-1])
-            )
-        return filename
+    def __call__(self, request, uri, headers):
+        """Function call interface for httpretty."""
+        if self.auth and request.headers['Authorization'] != 'Token KEY':
+            return 403, headers, ''
+
+        content = self.get_content(request)
+
+        return 200, headers, content
 
     def get_content(self, request):
         """Return content for given request."""
@@ -59,11 +57,66 @@ class ResponseHandler(object):
 
         return self.body
 
-    def __call__(self, request, uri, headers):
-        """Function call interface for httpretty."""
-        if self.auth and request.headers['Authorization'] != 'Token KEY':
-            return (403, headers, '')
-        return (200, headers, self.get_content(request))
+    def get_filename(self, request):
+        """Return filename for given request."""
+        filename = None
+        if request.method != 'GET':
+            content_type = request.headers.get('content-type', None)
+
+            if content_type is not None \
+                    and content_type.startswith('multipart/form-data'):
+                filename = self.get_multipart_filename(content_type, request)
+            else:
+                filename = '--'.join((
+                    self.filename,
+                    request.method,
+                    request.body.decode('ascii')
+                ))
+        elif '?' in request.path:
+            filename = '--'.join(
+                (self.filename, request.method, request.path.split('?', 1)[-1])
+            )
+        return filename
+
+    def get_multipart_filename(self, content_type, request):
+        """Return filename for given multipart request."""
+        body = request.body
+        multipart_data = decoder.MultipartDecoder(body, content_type)
+        multipart_dict = {}
+        filename_array = [self.filename, request.method]
+        for part in multipart_data.parts:
+            content_disposition = part.headers.get(
+                'Content-Disposition'.encode(),
+                None
+            )
+
+            decoded_cd = content_disposition.decode("utf-8")
+            multipart_name = self.get_multipart_name(decoded_cd)
+
+            multipart_dict[multipart_name] = part.text.replace(' ', '-')
+
+        ordered_dict = collections.OrderedDict(
+            sorted(multipart_dict.items())
+        )
+
+        for key, value in ordered_dict.items():
+            filename_array.append(key + '=' + value)
+        filename = '--'.join(filename_array)
+
+        return filename
+
+    # simple implementation instead of one based on the rfc6266 parser,
+    # as rfc6266 fails on python 3.7
+    @staticmethod
+    def get_multipart_name(content_disposition):
+        """Return multipart name from content disposition."""
+        m = re.search(
+            'name\s*=\s*"(?P<name>[A-Za-z]+)"',
+            content_disposition)
+
+        name = m.group('name')
+
+        return name
 
 
 def register_uri(path, domain='http://127.0.0.1:8000/api', auth=False):
@@ -143,7 +196,6 @@ def register_uris():
 
 
 class APITest(TestCase):
-
     """Base class for API testing."""
 
     def setUp(self):

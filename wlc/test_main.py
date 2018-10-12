@@ -19,7 +19,7 @@
 #
 """Test command line interface."""
 
-from io import StringIO, BytesIO
+from io import StringIO, BytesIO, TextIOWrapper
 import json
 import sys
 from tempfile import NamedTemporaryFile
@@ -34,7 +34,7 @@ TEST_CONFIG = os.path.join(os.path.dirname(__file__), 'test_data', 'wlc')
 TEST_SECTION = os.path.join(os.path.dirname(__file__), 'test_data', 'section')
 
 
-def execute(args, settings=None, stdout=None, expected=0):
+def execute(args, settings=None, stdout=None, stdin=None, expected=0):
     """Execute command and return output."""
     if settings is None:
         settings = ()
@@ -49,7 +49,7 @@ def execute(args, settings=None, stdout=None, expected=0):
         sys.stderr = output
         if stdout:
             stdout = output
-        result = main(args=args, settings=settings, stdout=stdout)
+        result = main(args=args, settings=settings, stdout=stdout, stdin=stdin)
         assert result == expected
     finally:
         sys.stdout = backup
@@ -378,3 +378,35 @@ class TestCommands(APITest):
 
         output = execute(['download', 'hello/weblate'], expected=1)
         self.assertIn('Not supported', output)
+
+    def test_upload(self):
+        """Translation file uploads."""
+        msg = (
+            'Error: Failed to upload translations!\n\n'
+        )
+
+        with self.get_text_io_wrapper("test upload data") as stdin:
+            output = execute(['upload', 'hello/weblate/cs'], stdin=stdin)
+            self.assertEqual('', output)
+
+        with self.get_text_io_wrapper("wrong upload data") as stdin:
+            output = execute(['upload', 'hello/weblate/cs'],
+                             stdin=stdin,
+                             expected=1)
+            self.assertEqual(msg, output)
+
+        with NamedTemporaryFile(delete=False) as handle:
+            handle.write('test upload overwrite'.encode())
+            handle.close()
+            output = execute([
+                'upload',
+                'hello/weblate/cs',
+                '-i',
+                handle.name,
+                '--overwrite'
+            ])
+            self.assertEqual('', output)
+
+    def get_text_io_wrapper(self, string):
+        """Create a text io wrapper from a string."""
+        return TextIOWrapper(BytesIO(string.encode()), "utf8")
