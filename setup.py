@@ -41,8 +41,12 @@ setup(
     license='GPLv3+',
     keywords='i18n l10n gettext git mercurial translate',
     url='https://weblate.org/',
-    download_url='https://pypi.python.org/pypi/wlc',
-    bugtrack_url='https://github.com/WeblateOrg/wlc/issues',
+    download_url='https://github.com/WeblateOrg/wlc',
+    project_urls={
+        'Bug Tracker': 'https://github.com/WeblateOrg/wlc/issues',
+        'Documentation': 'https://docs.weblate.org/',
+        'Source Code': 'https://github.com/WeblateOrg/wlc',
+    },
     platforms=['any'],
     packages=[
         'wlc',
