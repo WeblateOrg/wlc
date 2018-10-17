@@ -11,10 +11,6 @@ wlc
     :target: https://ci.appveyor.com/project/nijel/wlc/branch/master
     :alt: Build status
 
-.. image:: https://landscape.io/github/WeblateOrg/wlc/master/landscape.svg?style=flat
-    :target: https://landscape.io/github/WeblateOrg/wlc/master
-    :alt: Code Health
-
 .. image:: http://codecov.io/github/WeblateOrg/wlc/coverage.svg?branch=master
     :target: http://codecov.io/github/WeblateOrg/wlc?branch=master
     :alt: Code coverage
