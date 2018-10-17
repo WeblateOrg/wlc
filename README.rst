@@ -11,8 +11,8 @@ wlc
     :target: https://ci.appveyor.com/project/nijel/wlc/branch/master
     :alt: Build status
 
-.. image:: http://codecov.io/github/WeblateOrg/wlc/coverage.svg?branch=master
-    :target: http://codecov.io/github/WeblateOrg/wlc?branch=master
+.. image:: https://codecov.io/github/WeblateOrg/wlc/coverage.svg?branch=master
+    :target: https://codecov.io/github/WeblateOrg/wlc?branch=master
     :alt: Code coverage
 
 .. image:: https://img.shields.io/pypi/v/wlc.svg
