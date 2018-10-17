@@ -1,7 +1,7 @@
 0.9
 ---
 
-* released on 17th October, 2018.
+* Released on 17th October, 2018.
 * Switched to requests
 * Added support for cleanup command.
 * Added support for upload command.
@@ -18,7 +18,7 @@
 
 * Released on 16th December, 2016.
 * Added reset operation.
-* Added statistrics for project.
+* Added statistics for project.
 * Added changes listing.
 * Added file downloads.
 
