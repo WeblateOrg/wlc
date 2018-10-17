@@ -1,15 +1,10 @@
-0.10
----
-
-* Not yet released.
-* Switched to requests
-* Added support for upload command.
-
 0.9
 ---
 
 * Not yet released.
+* Switched to requests
 * Added support for cleanup command.
+* Added support for upload command.
 
 0.8
 ---
