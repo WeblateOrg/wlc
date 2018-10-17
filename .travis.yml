@@ -19,10 +19,9 @@ install:
   # Get newer pip and whell for binary caching support
   - pip install --upgrade pip wheel
   - pip install -r requirements-test.txt
-build:
-  - ./setup.py sdist
 script: 
   - py.test --cov=wlc wlc
+  - ./setup.py sdist
   - twine check dist/*
 after_script:
   - coverage xml
