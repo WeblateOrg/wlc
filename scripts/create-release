@@ -22,9 +22,11 @@ fi
 
 if [ "x$1" = "x--tag" ] ; then
     # PyPi archive
-    fakeroot ./setup.py sdist upload
-    fakeroot ./setup.py bdist_wheel --universal upload
+    fakeroot ./setup.py sdist
+    fakeroot ./setup.py bdist_wheel --universal
+    twine upload dist/wlc-$version*
 else
     # Create tarball
     fakeroot ./setup.py sdist
+    fakeroot ./setup.py bdist_wheel
 fi
