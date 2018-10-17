@@ -1,7 +1,7 @@
 0.9
 ---
 
-* Not yet released.
+* released on 17th October, 2018.
 * Switched to requests
 * Added support for cleanup command.
 * Added support for upload command.
