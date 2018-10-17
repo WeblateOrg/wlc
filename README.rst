@@ -15,8 +15,8 @@ wlc
     :target: http://codecov.io/github/WeblateOrg/wlc?branch=master
     :alt: Code coverage
 
-.. image:: https://img.shields.io/pypi/dm/wlc.svg
-    :target: https://pypi.python.org/pypi/wlc
+.. image:: https://img.shields.io/pypi/v/wlc.svg
+    :target: https://pypi.org/project/wlc/
     :alt: PyPI package
 
 .. image:: https://hosted.weblate.org/widgets/weblate/-/svg-badge.svg
