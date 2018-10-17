@@ -44,9 +44,10 @@ setup(
     url='https://weblate.org/',
     download_url='https://github.com/WeblateOrg/wlc',
     project_urls={
-        'Bug Tracker': 'https://github.com/WeblateOrg/wlc/issues',
+        'Issue Tracker': 'https://github.com/WeblateOrg/wlc/issues',
         'Documentation': 'https://docs.weblate.org/',
         'Source Code': 'https://github.com/WeblateOrg/wlc',
+        'Twitter': 'https://twitter.com/WeblateOrg',
     },
     platforms=['any'],
     packages=[
