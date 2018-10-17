@@ -73,22 +73,42 @@ class Weblate(object):
                 'HTTP error {0}: {1}'.format(status_code, reason)
             )
 
-    def request(self, method, path, params=None, raw=False):
+    def raw_request(self, method, path, params=None, files=None):
+        """Construct request object and returns raw content."""
+        r = self.invoke_request(method, path, params, files)
+
+        return r.content
+
+    def request(self, method, path, params=None, files=None):
+        """Construct request object and returns json response."""
+        r = self.invoke_request(method, path, params, files)
+
+        try:
+            result = r.json()
+        except ValueError:
+            raise WeblateException(
+                'Server returned invalid JSON'
+            )
+
+        return result
+
+    def invoke_request(self, method, path, params, files):
         """Construct request object."""
         if not path.startswith('http'):
             path = '{0}{1}'.format(self.url, path)
-
         headers = {'user-agent': USER_AGENT, 'Accept': 'application/json'}
-
         if self.key:
             headers['Authorization'] = 'Token {}'.format(self.key)
-
         verify_ssl = self._should_verify_ssl(path)
-
         try:
             if method == 'post':
                 r = requests.request(
-                    method, path, headers=headers, data=params, verify=verify_ssl
+                    method,
+                    path,
+                    headers=headers,
+                    data=params,
+                    verify=verify_ssl,
+                    files=files
                 )
             else:
                 r = requests.request(
@@ -99,16 +119,7 @@ class Weblate(object):
         except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
-        if raw:
-            return r.content
-        try:
-            result = r.json()
-        except ValueError:
-            raise WeblateException(
-                'Server returned invalid JSON'
-            )
-
-        return result
+        return r
 
     def post(self, path, **kwargs):
         """Perform POST request on the API."""
@@ -516,7 +527,19 @@ class Translation(LazyObject, RepoObjectMixin):
                 url,
                 urlencode({'format': convert})
             )
-        return self.weblate.request('get', url, raw=True)
+        return self.weblate.raw_request('get', url)
+
+    def upload(self, file, overwrite=None):
+        """Download translation file from server."""
+        self.ensure_loaded('file_url')
+        url = self._attribs['file_url']
+        files = {'file': file}
+        params = None
+
+        if overwrite:
+            params = {'overwrite': 'yes'}
+
+        return self.weblate.request('post', url, files=files, params=params)
 
 
 class Statistics(LazyObject):

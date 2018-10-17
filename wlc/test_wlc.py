@@ -20,6 +20,8 @@
 """Test the module."""
 from .test_base import APITest
 
+import io
+
 from wlc import (
     Weblate, WeblateException, Project, Component, Translation,
     Change,
@@ -358,3 +360,10 @@ class TranslationTest(ObjectTest, APITest):
             b'"location"',
             content
         )
+
+    def test_upload(self):
+        """Test file upload."""
+        obj = self.get()
+        file = io.StringIO("test upload data")
+
+        obj.upload(file)
