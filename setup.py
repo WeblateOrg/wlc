@@ -28,6 +28,7 @@ with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
     LONG_DESCRIPTION = readme.read()
 
 REQUIRES = open('requirements.txt').read().split()
+REQUIRES_TEST = open('requirements-test.txt').read().split()[2:]
 
 setup(
     name='wlc',
@@ -74,4 +75,6 @@ setup(
     entry_points={
         'console_scripts': ['wlc = wlc.main:main']
     },
+    setup_requires=["pytest-runner"],
+    tests_require=REQUIRES_TEST,
 )
