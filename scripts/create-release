@@ -20,13 +20,11 @@ if [ "x$1" = "x--tag" ] ; then
     git tag -s $version -m "Version $version"
 fi
 
+# PyPi archive
+rm dist/wlc-$version*
+fakeroot ./setup.py sdist
+fakeroot ./setup.py bdist_wheel
+
 if [ "x$1" = "x--tag" ] ; then
-    # PyPi archive
-    fakeroot ./setup.py sdist
-    fakeroot ./setup.py bdist_wheel --universal
     twine upload dist/wlc-$version*
-else
-    # Create tarball
-    fakeroot ./setup.py sdist
-    fakeroot ./setup.py bdist_wheel
 fi
