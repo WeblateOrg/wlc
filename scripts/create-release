@@ -21,7 +21,7 @@ if [ "x$1" = "x--tag" ] ; then
 fi
 
 # PyPi archive
-rm dist/wlc-$version*
+rm -f dist/wlc-$version*
 fakeroot ./setup.py sdist
 fakeroot ./setup.py bdist_wheel
 

@@ -1,5 +1,7 @@
 comment:
-  layout: header, changes, diff
+  layout: reach, changes, diff, files
 coverage:
   status:
-    patch: false
+    project:
+      default:
+        target: '99'
