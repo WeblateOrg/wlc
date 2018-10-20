@@ -2,6 +2,7 @@
 ----
 
 * Fixed POST operations in the API.
+* Added --debug parameter to diagnose HTTP problems.
 
 0.9
 ---

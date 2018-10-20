@@ -22,6 +22,8 @@ import sys
 import json
 import csv
 from argparse import ArgumentParser
+import logging
+import http.client
 
 import wlc
 from wlc.config import WeblateConfig, NoOptionError
@@ -54,6 +56,11 @@ def get_parser():
         '--version', '-v',
         action='version',
         version='wlc {0}'.format(wlc.__version__)
+    )
+    parser.add_argument(
+        '--debug', '-D',
+        action='store_true',
+        help='Print verbosely http communication',
     )
     parser.add_argument(
         '--config', '-c',
@@ -698,6 +705,14 @@ def main(settings=None, stdout=None, stdin=None, args=None):
         args = sys.argv[1:]
     args = parser.parse_args(args)
 
+    if args.debug:
+        http.client.HTTPConnection.debuglevel = 1
+        logging.basicConfig()
+        logging.getLogger().setLevel(logging.DEBUG)
+        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log.setLevel(logging.DEBUG)
+        requests_log.propagate = True
+
     config = parse_settings(args, settings)
 
     command = COMMANDS[args.cmd](args, config, stdout, stdin)
@@ -707,3 +722,9 @@ def main(settings=None, stdout=None, stdin=None, args=None):
     except (CommandError, wlc.WeblateException) as error:
         print('Error: {0}'.format(error), file=sys.stderr)
         return 1
+    finally:
+        if args.debug:
+            http.client.HTTPConnection.debuglevel = 0
+            logging.getLogger().setLevel(logging.DEBUG)
+            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log.setLevel(logging.DEBUG)
