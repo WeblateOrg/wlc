@@ -1,3 +1,8 @@
+0.10
+----
+
+* Fixed POST operations in the API.
+
 0.9
 ---
 

@@ -23,7 +23,7 @@ from urllib.parse import urlencode, urlparse
 import requests
 from requests import HTTPError
 
-__version__ = '0.9'
+__version__ = '0.10'
 
 URL = 'https://weblate.org/'
 DEVEL_URL = 'https://github.com/WeblateOrg/wlc'
@@ -92,7 +92,7 @@ class Weblate(object):
 
         return result
 
-    def invoke_request(self, method, path, params, files):
+    def invoke_request(self, method, path, params=None, files=None):
         """Construct request object."""
         if not path.startswith('http'):
             path = '{0}{1}'.format(self.url, path)
@@ -101,20 +101,14 @@ class Weblate(object):
             headers['Authorization'] = 'Token {}'.format(self.key)
         verify_ssl = self._should_verify_ssl(path)
         try:
-            if method == 'post':
-                r = requests.request(
-                    method,
-                    path,
-                    headers=headers,
-                    data=params,
-                    verify=verify_ssl,
-                    files=files
-                )
-            else:
-                r = requests.request(
-                    method, path, headers=headers, verify=verify_ssl
-                )
-
+            r = requests.request(
+                method,
+                path,
+                headers=headers,
+                data=params,
+                verify=verify_ssl,
+                files=files
+            )
             r.raise_for_status()
         except requests.exceptions.RequestException as error:
             self.process_error(error)
@@ -123,8 +117,7 @@ class Weblate(object):
 
     def post(self, path, **kwargs):
         """Perform POST request on the API."""
-        params = urlencode(kwargs)
-        return self.request('post', path, params.encode('utf-8'))
+        return self.request('post', path, kwargs)
 
     def get(self, path):
         """Perform GET request on the API."""
