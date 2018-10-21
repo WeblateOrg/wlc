@@ -1,6 +1,7 @@
 0.10
 ----
 
+* Released on 21th October, 2018.
 * Fixed POST operations in the API.
 * Added --debug parameter to diagnose HTTP problems.
 
