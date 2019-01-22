@@ -14,6 +14,16 @@ matrix:
         - python3 -m pip install virtualenv
         - virtualenv venv -p python3
         - source venv/bin/activate
+    - os: windows
+      language: sh
+      python: "3.7"
+      before_install:
+        - choco install python3
+        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        - python -m pip install --upgrade pip wheel
+    # Obtain Python 3.7 from xenial as per https://github.com/travis-ci/travis-ci/issues/9815
+    - python: 3.7
+      dist: xenial
 install: 
   # Get newer pip and whell for binary caching support
   - pip install --upgrade pip wheel
