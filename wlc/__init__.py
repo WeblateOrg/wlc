@@ -21,7 +21,6 @@
 
 from urllib.parse import urlencode, urlparse
 import requests
-from requests import HTTPError
 
 __version__ = '0.10'
 
@@ -51,7 +50,7 @@ class Weblate(object):
     @staticmethod
     def process_error(error):
         """Raise WeblateException for known HTTP errors."""
-        if type(error) is HTTPError:
+        if type(error) is requests.HTTPError:
             status_code = error.response.status_code
 
             if status_code == 429:
