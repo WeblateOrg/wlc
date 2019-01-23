@@ -30,8 +30,8 @@ install:
   - pip install -U -r requirements-test.txt
 script: 
   - py.test --cov=wlc wlc
-  - ./setup.py sdist
-  - twine check dist/*
+  - python ./setup.py sdist
+  - python -m twine check dist/*
 after_script:
   - coverage xml
   - codecov
