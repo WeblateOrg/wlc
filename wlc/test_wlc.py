@@ -294,3 +294,10 @@ class TranslationTest(ObjectTest, APITest):
         file = io.StringIO("test upload data")
 
         obj.upload(file)
+
+    def test_upload_method(self):
+        """Test file upload."""
+        obj = self.get()
+        file = io.StringIO("test upload data")
+
+        obj.upload(file, method="translate")
