@@ -22,7 +22,7 @@
 from urllib.parse import urlencode, urlparse
 import requests
 
-__version__ = '0.10'
+__version__ = '0.11'
 
 URL = 'https://weblate.org/'
 DEVEL_URL = 'https://github.com/WeblateOrg/wlc'
