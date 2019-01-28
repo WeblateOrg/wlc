@@ -104,7 +104,7 @@ class ResponseHandler(object):
     @staticmethod
     def get_multipart_name(content_disposition):
         """Return multipart name from content disposition."""
-        m = re.search('name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition)
+        m = re.search(r'name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition)
 
         name = m.group("name")
 
