@@ -55,7 +55,7 @@ setup(
     long_description=LONG_DESCRIPTION,
     install_requires=REQUIRES,
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Topic :: Software Development :: Internationalization",
         "Topic :: Software Development :: Localization",
         "Topic :: Utilities",
