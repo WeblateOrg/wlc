@@ -26,7 +26,7 @@ from unittest import TestCase
 import httpretty
 from requests_toolbelt.multipart import decoder
 
-DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), 'test_data', 'api')
+DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
 
 
 class ResponseHandler(object):
@@ -40,8 +40,8 @@ class ResponseHandler(object):
 
     def __call__(self, request, uri, headers):
         """Function call interface for httpretty."""
-        if self.auth and request.headers['Authorization'] != 'Token KEY':
-            return 403, headers, ''
+        if self.auth and request.headers["Authorization"] != "Token KEY":
+            return 403, headers, ""
 
         content = self.get_content(request)
 
@@ -52,7 +52,7 @@ class ResponseHandler(object):
         filename = self.get_filename(request)
 
         if filename is not None:
-            with open(filename, 'rb') as handle:
+            with open(filename, "rb") as handle:
                 return handle.read()
 
         return self.body
@@ -60,21 +60,20 @@ class ResponseHandler(object):
     def get_filename(self, request):
         """Return filename for given request."""
         filename = None
-        if request.method != 'GET':
-            content_type = request.headers.get('content-type', None)
+        if request.method != "GET":
+            content_type = request.headers.get("content-type", None)
 
-            if content_type is not None \
-                    and content_type.startswith('multipart/form-data'):
+            if content_type is not None and content_type.startswith(
+                "multipart/form-data"
+            ):
                 filename = self.get_multipart_filename(content_type, request)
             else:
-                filename = '--'.join((
-                    self.filename,
-                    request.method,
-                    request.body.decode('ascii')
-                ))
-        elif '?' in request.path:
-            filename = '--'.join(
-                (self.filename, request.method, request.path.split('?', 1)[-1])
+                filename = "--".join(
+                    (self.filename, request.method, request.body.decode("ascii"))
+                )
+        elif "?" in request.path:
+            filename = "--".join(
+                (self.filename, request.method, request.path.split("?", 1)[-1])
             )
         return filename
 
@@ -85,23 +84,18 @@ class ResponseHandler(object):
         multipart_dict = {}
         filename_array = [self.filename, request.method]
         for part in multipart_data.parts:
-            content_disposition = part.headers.get(
-                'Content-Disposition'.encode(),
-                None
-            )
+            content_disposition = part.headers.get("Content-Disposition".encode(), None)
 
             decoded_cd = content_disposition.decode("utf-8")
             multipart_name = self.get_multipart_name(decoded_cd)
 
-            multipart_dict[multipart_name] = part.text.replace(' ', '-')
+            multipart_dict[multipart_name] = part.text.replace(" ", "-")
 
-        ordered_dict = collections.OrderedDict(
-            sorted(multipart_dict.items())
-        )
+        ordered_dict = collections.OrderedDict(sorted(multipart_dict.items()))
 
         for key, value in ordered_dict.items():
-            filename_array.append(key + '=' + value)
-        filename = '--'.join(filename_array)
+            filename_array.append(key + "=" + value)
+        filename = "--".join(filename_array)
 
         return filename
 
@@ -110,89 +104,84 @@ class ResponseHandler(object):
     @staticmethod
     def get_multipart_name(content_disposition):
         """Return multipart name from content disposition."""
-        m = re.search(
-            'name\s*=\s*"(?P<name>[A-Za-z]+)"',
-            content_disposition)
+        m = re.search('name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition)
 
-        name = m.group('name')
+        name = m.group("name")
 
         return name
 
 
-def register_uri(path, domain='http://127.0.0.1:8000/api', auth=False):
+def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
     """Simplified URL registration."""
-    filename = os.path.join(DATA_TEST_BASE, path.replace('/', '-'))
-    url = '/'.join((domain, path, ''))
-    with open(filename, 'rb') as handle:
+    filename = os.path.join(DATA_TEST_BASE, path.replace("/", "-"))
+    url = "/".join((domain, path, ""))
+    with open(filename, "rb") as handle:
         httpretty.register_uri(
             httpretty.GET,
             url,
             body=ResponseHandler(handle.read(), filename, auth),
-            content_type='application/json'
+            content_type="application/json",
         )
         httpretty.register_uri(
             httpretty.POST,
             url,
             body=ResponseHandler(handle.read(), filename, auth),
-            content_type='application/json'
+            content_type="application/json",
         )
 
 
 def raise_error(request, uri, headers):
     """Raise IOError."""
     # pylint: disable=W0613
-    raise IOError('Some error')
+    raise IOError("Some error")
 
 
-def register_error(path, code, domain='http://127.0.0.1:8000/api', body=None):
+def register_error(path, code, domain="http://127.0.0.1:8000/api", body=None):
     """Simplified URL error registration."""
-    url = '/'.join((domain, path, ''))
-    httpretty.register_uri(
-        httpretty.GET,
-        url,
-        body=body,
-        status=code
-    )
+    url = "/".join((domain, path, ""))
+    httpretty.register_uri(httpretty.GET, url, body=body, status=code)
 
 
 def register_uris():
     """Register URIs for httpretty."""
     paths = (
-        'changes',
-        'projects', 'components', 'translations',
-        'projects/hello',
-        'projects/hello/changes',
-        'projects/hello/components',
-        'projects/hello/statistics',
-        'projects/empty',
-        'projects/empty/components',
-        'projects/invalid',
-        'components/hello/weblate',
-        'components/hello/android',
-        'translations/hello/weblate/cs',
-        'projects/hello/repository',
-        'components/hello/weblate/repository',
-        'components/hello/weblate/changes',
-        'translations/hello/weblate/cs/file',
-        'translations/hello/weblate/cs/repository',
-        'translations/hello/weblate/cs/changes',
-        'components/hello/weblate/statistics',
-        'translations/hello/weblate/cs/statistics',
-        'components/hello/weblate/translations',
-        'components/hello/weblate/lock',
-        'languages',
+        "changes",
+        "projects",
+        "components",
+        "translations",
+        "projects/hello",
+        "projects/hello/changes",
+        "projects/hello/components",
+        "projects/hello/statistics",
+        "projects/empty",
+        "projects/empty/components",
+        "projects/invalid",
+        "components/hello/weblate",
+        "components/hello/android",
+        "translations/hello/weblate/cs",
+        "projects/hello/repository",
+        "components/hello/weblate/repository",
+        "components/hello/weblate/changes",
+        "translations/hello/weblate/cs/file",
+        "translations/hello/weblate/cs/repository",
+        "translations/hello/weblate/cs/changes",
+        "components/hello/weblate/statistics",
+        "translations/hello/weblate/cs/statistics",
+        "components/hello/weblate/translations",
+        "components/hello/weblate/lock",
+        "languages",
     )
     for path in paths:
         register_uri(path)
 
-    register_uri('projects/acl', auth=True)
+    register_uri("projects/acl", auth=True)
 
-    register_uri('projects', domain='https://example.net')
-    register_error('projects/nonexisting', 404)
-    register_error('projects/denied', 403)
-    register_error('projects/throttled', 429)
-    register_error('projects/error', 500)
-    register_error('projects/io', 500, body=raise_error)
+    register_uri("projects", domain="https://example.net")
+    register_error("projects/nonexisting", 404)
+    register_error("projects/denied", 403)
+    register_error("projects/throttled", 429)
+    register_error("projects/error", 500)
+    register_error("projects/io", 500, body=raise_error)
 
 
 class APITest(TestCase):

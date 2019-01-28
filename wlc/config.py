@@ -27,37 +27,37 @@ from xdg.BaseDirectory import load_config_paths
 
 import wlc
 
-__all__ = ['NoOptionError', 'WeblateConfig']
+__all__ = ["NoOptionError", "WeblateConfig"]
 
 
 class WeblateConfig(RawConfigParser):
 
     """Configuration parser wrapper with defaults."""
 
-    def __init__(self, section='weblate'):
+    def __init__(self, section="weblate"):
         """Construct WeblateConfig object."""
-        RawConfigParser.__init__(self, delimiters=('=',))
+        RawConfigParser.__init__(self, delimiters=("=",))
         self.section = section
         self.set_defaults()
 
     def set_defaults(self):
         """Set default values."""
-        self.add_section('keys')
+        self.add_section("keys")
         self.add_section(self.section)
-        self.set(self.section, 'key', '')
-        self.set(self.section, 'url', wlc.API_URL)
+        self.set(self.section, "key", "")
+        self.set(self.section, "url", wlc.API_URL)
 
     def load(self, path=None):
         """Load configuration from XDG paths."""
         if path is None:
-            path = load_config_paths('weblate')
+            path = load_config_paths("weblate")
         self.read(path)
 
         # Try reading from current dir
-        cwd = os.path.abspath('.')
+        cwd = os.path.abspath(".")
         prev = None
         while cwd != prev:
-            conf_name = os.path.join(cwd, '.weblate')
+            conf_name = os.path.join(cwd, ".weblate")
             if os.path.exists(conf_name):
                 self.read(conf_name)
                 break
@@ -66,11 +66,11 @@ class WeblateConfig(RawConfigParser):
 
     def get_url_key(self):
         """Get API URL and key."""
-        url = self.get(self.section, 'url')
-        key = self.get(self.section, 'key')
+        url = self.get(self.section, "url")
+        key = self.get(self.section, "key")
         if not key:
             try:
-                key = self.get('keys', url)
+                key = self.get("keys", url)
             except NoOptionError:
-                key = ''
+                key = ""
         return url, key

@@ -30,8 +30,7 @@ from wlc.config import WeblateConfig, NoOptionError
 
 COMMANDS = {}
 
-SORT_ORDER = [
-]
+SORT_ORDER = []
 
 
 def register_command(command):
@@ -43,46 +42,32 @@ def register_command(command):
 def get_parser():
     """Create argument parser."""
     parser = ArgumentParser(
-        description='Weblate <{0}> command line utility.'.format(wlc.URL),
-        epilog='This utility is developed at <{0}>.'.format(wlc.DEVEL_URL),
+        description="Weblate <{0}> command line utility.".format(wlc.URL),
+        epilog="This utility is developed at <{0}>.".format(wlc.DEVEL_URL),
     )
     parser.add_argument(
-        '--format', '-f',
-        default='text',
-        choices=('text', 'csv', 'json', 'html'),
-        help='Output format to use'
+        "--format",
+        "-f",
+        default="text",
+        choices=("text", "csv", "json", "html"),
+        help="Output format to use",
     )
     parser.add_argument(
-        '--version', '-v',
-        action='version',
-        version='wlc {0}'.format(wlc.__version__)
+        "--version", "-v", action="version", version="wlc {0}".format(wlc.__version__)
     )
     parser.add_argument(
-        '--debug', '-D',
-        action='store_true',
-        help='Print verbosely http communication',
+        "--debug", "-D", action="store_true", help="Print verbosely http communication"
     )
+    parser.add_argument("--config", "-c", help="Path to configuration file")
     parser.add_argument(
-        '--config', '-c',
-        help='Path to configuration file',
+        "--config-section", "-s", default="weblate", help="Configuration section to use"
     )
-    parser.add_argument(
-        '--config-section', '-s',
-        default='weblate',
-        help='Configuration section to use'
-    )
-    parser.add_argument(
-        '--key', '-k',
-        help='API key',
-    )
-    parser.add_argument(
-        '--url', '-u',
-        help='API URL',
-    )
+    parser.add_argument("--key", "-k", help="API key")
+    parser.add_argument("--url", "-u", help="API URL")
     subparser = parser.add_subparsers(
-        title='subcommands',
-        description='Subcommands specify what action to perform.',
-        dest='cmd'
+        title="subcommands",
+        description="Subcommands specify what action to perform.",
+        dest="cmd",
     )
     subparser.required = True
 
@@ -98,14 +83,14 @@ class CommandError(Exception):
     def __init__(self, message, detail=None):
         """Create CommandError exception."""
         if detail is not None:
-            message = '\n'.join((message, detail))
+            message = "\n".join((message, detail))
         super(CommandError, self).__init__(message)
 
 
 def sort_key(value):
     """Key getter for sorting."""
     try:
-        return '{0:02d}'.format(SORT_ORDER.index(value))
+        return "{0:02d}".format(SORT_ORDER.index(value))
     except ValueError:
         return value
 
@@ -119,8 +104,8 @@ def sorted_items(value):
 class Command(object):
     """Basic command object."""
 
-    name = ''
-    description = ''
+    name = ""
+    description = ""
 
     def __init__(self, args, config, stdout=None, stdin=None):
         """Construct Command object."""
@@ -141,9 +126,7 @@ class Command(object):
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
-        return subparser.add_parser(
-            cls.name, description=cls.description
-        )
+        return subparser.add_parser(cls.name, description=cls.description)
 
     def println(self, line):
         """Print single line to output."""
@@ -157,12 +140,12 @@ class Command(object):
     def format_value(value):
         """Format value for rendering."""
         if isinstance(value, float):
-            return '{0:.1f}'.format(value)
+            return "{0:.1f}".format(value)
         elif isinstance(value, int):
-            return '{0}'.format(value)
+            return "{0}".format(value)
         elif value is None:
-            return ''
-        elif hasattr(value, 'to_value'):
+            return ""
+        elif hasattr(value, "to_value"):
             return value.to_value()
         return value
 
@@ -172,9 +155,7 @@ class Command(object):
             writer = csv.DictWriter(self.stdout, header)
             writer.writeheader()
             for row in value:
-                writer.writerow(
-                    {k: self.format_value(v) for k, v in row.items()}
-                )
+                writer.writerow({k: self.format_value(v) for k, v in row.items()})
         else:
             writer = csv.writer(self.stdout)
             for key, data in sorted_items(value):
@@ -183,48 +164,48 @@ class Command(object):
     def print_html(self, value, header):
         """HTML print."""
         if header is not None:
-            self.println('<table>')
-            self.println('  <thead>')
-            self.println('    <tr>')
+            self.println("<table>")
+            self.println("  <thead>")
+            self.println("    <tr>")
             for key in header:
-                self.println('      <th>{0}</th>'.format(key))
-            self.println('    </tr>')
-            self.println('  </thead>')
-            self.println('  <tbody>')
+                self.println("      <th>{0}</th>".format(key))
+            self.println("    </tr>")
+            self.println("  </thead>")
+            self.println("  <tbody>")
 
             for item in value:
-                self.println('    <tr>')
+                self.println("    <tr>")
                 for key in header:
-                    self.println('      <td>{0}</td>'.format(
-                        self.format_value(getattr(item, key))
-                    ))
-                self.println('    </tr>')
-            self.println('  </tbody>')
-            self.println('</table>')
+                    self.println(
+                        "      <td>{0}</td>".format(
+                            self.format_value(getattr(item, key))
+                        )
+                    )
+                self.println("    </tr>")
+            self.println("  </tbody>")
+            self.println("</table>")
         else:
-            self.println('<table>')
+            self.println("<table>")
             for key, data in sorted_items(value):
-                self.println('  <tr>')
-                self.println('    <th>{0}</th><td>{1}</td>'.format(
-                    key, self.format_value(data)
-                ))
-                self.println('  </tr>')
-            self.println('</table>')
+                self.println("  <tr>")
+                self.println(
+                    "    <th>{0}</th><td>{1}</td>".format(key, self.format_value(data))
+                )
+                self.println("  </tr>")
+            self.println("</table>")
 
     def print_text(self, value, header):
         """Text print."""
         if header is not None:
             for item in value:
                 for key in header:
-                    self.println('{0}: {1}'.format(
-                        key, self.format_value(getattr(item, key))
-                    ))
-                self.println('')
+                    self.println(
+                        "{0}: {1}".format(key, self.format_value(getattr(item, key)))
+                    )
+                self.println("")
         else:
             for key, data in sorted_items(value):
-                self.println('{0}: {1}'.format(
-                    key, self.format_value(data)
-                ))
+                self.println("{0}: {1}".format(key, self.format_value(data)))
 
     def print(self, value):
         """Print value."""
@@ -234,11 +215,11 @@ class Command(object):
                 return
             header = sorted(value[0].keys(), key=sort_key)
 
-        if self.args.format == 'json':
+        if self.args.format == "json":
             self.print_json(value)
-        elif self.args.format == 'csv':
+        elif self.args.format == "csv":
             self.print_csv(value, header)
-        elif self.args.format == 'html':
+        elif self.args.format == "html":
             self.print_html(value, header)
         else:
             self.print_text(value, header)
@@ -256,12 +237,12 @@ class ObjectCommand(Command):
         """Create parser for command line."""
         parser = super(ObjectCommand, cls).add_parser(subparser)
         parser.add_argument(
-            'object',
-            nargs='*',
+            "object",
+            nargs="*",
             help=(
-                'Object on which we should operate '
-                '(project, component or translation)'
-            )
+                "Object on which we should operate "
+                "(project, component or translation)"
+            ),
         )
         return parser
 
@@ -271,12 +252,12 @@ class ObjectCommand(Command):
             path = self.args.object[0]
         else:
             try:
-                path = self.config.get(self.config.section, 'translation')
+                path = self.config.get(self.config.section, "translation")
             except NoOptionError:
                 path = None
 
         if not path:
-            raise CommandError('No object passed on command line!')
+            raise CommandError("No object passed on command line!")
 
         return self.wlc.get_object(path)
 
@@ -287,11 +268,8 @@ class ObjectCommand(Command):
     @staticmethod
     def check_result(result, message):
         """Check result json data."""
-        if not result['result']:
-            raise CommandError(
-                message,
-                result['detail'] if 'detail' in result else '',
-            )
+        if not result["result"]:
+            raise CommandError(message, result["detail"] if "detail" in result else "")
 
 
 class ComponentCommand(ObjectCommand):
@@ -301,7 +279,7 @@ class ComponentCommand(ObjectCommand):
         """Return component object."""
         obj = super(ComponentCommand, self).get_object()
         if not isinstance(obj, wlc.Component):
-            raise CommandError('Not supported')
+            raise CommandError("Not supported")
         return obj
 
     def run(self):
@@ -316,7 +294,7 @@ class TranslationCommand(ObjectCommand):
         """Return translation object."""
         obj = super(TranslationCommand, self).get_object()
         if not isinstance(obj, wlc.Translation):
-            raise CommandError('Not supported')
+            raise CommandError("Not supported")
         return obj
 
     def run(self):
@@ -328,18 +306,14 @@ class TranslationCommand(ObjectCommand):
 class Version(Command):
     """Print version."""
 
-    name = 'version'
+    name = "version"
     description = "Prints program version"
 
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
         parser = super(Version, cls).add_parser(subparser)
-        parser.add_argument(
-            '--bare',
-            action='store_true',
-            help='Print only version'
-        )
+        parser.add_argument("--bare", action="store_true", help="Print only version")
         return parser
 
     def run(self):
@@ -347,14 +321,14 @@ class Version(Command):
         if self.args.bare:
             self.println(wlc.__version__)
         else:
-            self.print({'version': wlc.__version__})
+            self.print({"version": wlc.__version__})
 
 
 @register_command
 class ListProjects(Command):
     """List projects."""
 
-    name = 'list-projects'
+    name = "list-projects"
     description = "Lists all projects"
 
     def run(self):
@@ -366,7 +340,7 @@ class ListProjects(Command):
 class ListComponents(Command):
     """List components."""
 
-    name = 'list-components'
+    name = "list-components"
     description = "Lists all components"
 
     def run(self):
@@ -378,7 +352,7 @@ class ListComponents(Command):
 class ListLanguages(Command):
     """List languages."""
 
-    name = 'list-languages'
+    name = "list-languages"
     description = "Lists all languages"
 
     def run(self):
@@ -390,7 +364,7 @@ class ListLanguages(Command):
 class ListTranslations(Command):
     """List translations."""
 
-    name = 'list-translations'
+    name = "list-translations"
     description = "Lists all translations"
 
     def run(self):
@@ -402,7 +376,7 @@ class ListTranslations(Command):
 class Show(ObjectCommand):
     """Show object."""
 
-    name = 'show'
+    name = "show"
     description = "Shows translation, component or project"
 
     def run(self):
@@ -414,7 +388,7 @@ class Show(ObjectCommand):
 class List(ObjectCommand):
     """List object."""
 
-    name = 'ls'
+    name = "ls"
     description = "List content of translation, component or project"
 
     def run(self):
@@ -432,21 +406,21 @@ class List(ObjectCommand):
 class Commit(ObjectCommand):
     """Commit object."""
 
-    name = 'commit'
+    name = "commit"
     description = "Commits changes in translation, component or project"
 
     def run(self):
         """Executor."""
         obj = self.get_object()
         result = obj.commit()
-        self.check_result(result, 'Failed to commit changes!')
+        self.check_result(result, "Failed to commit changes!")
 
 
 @register_command
 class Push(ObjectCommand):
     """Push object."""
 
-    name = 'push'
+    name = "push"
     description = (
         "Pushes changes from Weblate to repository "
         "in translation, component or project from Weblate"
@@ -456,14 +430,14 @@ class Push(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.push()
-        self.check_result(result, 'Failed to push changes!')
+        self.check_result(result, "Failed to push changes!")
 
 
 @register_command
 class Pull(ObjectCommand):
     """Pull object."""
 
-    name = 'pull'
+    name = "pull"
     description = (
         "Pulls changes to Weblate from repository "
         "in translation, component or project"
@@ -473,14 +447,14 @@ class Pull(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.pull()
-        self.check_result(result, 'Failed to pull changes!')
+        self.check_result(result, "Failed to pull changes!")
 
 
 @register_command
 class Reset(ObjectCommand):
     """Reset object."""
 
-    name = 'reset'
+    name = "reset"
     description = (
         "Resets all changes in Weblate repository to upstream "
         "in translation, component or project"
@@ -490,14 +464,14 @@ class Reset(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.reset()
-        self.check_result(result, 'Failed to reset changes!')
+        self.check_result(result, "Failed to reset changes!")
 
 
 @register_command
 class Cleanup(ObjectCommand):
     """Cleanup object."""
 
-    name = 'cleanup'
+    name = "cleanup"
     description = (
         "Cleanups all untracked changes in Weblate repository "
         "in translation, component or project"
@@ -507,17 +481,16 @@ class Cleanup(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         result = obj.cleanup()
-        self.check_result(result, 'Failed to cleanup changes!')
+        self.check_result(result, "Failed to cleanup changes!")
 
 
 @register_command
 class Repo(ObjectCommand):
     """Display repository status for object."""
 
-    name = 'repo'
+    name = "repo"
     description = (
-        "Displays status of Weblate repository "
-        "for translation, component or project"
+        "Displays status of Weblate repository " "for translation, component or project"
     )
 
     def run(self):
@@ -530,11 +503,8 @@ class Repo(ObjectCommand):
 class Changes(ObjectCommand):
     """Display repository status for object."""
 
-    name = 'changes'
-    description = (
-        "Displays list of changes "
-        "for translation, component or project"
-    )
+    name = "changes"
+    description = "Displays list of changes " "for translation, component or project"
 
     def run(self):
         """Executor."""
@@ -546,11 +516,8 @@ class Changes(ObjectCommand):
 class Stats(ObjectCommand):
     """Display repository statistics for object."""
 
-    name = 'stats'
-    description = (
-        "Displays statistics "
-        "for translation, component or project"
-    )
+    name = "stats"
+    description = "Displays statistics " "for translation, component or project"
 
     def run(self):
         """Executor."""
@@ -567,10 +534,8 @@ class Stats(ObjectCommand):
 class LockStatus(ComponentCommand):
     """Show lock status."""
 
-    name = 'lock-status'
-    description = (
-        "Shows component lock status"
-    )
+    name = "lock-status"
+    description = "Shows component lock status"
 
     def run(self):
         """Executor."""
@@ -582,10 +547,8 @@ class LockStatus(ComponentCommand):
 class Lock(ComponentCommand):
     """Lock component for transaltion."""
 
-    name = 'lock'
-    description = (
-        "Locks componets from translations"
-    )
+    name = "lock"
+    description = "Locks componets from translations"
 
     def run(self):
         """Executor."""
@@ -597,10 +560,8 @@ class Lock(ComponentCommand):
 class Unlock(ComponentCommand):
     """Unock component for transaltion."""
 
-    name = 'unlock'
-    description = (
-        "Unlocks componets from translations"
-    )
+    name = "unlock"
+    description = "Unlocks componets from translations"
 
     def run(self):
         """Executor."""
@@ -612,22 +573,18 @@ class Unlock(ComponentCommand):
 class Download(TranslationCommand):
     """Downloads translation file."""
 
-    name = 'download'
-    description = (
-        "Downloads translation file"
-    )
+    name = "download"
+    description = "Downloads translation file"
 
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
         parser = super(Download, cls).add_parser(subparser)
         parser.add_argument(
-            '-c', '--convert',
-            help='Convert file format on server (defaults to none)'
+            "-c", "--convert", help="Convert file format on server (defaults to none)"
         )
         parser.add_argument(
-            '-o', '--output',
-            help='File where to store output (defaults to stdout)'
+            "-o", "--output", help="File where to store output (defaults to stdout)"
         )
         return parser
 
@@ -635,8 +592,8 @@ class Download(TranslationCommand):
         """Executor."""
         obj = self.get_object()
         content = obj.download(self.args.convert)
-        if self.args.output and self.args.output != '-':
-            with open(self.args.output, 'wb') as handle:
+        if self.args.output and self.args.output != "-":
+            with open(self.args.output, "wb") as handle:
                 handle.write(content)
         else:
             self.stdout.buffer.write(content)
@@ -647,61 +604,52 @@ class Upload(TranslationCommand):
 
     """Uploads translation file."""
 
-    name = 'upload'
-    description = (
-        "Uploads translation file"
-    )
+    name = "upload"
+    description = "Uploads translation file"
 
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
         parser = super(Upload, cls).add_parser(subparser)
+        parser.add_argument("-i", "--input", help="File to upload (defaults to stdin)")
         parser.add_argument(
-            '-i', '--input',
-            help='File to upload (defaults to stdin)'
+            "--overwrite",
+            action="store_true",
+            help="Overwrite existing translations (defaults to none)",
         )
         parser.add_argument(
-            '--overwrite',
-            action='store_true',
-            help='Overwrite existing translations (defaults to none)'
+            "--author-name",
+            help="Author name, to override currently authenticated user",
         )
         parser.add_argument(
-            '--author-name',
-            help='Author name, to override currently authenticated user',
+            "--author-email",
+            help="Author email, to override currently authenticated user",
         )
         parser.add_argument(
-            '--author-email',
-            help='Author email, to override currently authenticated user',
+            "--method",
+            choices=("translate", "approve", "suggest", "fuzzy"),
+            default="translate",
         )
-        parser.add_argument(
-            '--method',
-            choices=('translate', 'approve', 'suggest', 'fuzzy'),
-            default='translate',
-        )
-        parser.add_argument(
-            '--fuzzy',
-            choices=('', 'process', 'approve'),
-            default='',
-        )
+        parser.add_argument("--fuzzy", choices=("", "process", "approve"), default="")
         return parser
 
     def run(self):
         """Executor."""
         obj = self.get_object()
 
-        kwargs = {'overwrite': self.args.overwrite}
-        for arg in ('author_name', 'author_email', 'method', 'fuzzy'):
+        kwargs = {"overwrite": self.args.overwrite}
+        for arg in ("author_name", "author_email", "method", "fuzzy"):
             value = getattr(self.args, arg, None)
             if value:
                 kwargs[arg] = value
 
-        if self.args.input and self.args.input != '-':
-            with open(self.args.input, 'rb') as handle:
+        if self.args.input and self.args.input != "-":
+            with open(self.args.input, "rb") as handle:
                 result = obj.upload(handle, **kwargs)
         else:
             result = obj.upload(self.stdin.buffer.read(), **kwargs)
 
-        self.check_result(result, 'Failed to upload translations!')
+        self.check_result(result, "Failed to upload translations!")
 
 
 def parse_settings(args, settings):
@@ -714,7 +662,7 @@ def parse_settings(args, settings):
         for section, key, value in settings:
             config.set(section, key, value)
 
-    for override in ('key', 'url'):
+    for override in ("key", "url"):
         value = getattr(args, override)
         if value is not None:
             config.set(args.config_section, override, value)
@@ -744,7 +692,7 @@ def main(settings=None, stdout=None, stdin=None, args=None):
         command.run()
         return 0
     except (CommandError, wlc.WeblateException) as error:
-        print('Error: {0}'.format(error), file=sys.stderr)
+        print("Error: {0}".format(error), file=sys.stderr)
         return 1
     finally:
         if args.debug:

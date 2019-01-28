@@ -22,60 +22,54 @@
 from setuptools import setup
 import os
 
-VERSION = __import__('wlc').__version__
+VERSION = __import__("wlc").__version__
 
-with open(os.path.join(os.path.dirname(__file__), 'README.rst')) as readme:
+with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
     LONG_DESCRIPTION = readme.read()
 
-REQUIRES = open('requirements.txt').read().split()
-REQUIRES_TEST = open('requirements-test.txt').read().split()[2:]
+REQUIRES = open("requirements.txt").read().split()
+REQUIRES_TEST = open("requirements-test.txt").read().split()[2:]
 
 setup(
-    name='wlc',
+    name="wlc",
     version=VERSION,
-    author='Michal Čihař',
-    author_email='michal@cihar.com',
+    author="Michal Čihař",
+    author_email="michal@cihar.com",
     description=(
-        'A command line utility for Weblate, '
-        'translation tool with tight version control integration'
+        "A command line utility for Weblate, "
+        "translation tool with tight version control integration"
     ),
-    license='GPLv3+',
-    keywords='i18n l10n gettext git mercurial translate',
-    url='https://weblate.org/',
-    download_url='https://github.com/WeblateOrg/wlc',
+    license="GPLv3+",
+    keywords="i18n l10n gettext git mercurial translate",
+    url="https://weblate.org/",
+    download_url="https://github.com/WeblateOrg/wlc",
     project_urls={
-        'Issue Tracker': 'https://github.com/WeblateOrg/wlc/issues',
-        'Documentation': 'https://docs.weblate.org/',
-        'Source Code': 'https://github.com/WeblateOrg/wlc',
-        'Twitter': 'https://twitter.com/WeblateOrg',
+        "Issue Tracker": "https://github.com/WeblateOrg/wlc/issues",
+        "Documentation": "https://docs.weblate.org/",
+        "Source Code": "https://github.com/WeblateOrg/wlc",
+        "Twitter": "https://twitter.com/WeblateOrg",
     },
-    platforms=['any'],
-    packages=[
-        'wlc',
-    ],
-    package_dir={'wlc': 'wlc'},
+    platforms=["any"],
+    packages=["wlc"],
+    package_dir={"wlc": "wlc"},
     long_description=LONG_DESCRIPTION,
     install_requires=REQUIRES,
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Topic :: Software Development :: Internationalization',
-        'Topic :: Software Development :: Localization',
-        'Topic :: Utilities',
-        'License :: OSI Approved :: '
-        'GNU General Public License v3 or later (GPLv3+)',
-        'Operating System :: OS Independent',
-        'Intended Audience :: Developers',
-        'Programming Language :: Python',
-        'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
-        'Programming Language :: Python :: 3.3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
+        "Development Status :: 4 - Beta",
+        "Topic :: Software Development :: Internationalization",
+        "Topic :: Software Development :: Localization",
+        "Topic :: Utilities",
+        "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+        "Operating System :: OS Independent",
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.2",
+        "Programming Language :: Python :: 3.3",
+        "Programming Language :: Python :: 3.4",
+        "Programming Language :: Python :: 3.5",
     ],
-
-    entry_points={
-        'console_scripts': ['wlc = wlc.main:main']
-    },
+    entry_points={"console_scripts": ["wlc = wlc.main:main"]},
     setup_requires=["pytest-runner"],
     tests_require=REQUIRES_TEST,
 )
