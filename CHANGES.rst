@@ -1,3 +1,8 @@
+0.11
+----
+
+* Added support for more parameters on file upload.
+
 0.10
 ----
 

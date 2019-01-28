@@ -521,7 +521,7 @@ class Translation(LazyObject, RepoObjectMixin):
             )
         return self.weblate.raw_request('get', url)
 
-    def upload(self, file, overwrite=None):
+    def upload(self, file, overwrite=None, **kwargs):
         """Download translation file from server."""
         self.ensure_loaded('file_url')
         url = self._attribs['file_url']
@@ -529,9 +529,9 @@ class Translation(LazyObject, RepoObjectMixin):
         params = None
 
         if overwrite:
-            params = {'overwrite': 'yes'}
+            kwargs['overwrite'] = 'yes'
 
-        return self.weblate.request('post', url, files=files, params=params)
+        return self.weblate.request('post', url, files=files, params=kwargs)
 
 
 class Statistics(LazyObject):

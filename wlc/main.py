@@ -665,17 +665,41 @@ class Upload(TranslationCommand):
             action='store_true',
             help='Overwrite existing translations (defaults to none)'
         )
+        parser.add_argument(
+            '--author-name',
+            help='Author name, to override currently authenticated user',
+        )
+        parser.add_argument(
+            '--author-email',
+            help='Author email, to override currently authenticated user',
+        )
+        parser.add_argument(
+            '--method',
+            choices=('translate', 'approve', 'suggest', 'fuzzy'),
+            default='translate',
+        )
+        parser.add_argument(
+            '--fuzzy',
+            choices=('', 'process', 'approve'),
+            default='',
+        )
         return parser
 
     def run(self):
         """Executor."""
         obj = self.get_object()
 
+        kwargs = {'overwrite': self.args.overwrite}
+        for arg in ('author_name', 'author_email', 'method', 'fuzzy'):
+            value = getattr(self.args, arg, None)
+            if value:
+                kwargs[arg] = value
+
         if self.args.input and self.args.input != '-':
             with open(self.args.input, 'rb') as handle:
-                result = obj.upload(handle, self.args.overwrite)
+                result = obj.upload(handle, **kwargs)
         else:
-            result = obj.upload(self.stdin.buffer.read(), self.args.overwrite)
+            result = obj.upload(self.stdin.buffer.read(), **kwargs)
 
         self.check_result(result, 'Failed to upload translations!')
 
