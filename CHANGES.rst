@@ -1,7 +1,7 @@
-0.11
-----
+1.0
+---
 
-* Not yet released.
+* Released on 31st January, 2019.
 * Added support for more parameters on file upload.
 
 0.10
