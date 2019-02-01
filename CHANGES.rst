@@ -1,3 +1,9 @@
+1.1
+---
+
+* Released on 1st February, 2019.
+* Fixed listing of language objects.
+
 1.0
 ---
 
