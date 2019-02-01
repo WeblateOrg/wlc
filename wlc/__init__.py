@@ -275,8 +275,6 @@ class Language(LazyObject):
         "web_url",
         "code",
         "name",
-        "nplurals",
-        "pluralequation",
         "direction",
     )
     _id = "code"
