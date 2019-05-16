@@ -19,8 +19,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Setup file for easy installation."""
-from setuptools import setup
 import os
+
+from setuptools import setup
 
 VERSION = __import__("wlc").__version__
 

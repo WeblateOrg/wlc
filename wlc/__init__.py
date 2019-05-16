@@ -20,6 +20,7 @@
 """Weblate API client library."""
 
 from urllib.parse import urlencode, urlparse
+
 import requests
 
 __version__ = "1.1"

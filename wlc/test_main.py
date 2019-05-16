@@ -19,15 +19,16 @@
 #
 """Test command line interface."""
 
-from io import StringIO, BytesIO, TextIOWrapper
 import json
-import sys
-from tempfile import NamedTemporaryFile
 import os
+import sys
+from io import BytesIO, StringIO, TextIOWrapper
+from tempfile import NamedTemporaryFile
 
 import wlc
-from wlc.main import main
 from wlc.config import WeblateConfig
+from wlc.main import main
+
 from .test_base import APITest
 
 TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test_data", "wlc")
@@ -61,7 +62,6 @@ def execute(args, settings=None, stdout=None, stdin=None, expected=0):
 
 
 class TestSettings(APITest):
-
     """Test settings handling."""
 
     def test_commandline(self):

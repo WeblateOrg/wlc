@@ -18,15 +18,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Command line interface for Weblate."""
-import sys
-import json
 import csv
-from argparse import ArgumentParser
-import logging
 import http.client
+import json
+import logging
+import sys
+from argparse import ArgumentParser
 
 import wlc
-from wlc.config import WeblateConfig, NoOptionError
+from wlc.config import NoOptionError, WeblateConfig
 
 COMMANDS = {}
 
@@ -34,7 +34,7 @@ SORT_ORDER = []
 
 
 def register_command(command):
-    """Decorator to register command in command line interface."""
+    """Register command decorator in the command line interface."""
     COMMANDS[command.name] = command
     return command
 

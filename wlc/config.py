@@ -20,18 +20,15 @@
 """Weblate API library, configuration."""
 
 import os.path
-
-from configparser import RawConfigParser, NoOptionError
-
-from xdg.BaseDirectory import load_config_paths
+from configparser import NoOptionError, RawConfigParser
 
 import wlc
+from xdg.BaseDirectory import load_config_paths
 
 __all__ = ["NoOptionError", "WeblateConfig"]
 
 
 class WeblateConfig(RawConfigParser):
-
     """Configuration parser wrapper with defaults."""
 
     def __init__(self, section="weblate"):

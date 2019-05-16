@@ -18,11 +18,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test the module."""
-from .test_base import APITest
-
 import io
 
-from wlc import Weblate, WeblateException, Project, Component, Translation, Change
+from wlc import Change, Component, Project, Translation, Weblate, WeblateException
+
+from .test_base import APITest
 
 
 class WeblateErrorTest(APITest):
