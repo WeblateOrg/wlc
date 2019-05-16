@@ -137,7 +137,6 @@ class TestSettings(APITest):
 
 
 class TestOutput(APITest):
-
     """Test output formatting."""
 
     def test_version_text(self):
@@ -184,7 +183,6 @@ class TestOutput(APITest):
 
 
 class TestCommands(APITest):
-
     """Individual command tests."""
 
     def test_version_bare(self):

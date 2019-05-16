@@ -33,12 +33,10 @@ LOCALHOST_NETLOC = "127.0.0.1"
 
 
 class WeblateException(Exception):
-
     """Generic error."""
 
 
 class Weblate(object):
-
     """Weblate API wrapper object."""
 
     def __init__(self, key="", url=API_URL, config=None):
@@ -81,11 +79,9 @@ class Weblate(object):
         r = self.invoke_request(method, path, params, files)
 
         try:
-            result = r.json()
+            return r.json()
         except ValueError:
             raise WeblateException("Server returned invalid JSON")
-
-        return result
 
     def invoke_request(self, method, path, params=None, files=None):
         """Construct request object."""
@@ -119,7 +115,7 @@ class Weblate(object):
         return self.request("get", path)
 
     def list_factory(self, path, parser):
-        """Wrapper for listing objects."""
+        """Listing object wrapper."""
         while path is not None:
             data = self.get(path)
             for item in data["results"]:
@@ -182,12 +178,10 @@ class Weblate(object):
         """Cheks if it should verify ssl certificates."""
         url = urlparse(path)
         is_localhost = url.netloc.startswith(LOCALHOST_NETLOC)
-        verify_ssl = url.scheme == "https" and (not is_localhost)
-        return verify_ssl
+        return url.scheme == "https" and (not is_localhost)
 
 
 class LazyObject(dict):
-
     """Object which supports deferred loading."""
 
     _params = ()
@@ -268,7 +262,6 @@ class LazyObject(dict):
 
 
 class Language(LazyObject):
-
     """Language object."""
 
     _params = (
@@ -282,7 +275,6 @@ class Language(LazyObject):
 
 
 class LanguageStats(LazyObject):
-
     """Language object."""
 
     _params = (
@@ -299,7 +291,6 @@ class LanguageStats(LazyObject):
 
 
 class RepoMixin(object):
-
     """Repository mixin providing generic repository wide operations."""
 
     def _get_repo_url(self):
@@ -328,7 +319,6 @@ class RepoMixin(object):
 
 
 class ProjectRepository(LazyObject, RepoMixin):
-
     """Repository object."""
 
     _params = ("url", "needs_commit", "needs_merge", "needs_push")
@@ -339,7 +329,6 @@ class ProjectRepository(LazyObject, RepoMixin):
 
 
 class Repository(ProjectRepository):
-
     """Repository object."""
 
     _params = (
@@ -354,7 +343,6 @@ class Repository(ProjectRepository):
 
 
 class RepoObjectMixin(RepoMixin):
-
     """Repository mixin."""
 
     _repository_class = ProjectRepository
@@ -366,7 +354,6 @@ class RepoObjectMixin(RepoMixin):
 
 
 class Project(LazyObject, RepoObjectMixin):
-
     """Project object."""
 
     _params = ("url", "web_url", "name", "slug", "web", "source_language")
@@ -393,7 +380,6 @@ class Project(LazyObject, RepoObjectMixin):
 
 
 class Component(LazyObject, RepoObjectMixin):
-
     """Component object."""
 
     _params = (
@@ -450,7 +436,6 @@ class Component(LazyObject, RepoObjectMixin):
 
 
 class Translation(LazyObject, RepoObjectMixin):
-
     """Translation object."""
 
     _params = (
@@ -513,7 +498,6 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         files = {"file": file}
-        params = None
 
         if overwrite:
             kwargs["overwrite"] = "yes"
@@ -522,7 +506,6 @@ class Translation(LazyObject, RepoObjectMixin):
 
 
 class Statistics(LazyObject):
-
     """Statistics object."""
 
     _params = (
@@ -545,7 +528,6 @@ class Statistics(LazyObject):
 
 
 class Change(LazyObject):
-
     """Change object."""
 
     _params = (

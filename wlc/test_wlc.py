@@ -26,7 +26,6 @@ from .test_base import APITest
 
 
 class WeblateErrorTest(APITest):
-
     """Testing error handling."""
 
     def test_nonexisting(self):
@@ -74,7 +73,6 @@ class WeblateErrorTest(APITest):
 
 
 class WeblateTest(APITest):
-
     """Testing of Weblate class."""
 
     def test_languages(self):
@@ -110,7 +108,6 @@ class WeblateTest(APITest):
 
 
 class ObjectTest(object):
-
     """Base class for objects testing."""
 
     _name = None
@@ -195,7 +192,6 @@ class ObjectTest(object):
 
 
 class ProjectTest(ObjectTest, APITest):
-
     """Project object tests."""
 
     _name = "hello"
@@ -218,7 +214,6 @@ class ProjectTest(ObjectTest, APITest):
 
 
 class ComponentTest(ObjectTest, APITest):
-
     """Component object tests."""
 
     _name = "hello/weblate"
@@ -256,7 +251,6 @@ class ComponentTest(ObjectTest, APITest):
 
 
 class TranslationTest(ObjectTest, APITest):
-
     """Translation object tests."""
 
     _name = "hello/weblate/cs"

@@ -601,7 +601,6 @@ class Download(TranslationCommand):
 
 @register_command
 class Upload(TranslationCommand):
-
     """Uploads translation file."""
 
     name = "upload"

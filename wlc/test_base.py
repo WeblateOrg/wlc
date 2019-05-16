@@ -59,23 +59,22 @@ class ResponseHandler(object):
 
     def get_filename(self, request):
         """Return filename for given request."""
-        filename = None
         if request.method != "GET":
             content_type = request.headers.get("content-type", None)
 
             if content_type is not None and content_type.startswith(
                 "multipart/form-data"
             ):
-                filename = self.get_multipart_filename(content_type, request)
+                return self.get_multipart_filename(content_type, request)
             else:
-                filename = "--".join(
+                return "--".join(
                     (self.filename, request.method, request.body.decode("ascii"))
                 )
         elif "?" in request.path:
-            filename = "--".join(
+            return "--".join(
                 (self.filename, request.method, request.path.split("?", 1)[-1])
             )
-        return filename
+        return None
 
     def get_multipart_filename(self, content_type, request):
         """Return filename for given multipart request."""
@@ -95,9 +94,7 @@ class ResponseHandler(object):
 
         for key, value in ordered_dict.items():
             filename_array.append(key + "=" + value)
-        filename = "--".join(filename_array)
-
-        return filename
+        return "--".join(filename_array)
 
     # simple implementation instead of one based on the rfc6266 parser,
     # as rfc6266 fails on python 3.7
@@ -106,9 +103,7 @@ class ResponseHandler(object):
         """Return multipart name from content disposition."""
         m = re.search(r'name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition)
 
-        name = m.group("name")
-
-        return name
+        return m.group("name")
 
 
 def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
