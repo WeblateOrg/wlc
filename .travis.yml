@@ -30,6 +30,7 @@ script:
   - py.test --cov=wlc wlc
   - python ./setup.py sdist
   - python -m twine check dist/*
+  - flake8
 after_script:
   - coverage xml
   - codecov
