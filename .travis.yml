@@ -13,8 +13,8 @@ matrix:
         - brew update
         - brew upgrade python3
         - python3 -m pip install virtualenv
-        - virtualenv venv -p python3
-        - source venv/bin/activate
+        - virtualenv .venv -p python3
+        - source .venv/bin/activate
     - os: windows
       language: sh
       python: "3.7"
