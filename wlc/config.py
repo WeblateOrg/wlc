@@ -22,8 +22,9 @@
 import os.path
 from configparser import NoOptionError, RawConfigParser
 
-import wlc
 from xdg.BaseDirectory import load_config_paths
+
+import wlc
 
 __all__ = ["NoOptionError", "WeblateConfig"]
 
