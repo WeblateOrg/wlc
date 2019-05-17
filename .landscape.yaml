@@ -1,9 +1,0 @@
-python-targets:
-  - 3
-pep8:
-  full: true
-test-warnings: true
-doc-warnings: true
-strictness: veryhigh
-max-line-length: 79
-autodetect: yes
