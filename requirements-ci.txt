@@ -1,6 +1,7 @@
 twine
 flake8
 flake8-breakpoint; python_version >= '3.6'
+flake8-black; python_version >= '3.6'
 flake8-builtins
 flake8-comprehensions; python_version >= '3.4'
 flake8-eradicate; python_version >= '3.6'
