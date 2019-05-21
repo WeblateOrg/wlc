@@ -264,13 +264,7 @@ class LazyObject(dict):
 class Language(LazyObject):
     """Language object."""
 
-    _params = (
-        "url",
-        "web_url",
-        "code",
-        "name",
-        "direction",
-    )
+    _params = ("url", "web_url", "code", "name", "direction")
     _id = "code"
 
 
