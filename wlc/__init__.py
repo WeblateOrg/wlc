@@ -186,14 +186,9 @@ class Weblate(object):
 class LazyObject(dict):
     """Object which supports deferred loading."""
 
-    _params = ()
-    _mappings = {}
-    _url = None
-    weblate = None
-    _loaded = False
-    _data = None
-    _attribs = None
-    _id = "url"
+    PARAMS = ()
+    MAPPINGS = {}
+    ID = "url"
 
     def __init__(self, weblate, url, **kwargs):
         """Construct object for given Weblate instance."""
@@ -201,21 +196,22 @@ class LazyObject(dict):
         self.weblate = weblate
         self._url = url
         self._data = {}
+        self._loaded = False
         self._attribs = {}
         self._load_params(**kwargs)
         self._load_params(url=url)
 
     def _load_params(self, **kwargs):
-        for param in self._params:
+        for param in self.PARAMS:
             if param in kwargs:
                 value = kwargs[param]
-                if value is not None and param in self._mappings:
+                if value is not None and param in self.MAPPINGS:
                     if isinstance(value, str):
-                        self._data[param] = self._mappings[param](
+                        self._data[param] = self.MAPPINGS[param](
                             self.weblate, url=value
                         )
                     else:
-                        self._data[param] = self._mappings[param](self.weblate, **value)
+                        self._data[param] = self.MAPPINGS[param](self.weblate, **value)
                 elif value is not None and param in TIMESTAMPS:
                     self._data[param] = dateutil.parser.parse(value)
                 else:
@@ -238,7 +234,7 @@ class LazyObject(dict):
         self._loaded = True
 
     def __getattr__(self, name):
-        if name not in self._params:
+        if name not in self.PARAMS:
             raise AttributeError(name)
         if name not in self._data:
             self.refresh()
@@ -248,34 +244,34 @@ class LazyObject(dict):
         return self.__getattr__(name)
 
     def __len__(self):
-        return len(self._params)
+        return len(self.PARAMS)
 
     def keys(self):
         """Return list of attributes."""
-        return self._params
+        return self.PARAMS
 
     def items(self):
         """Iterator over attributes."""
-        for key in self._params:
+        for key in self.PARAMS:
             yield key, self.__getattr__(key)
 
     def to_value(self):
         """Return identifier for the object."""
-        self.ensure_loaded(self._id)
-        return self.__getattr__(self._id)
+        self.ensure_loaded(self.ID)
+        return self.__getattr__(self.ID)
 
 
 class Language(LazyObject):
     """Language object."""
 
-    _params = ("url", "web_url", "code", "name", "direction")
-    _id = "code"
+    PARAMS = ("url", "web_url", "code", "name", "direction")
+    ID = "code"
 
 
 class LanguageStats(LazyObject):
     """Language object."""
 
-    _params = (
+    PARAMS = (
         "total",
         "code",
         "translated_words",
@@ -285,7 +281,7 @@ class LanguageStats(LazyObject):
         "total_words",
         "words_percent",
     )
-    _id = "code"
+    ID = "code"
 
 
 class RepoMixin(object):
@@ -319,7 +315,7 @@ class RepoMixin(object):
 class ProjectRepository(LazyObject, RepoMixin):
     """Repository object."""
 
-    _params = ("url", "needs_commit", "needs_merge", "needs_push")
+    PARAMS = ("url", "needs_commit", "needs_merge", "needs_push")
 
     def _get_repo_url(self):
         """Return repository url."""
@@ -329,7 +325,7 @@ class ProjectRepository(LazyObject, RepoMixin):
 class Repository(ProjectRepository):
     """Repository object."""
 
-    _params = (
+    PARAMS = (
         "url",
         "needs_commit",
         "needs_merge",
@@ -343,20 +339,20 @@ class Repository(ProjectRepository):
 class RepoObjectMixin(RepoMixin):
     """Repository mixin."""
 
-    _repository_class = ProjectRepository
+    REPOSITORY_CLASS = ProjectRepository
 
     def repository(self):
         """Return repository object."""
         data = self.weblate.get(self._get_repo_url())
-        return self._repository_class(weblate=self.weblate, **data)
+        return self.REPOSITORY_CLASS(weblate=self.weblate, **data)
 
 
 class Project(LazyObject, RepoObjectMixin):
     """Project object."""
 
-    _params = ("url", "web_url", "name", "slug", "web", "source_language")
-    _id = "slug"
-    _mappings = {"source_language": Language}
+    PARAMS = ("url", "web_url", "name", "slug", "web", "source_language")
+    ID = "slug"
+    MAPPINGS = {"source_language": Language}
 
     def list(self):
         """List components in the project."""
@@ -386,7 +382,7 @@ class Project(LazyObject, RepoObjectMixin):
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
 
-    _params = (
+    PARAMS = (
         "url",
         "web_url",
         "name",
@@ -403,9 +399,9 @@ class Component(LazyObject, RepoObjectMixin):
         "license",
         "license_url",
     )
-    _id = "slug"
-    _mappings = {"project": Project}
-    _repository_class = Repository
+    ID = "slug"
+    MAPPINGS = {"project": Project}
+    REPOSITORY_CLASS = Repository
 
     def list(self):
         """List translations in the component."""
@@ -444,7 +440,7 @@ class Component(LazyObject, RepoObjectMixin):
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object."""
 
-    _params = (
+    PARAMS = (
         "url",
         "web_url",
         "language",
@@ -471,9 +467,9 @@ class Translation(LazyObject, RepoObjectMixin):
         "last_change",
         "last_author",
     )
-    _id = "language_code"
-    _mappings = {"language": Language, "component": Component}
-    _repository_class = Repository
+    ID = "language_code"
+    MAPPINGS = {"language": Language, "component": Component}
+    REPOSITORY_CLASS = Repository
 
     def list(self):
         """API compatibility method, returns self."""
@@ -514,7 +510,7 @@ class Translation(LazyObject, RepoObjectMixin):
 class Statistics(LazyObject):
     """Statistics object."""
 
-    _params = (
+    PARAMS = (
         "failing_percent",
         "url",
         "translated_percent",
@@ -533,13 +529,13 @@ class Statistics(LazyObject):
 
 
 class TranslationStatistics(Statistics):
-    _params = Statistics._params + ("code", "last_author")
+    PARAMS = Statistics.PARAMS + ("code", "last_author")
 
 
 class Change(LazyObject):
     """Change object."""
 
-    _params = (
+    PARAMS = (
         "url",
         "unit",
         "translation",
@@ -548,5 +544,5 @@ class Change(LazyObject):
         "action_name",
         "target",
     )
-    _id = "id"
-    _mappings = {"translation": Translation, "component": Component}
+    ID = "id"
+    MAPPINGS = {"translation": Translation, "component": Component}
