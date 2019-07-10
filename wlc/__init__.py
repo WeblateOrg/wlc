@@ -216,7 +216,7 @@ class LazyObject(dict):
                         )
                     else:
                         self._data[param] = self._mappings[param](self.weblate, **value)
-                elif param in TIMESTAMPS:
+                elif value is not None and param in TIMESTAMPS:
                     self._data[param] = dateutil.parser.parse(value)
                 else:
                     self._data[param] = value
@@ -523,6 +523,7 @@ class Statistics(LazyObject):
         "translated_words",
         "url_translate",
         "fuzzy_percent",
+        "recent_changes",
         "translated",
         "fuzzy",
         "total",
