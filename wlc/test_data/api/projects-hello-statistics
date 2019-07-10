@@ -1,22 +1,15 @@
-  [
-    {
-        "total_words": 30,
-        "code": "cs",
-        "translated_words": 19,
-        "language": "čeština",
-        "translated": 5,
-        "translated_percent": 62.5,
-        "total": 8,
-        "words_percent": 63.3
-    },
-    {
-        "total_words": 30,
-        "code": "en",
-        "translated_words": 15,
-        "language": "angličtina",
-        "translated": 4,
-        "translated_percent": 50.0,
-        "total": 8,
-        "words_percent": 50.0
-    }
-  ]
+{
+    "failing": 3,
+    "failing_percent": 75.0,
+    "fuzzy": 0,
+    "fuzzy_percent": 0.0,
+    "last_change": "2016-03-07T10:20:05.499",
+    "name": "Hello",
+    "total": 4,
+    "total_words": 15,
+    "translated": 4,
+    "translated_percent": 100.0,
+    "translated_words": 15,
+    "url": "http://127.0.0.1:8000/engage/hello/",
+    "url_translate": "http://127.0.0.1:8000/projects/hello/"
+}

@@ -14,6 +14,7 @@
     },
     "url": "http://127.0.0.1:8000/api/projects/hello/",
     "statistics_url": "http://127.0.0.1:8000/api/projects/hello/statistics/",
+    "languages_url": "http://127.0.0.1:8000/api/projects/hello/languages/",
     "changes_list_url": "http://127.0.0.1:8000/api/projects/hello/changes/",
     "web": "http://weblate.org/",
     "web_url": "http://127.0.0.1:8000/projects/hello/"

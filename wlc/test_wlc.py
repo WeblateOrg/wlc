@@ -207,10 +207,16 @@ class ProjectTest(ObjectTest, APITest):
         self.assertEqual(len(lst), 2)
         self.assertIsInstance(lst[0], Component)
 
+    def test_languages(self):
+        """Component statistics test."""
+        obj = self.get()
+        self.assertEqual(2, len(list(obj.languages())))
+
     def test_statistics(self):
         """Component statistics test."""
         obj = self.get()
-        self.assertEqual(2, len(list(obj.statistics())))
+        stats = obj.statistics()
+        self.assertEqual(stats['name'], 'Hello')
 
 
 class ComponentTest(ObjectTest, APITest):

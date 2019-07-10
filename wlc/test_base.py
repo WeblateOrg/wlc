@@ -148,6 +148,7 @@ def register_uris():
         "projects/hello/changes",
         "projects/hello/components",
         "projects/hello/statistics",
+        "projects/hello/languages",
         "projects/empty",
         "projects/empty/components",
         "projects/invalid",

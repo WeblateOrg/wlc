@@ -1,0 +1,22 @@
+  [
+    {
+        "total_words": 30,
+        "code": "cs",
+        "translated_words": 19,
+        "language": "čeština",
+        "translated": 5,
+        "translated_percent": 62.5,
+        "total": 8,
+        "words_percent": 63.3
+    },
+    {
+        "total_words": 30,
+        "code": "en",
+        "translated_words": 15,
+        "language": "angličtina",
+        "translated": 4,
+        "translated_percent": 50.0,
+        "total": 8,
+        "words_percent": 50.0
+    }
+  ]
