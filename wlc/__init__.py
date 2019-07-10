@@ -21,6 +21,7 @@
 
 from urllib.parse import urlencode, urlparse
 
+import dateutil.parser
 import requests
 
 __version__ = "1.1"
@@ -30,6 +31,7 @@ DEVEL_URL = "https://github.com/WeblateOrg/wlc"
 API_URL = "http://127.0.0.1:8000/api/"
 USER_AGENT = "wlc/{0}".format(__version__)
 LOCALHOST_NETLOC = "127.0.0.1"
+TIMESTAMPS = {"last_change"}
 
 
 class WeblateException(Exception):
@@ -214,6 +216,8 @@ class LazyObject(dict):
                         )
                     else:
                         self._data[param] = self._mappings[param](self.weblate, **value)
+                elif param in TIMESTAMPS:
+                    self._data[param] = dateutil.parser.parse(value)
                 else:
                     self._data[param] = value
                 del kwargs[param]
