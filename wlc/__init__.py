@@ -360,9 +360,15 @@ class Project(LazyObject, RepoObjectMixin):
         return self.weblate.list_components(self._attribs["components_list_url"])
 
     def statistics(self):
-        """Return statistics for component."""
+        """Return statistics for translation."""
         self.ensure_loaded("statistics_url")
-        url = self._attribs["statistics_url"]
+        data = self.weblate.get(self._attribs["statistics_url"])
+        return Statistics(weblate=self.weblate, **data)
+
+    def languages(self):
+        """Return language statistics for component."""
+        self.ensure_loaded("languages_url")
+        url = self._attribs["languages_url"]
         return [
             LanguageStats(self.weblate, url, **item) for item in self.weblate.get(url)
         ]
@@ -405,7 +411,9 @@ class Component(LazyObject, RepoObjectMixin):
     def statistics(self):
         """Return statistics for component."""
         self.ensure_loaded("statistics_url")
-        return self.weblate.list_factory(self._attribs["statistics_url"], Statistics)
+        return self.weblate.list_factory(
+            self._attribs["statistics_url"], TranslationStatistics
+        )
 
     def _get_lock_url(self):
         self.ensure_loaded("lock_url")
@@ -472,7 +480,7 @@ class Translation(LazyObject, RepoObjectMixin):
         """Return statistics for translation."""
         self.ensure_loaded("statistics_url")
         data = self.weblate.get(self._attribs["statistics_url"])
-        return Statistics(weblate=self.weblate, **data)
+        return TranslationStatistics(weblate=self.weblate, **data)
 
     def changes(self):
         """List changes in the project."""
@@ -503,8 +511,6 @@ class Statistics(LazyObject):
     """Statistics object."""
 
     _params = (
-        "last_author",
-        "code",
         "failing_percent",
         "url",
         "translated_percent",
@@ -519,6 +525,10 @@ class Statistics(LazyObject):
         "last_change",
         "name",
     )
+
+
+class TranslationStatistics(Statistics):
+    _params = Statistics._params + ("code", "last_author")
 
 
 class Change(LazyObject):

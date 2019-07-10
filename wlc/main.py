@@ -523,7 +523,7 @@ class Stats(ObjectCommand):
         """Executor."""
         obj = self.get_object()
         if isinstance(obj, wlc.Project):
-            self.print(list(obj.statistics()))
+            self.print(obj.statistics())
         elif isinstance(obj, wlc.Component):
             self.print(list(obj.statistics()))
         else:
