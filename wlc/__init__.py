@@ -19,6 +19,7 @@
 #
 """Weblate API client library."""
 
+from copy import copy
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
@@ -200,6 +201,9 @@ class LazyObject(dict):
         self._attribs = {}
         self._load_params(**kwargs)
         self._load_params(url=url)
+
+    def get_data(self):
+        return copy(self._data)
 
     def _load_params(self, **kwargs):
         for param in self.PARAMS:

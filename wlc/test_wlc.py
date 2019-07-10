@@ -190,6 +190,10 @@ class ObjectTest(object):
             {"result": False, "detail": "Push is disabled for Hello/Weblate."},
         )
 
+    def test_data(self):
+        obj = self.get()
+        self.assertIsNotNone(obj.get_data())
+
 
 class ProjectTest(ObjectTest, APITest):
     """Project object tests."""
