@@ -216,7 +216,7 @@ class ProjectTest(ObjectTest, APITest):
         """Component statistics test."""
         obj = self.get()
         stats = obj.statistics()
-        self.assertEqual(stats['name'], 'Hello')
+        self.assertEqual(stats["name"], "Hello")
 
 
 class ComponentTest(ObjectTest, APITest):
