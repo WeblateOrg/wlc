@@ -3,8 +3,8 @@ wlc
 
 `Weblate`_ commandline client using `Weblate's REST API`_.
 
-.. image:: https://travis-ci.org/WeblateOrg/wlc.svg?branch=master
-    :target: https://travis-ci.org/WeblateOrg/wlc
+.. image:: https://travis-ci.com/WeblateOrg/wlc.svg?branch=master
+    :target: https://travis-ci.com/WeblateOrg/wlc
     :alt: Build Status
 
 .. image:: https://ci.appveyor.com/api/projects/status/e9a8n9qhvd6ulibw/branch/master?svg=true
