@@ -123,6 +123,12 @@ def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
             body=ResponseHandler(handle.read(), filename, auth),
             content_type="application/json",
         )
+        httpretty.register_uri(
+            httpretty.DELETE,
+            url,
+            body=ResponseHandler(handle.read(), filename, auth),
+            content_type="application/json",
+        )
 
 
 def raise_error(request, uri, headers):

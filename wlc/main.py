@@ -385,6 +385,18 @@ class Show(ObjectCommand):
 
 
 @register_command
+class Delete(ObjectCommand):
+    """Delete object."""
+
+    name = "delete"
+    description = "Delete translation, component or project"
+
+    def run(self):
+        """Executor."""
+        self.get_object().delete()
+
+
+@register_command
 class List(ObjectCommand):
     """List object."""
 

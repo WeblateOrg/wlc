@@ -382,6 +382,9 @@ class Project(LazyObject, RepoObjectMixin):
         self.ensure_loaded("changes_list_url")
         return self.weblate.list_changes(self._attribs["changes_list_url"])
 
+    def delete(self):
+        self.weblate.raw_request("delete", self._url)
+
 
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
@@ -439,6 +442,9 @@ class Component(LazyObject, RepoObjectMixin):
         """List changes in the project."""
         self.ensure_loaded("changes_list_url")
         return self.weblate.list_changes(self._attribs["changes_list_url"])
+
+    def delete(self):
+        self.weblate.raw_request("delete", self._url)
 
 
 class Translation(LazyObject, RepoObjectMixin):
@@ -509,6 +515,9 @@ class Translation(LazyObject, RepoObjectMixin):
             kwargs["overwrite"] = "yes"
 
         return self.weblate.request("post", url, files=files, params=kwargs)
+
+    def delete(self):
+        self.weblate.raw_request("delete", self._url)
 
 
 class Statistics(LazyObject):

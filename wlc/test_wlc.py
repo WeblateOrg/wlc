@@ -194,6 +194,10 @@ class ObjectTest(object):
         obj = self.get()
         self.assertIsNotNone(obj.get_data())
 
+    def test_delete(self):
+        obj = self.get()
+        self.assertIsNone(obj.delete())
+
 
 class ProjectTest(ObjectTest, APITest):
     """Project object tests."""
