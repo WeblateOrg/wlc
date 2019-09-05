@@ -626,7 +626,7 @@ class Upload(TranslationCommand):
         )
         parser.add_argument(
             "--method",
-            choices=("translate", "approve", "suggest", "fuzzy"),
+            choices=("translate", "approve", "suggest", "fuzzy", "replace"),
             default="translate",
         )
         parser.add_argument("--fuzzy", choices=("", "process", "approve"), default="")
