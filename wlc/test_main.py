@@ -56,9 +56,9 @@ def execute(args, settings=None, stdout=None, stdin=None, expected=0):
         sys.stdout = backup
         sys.stderr = backup_err
     result = output.buffer.getvalue()
-    if not result:
-        result = output.getvalue()
-    return result
+    if result:
+        return result
+    return output.getvalue()
 
 
 class TestSettings(APITest):
