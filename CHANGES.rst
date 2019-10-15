@@ -1,3 +1,8 @@
+1.3
+---
+
+* Not yet released.
+
 1.2
 ---
 
