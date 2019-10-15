@@ -71,7 +71,7 @@ setup(
         "Topic :: Utilities",
     ],
     entry_points={"console_scripts": ["wlc = wlc.main:main"]},
-    python_requires='>=3.5',
+    python_requires=">=3.5",
     setup_requires=["pytest-runner"],
     tests_require=REQUIRES_TEST,
 )
