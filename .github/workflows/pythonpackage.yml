@@ -27,7 +27,9 @@ jobs:
     - name: Test with pytest
       run: |
         py.test --cov=wlc wlc
-        codecov
+    - uses: codecov/codecov-action@v1.0.2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
     - name: Check sdist
       run: |
         python ./setup.py sdist
