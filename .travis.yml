@@ -17,10 +17,10 @@ matrix:
         - source .venv/bin/activate
     - os: windows
       language: sh
-      python: "3.7"
+      python: "3.x"
       before_install:
-        - choco install python3
-        - export PATH="/c/Python37:/c/Python37/Scripts:$PATH"
+        - choco install python3 --params "/InstallDir:C:\\Python"
+        - export PATH="/c/Python:/c/Python/Scripts:$PATH"
         - python -m pip install --upgrade pip wheel
 install: 
   # Get newer pip and whell for binary caching support
