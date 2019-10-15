@@ -25,7 +25,7 @@ from urllib.parse import urlencode, urlparse
 import dateutil.parser
 import requests
 
-__version__ = "1.1"
+__version__ = "1.2"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"

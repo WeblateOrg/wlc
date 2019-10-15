@@ -1,3 +1,12 @@
+1.2
+---
+
+* Released on 15th October 2019.
+* Fix stats invocation.
+* Improved timestamps handling.
+* Added support for replace upload.
+* Added support for project, component and translation removal.
+
 1.1
 ---
 
