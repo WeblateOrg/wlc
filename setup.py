@@ -23,7 +23,12 @@ import os
 
 from setuptools import setup
 
-VERSION = __import__("wlc").__version__
+VERSION = None
+with open("wlc/__init__.py") as handle:
+    for line in handle.readlines():
+        if line.startswith("__version__"):
+            VERSION = line.split("=")[1].strip().strip("\"")
+            break
 
 with open("README.rst") as handle:
     LONG_DESCRIPTION = handle.read()
