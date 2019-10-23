@@ -19,7 +19,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Setup file for easy installation."""
-import os
 
 from setuptools import setup
 
@@ -27,7 +26,7 @@ VERSION = None
 with open("wlc/__init__.py") as handle:
     for line in handle.readlines():
         if line.startswith("__version__"):
-            VERSION = line.split("=")[1].strip().strip("\"")
+            VERSION = line.split("=")[1].strip().strip('"')
             break
 
 with open("README.rst") as handle:
