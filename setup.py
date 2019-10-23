@@ -25,11 +25,14 @@ from setuptools import setup
 
 VERSION = __import__("wlc").__version__
 
-with open(os.path.join(os.path.dirname(__file__), "README.rst")) as readme:
-    LONG_DESCRIPTION = readme.read()
+with open("README.rst") as handle:
+    LONG_DESCRIPTION = handle.read()
 
-REQUIRES = open("requirements.txt").read().split()
-REQUIRES_TEST = open("requirements-test.txt").read().split()[2:]
+with open("requirements.txt") as handle:
+    REQUIRES = handle.read().split()
+
+with open("requirements-test.txt") as handle:
+    REQUIRES_TEST = handle.read().split()[2:]
 
 setup(
     name="wlc",
