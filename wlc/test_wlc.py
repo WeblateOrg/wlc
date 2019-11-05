@@ -20,7 +20,15 @@
 """Test the module."""
 import io
 
-from wlc import Change, Component, Project, Translation, Weblate, WeblateException
+from wlc import (
+    API_URL,
+    Change,
+    Component,
+    Project,
+    Translation,
+    Weblate,
+    WeblateException,
+)
 
 from .test_base import APITest
 
@@ -78,6 +86,10 @@ class WeblateTest(APITest):
     def test_languages(self):
         """Test listing projects."""
         self.assertEqual(len(list(Weblate().list_languages())), 47)
+
+    def test_api_trailing_slash(self):
+        """Test listing projects."""
+        self.assertEqual(len(list(Weblate(url=API_URL[:-1]).list_languages())), 47)
 
     def test_projects(self):
         """Test listing projects."""

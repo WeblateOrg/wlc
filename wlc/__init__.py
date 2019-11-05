@@ -49,6 +49,8 @@ class Weblate(object):
         else:
             self.key = key
             self.url = url
+        if not self.url.endswith("/"):
+            self.url += "/"
 
     @staticmethod
     def process_error(error):
