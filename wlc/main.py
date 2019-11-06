@@ -279,7 +279,7 @@ class ComponentCommand(ObjectCommand):
         """Return component object."""
         obj = super(ComponentCommand, self).get_object()
         if not isinstance(obj, wlc.Component):
-            raise CommandError("Not supported")
+            raise CommandError("This command is supported only at component level")
         return obj
 
     def run(self):
@@ -294,7 +294,7 @@ class TranslationCommand(ObjectCommand):
         """Return translation object."""
         obj = super(TranslationCommand, self).get_object()
         if not isinstance(obj, wlc.Translation):
-            raise CommandError("Not supported")
+            raise CommandError("This command is supported only at translation level")
         return obj
 
     def run(self):
