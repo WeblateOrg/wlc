@@ -322,7 +322,7 @@ class TestCommands(APITest):
     def test_locks(self):
         """Project locks."""
         output = execute(["lock-status", "hello"], expected=1)
-        self.assertIn("Not supported", output)
+        self.assertIn("This command is supported only at component level", output)
 
         output = execute(["lock-status", "hello/weblate"])
         self.assertIn("locked", output)
@@ -332,7 +332,7 @@ class TestCommands(APITest):
         self.assertEqual("", output)
 
         output = execute(["lock-status", "hello/weblate/cs"], expected=1)
-        self.assertIn("Not supported", output)
+        self.assertIn("This command is supported only at component level", output)
 
     def test_changes(self):
         """Project changes."""
@@ -361,7 +361,7 @@ class TestCommands(APITest):
             self.assertIn(b"Plural-Forms:", output)
 
         output = execute(["download", "hello/weblate"], expected=1)
-        self.assertIn("Not supported", output)
+        self.assertIn("This command is supported only at translation level", output)
 
     def test_upload(self):
         """Translation file uploads."""
