@@ -2,6 +2,7 @@
 ---
 
 * Not yet released.
+* Mark Python 3.8 as supported.
 
 1.2
 ---
