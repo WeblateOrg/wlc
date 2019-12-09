@@ -4,9 +4,13 @@ on:
   push:
     paths:
       - '**.py'
+      - 'setup.cfg'
+      - 'requirements*.txt'
   pull_request:
     paths:
       - '**.py'
+      - 'setup.cfg'
+      - 'requirements*.txt'
 
 jobs:
   flake8:
