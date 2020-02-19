@@ -119,7 +119,7 @@ class WeblateTest(APITest):
             getattr(obj, "missing")
 
 
-class ObjectTest(object):
+class ObjectTest:
     """Base class for objects testing."""
 
     _name = None

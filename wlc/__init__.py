@@ -39,7 +39,7 @@ class WeblateException(Exception):
     """Generic error."""
 
 
-class Weblate(object):
+class Weblate:
     """Weblate API wrapper object."""
 
     def __init__(self, key="", url=API_URL, config=None):
@@ -290,7 +290,7 @@ class LanguageStats(LazyObject):
     ID = "code"
 
 
-class RepoMixin(object):
+class RepoMixin:
     """Repository mixin providing generic repository wide operations."""
 
     def _get_repo_url(self):

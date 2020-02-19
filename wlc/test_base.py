@@ -29,7 +29,7 @@ from requests_toolbelt.multipart import decoder
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
 
 
-class ResponseHandler(object):
+class ResponseHandler:
     """httpretty response handler."""
 
     def __init__(self, body, filename, auth=False):

@@ -101,7 +101,7 @@ def sorted_items(value):
         yield key, value[key]
 
 
-class Command(object):
+class Command:
     """Basic command object."""
 
     name = ""
