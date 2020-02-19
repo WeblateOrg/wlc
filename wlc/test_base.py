@@ -100,9 +100,9 @@ class ResponseHandler:
     @staticmethod
     def get_multipart_name(content_disposition):
         """Return multipart name from content disposition."""
-        m = re.search(r'name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition)
-
-        return m.group("name")
+        return re.search(
+            r'name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition
+        ).group("name")
 
 
 def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
