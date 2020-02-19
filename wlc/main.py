@@ -71,8 +71,8 @@ def get_parser():
     )
     subparser.required = True
 
-    for command in COMMANDS:
-        COMMANDS[command].add_parser(subparser)
+    for command in COMMANDS.values():
+        command.add_parser(subparser)
 
     return parser
 
