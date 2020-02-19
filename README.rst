@@ -1,29 +1,31 @@
-wlc
-===
+.. image:: https://s.weblate.org/cdn/Logo-Darktext-borders.png
+   :alt: Weblate
+   :target: https://weblate.org/
+   :height: 80px
 
-`Weblate`_ commandline client using `Weblate's REST API`_.
+**Weblate is a copylefted libre software web-based continuous localization system,
+used by over 1150 libre projects and companies in more than 115 countries.**
 
-.. image:: https://travis-ci.com/WeblateOrg/wlc.svg?branch=master
-    :target: https://travis-ci.com/WeblateOrg/wlc
-    :alt: Build Status
 
-.. image:: https://ci.appveyor.com/api/projects/status/e9a8n9qhvd6ulibw/branch/master?svg=true
-    :target: https://ci.appveyor.com/project/nijel/wlc/branch/master
-    :alt: Build status
+wlc is a `Weblate`_ commandline client using `Weblate's REST API`_.
 
-.. image:: https://codecov.io/github/WeblateOrg/wlc/coverage.svg?branch=master
-    :target: https://codecov.io/github/WeblateOrg/wlc?branch=master
-    :alt: Code coverage
-
-.. image:: https://img.shields.io/pypi/v/wlc.svg
-    :target: https://pypi.org/project/wlc/
-    :alt: PyPI package
+.. image:: https://img.shields.io/badge/website-weblate.org-blue.svg
+    :alt: Website
+    :target: https://weblate.org/
 
 .. image:: https://hosted.weblate.org/widgets/weblate/-/svg-badge.svg
     :alt: Translation status
     :target: https://hosted.weblate.org/engage/weblate/?utm_source=widget
 
-.. image:: https://img.shields.io/badge/docs-latest-brightgreen.svg?style=flat
+.. image:: https://bestpractices.coreinfrastructure.org/projects/552/badge
+    :alt: CII Best Practices
+    :target: https://bestpractices.coreinfrastructure.org/projects/552
+
+.. image:: https://img.shields.io/pypi/v/wlc.svg
+    :target: https://pypi.org/project/wlc/
+    :alt: PyPI package
+
+.. image:: https://img.shields.io/readthedocs/weblate.svg 
     :alt: Documentation
     :target: https://docs.weblate.org/en/latest/wlc.html
 
