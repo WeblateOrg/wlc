@@ -32,6 +32,12 @@ jobs:
     - uses: codecov/codecov-action@v1.0.4
       with:
         token: ${{secrets.CODECOV_TOKEN}}
+    - name: DeepSource
+      env:
+        DEEPSOURCE_DSN: https://2d04f02d358e4cc4884c41332fcf56dd@deepsource.io
+      run: |
+        curl https://deepsource.io/cli | sh
+        ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml
     - name: Check sdist
       run: |
         python ./setup.py sdist
