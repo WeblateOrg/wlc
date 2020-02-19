@@ -46,7 +46,7 @@ jobs:
       with:
         token: ${{secrets.CODECOV_TOKEN}}
     - name: DeepSource
-      if: matrix.os == "ubuntu-latest"
+      if: matrix.os == 'ubuntu-latest'
       env:
         DEEPSOURCE_DSN: https://2d04f02d358e4cc4884c41332fcf56dd@deepsource.io
       run: |
