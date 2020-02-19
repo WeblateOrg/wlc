@@ -75,16 +75,16 @@ class Weblate:
 
     def raw_request(self, method, path, params=None, files=None):
         """Construct request object and returns raw content."""
-        r = self.invoke_request(method, path, params, files)
+        response = self.invoke_request(method, path, params, files)
 
-        return r.content
+        return response.content
 
     def request(self, method, path, params=None, files=None):
         """Construct request object and returns json response."""
-        r = self.invoke_request(method, path, params, files)
+        response = self.invoke_request(method, path, params, files)
 
         try:
-            return r.json()
+            return response.json()
         except ValueError:
             raise WeblateException("Server returned invalid JSON")
 
@@ -97,7 +97,7 @@ class Weblate:
             headers["Authorization"] = "Token {}".format(self.key)
         verify_ssl = self._should_verify_ssl(path)
         try:
-            r = requests.request(
+            response = requests.request(
                 method,
                 path,
                 headers=headers,
@@ -105,11 +105,11 @@ class Weblate:
                 verify=verify_ssl,
                 files=files,
             )
-            r.raise_for_status()
+            response.raise_for_status()
         except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
-        return r
+        return response
 
     def post(self, path, **kwargs):
         """Perform POST request on the API."""
