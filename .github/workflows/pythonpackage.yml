@@ -25,7 +25,7 @@ jobs:
           - os: macos-latest
             python-version: 3.7
 
-    name: Python ${{ matix.python-version }}, ${{ matrix.os }}
+    name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v1
@@ -47,7 +47,7 @@ jobs:
     - uses: codecov/codecov-action@v1
       with:
         token: ${{secrets.CODECOV_TOKEN}}
-        name: Python ${{ matix.python-version }}, ${{ matrix.os }}
+        name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
     - name: DeepSource
       if: matrix.os == 'ubuntu-latest'
       env:
