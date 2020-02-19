@@ -60,12 +60,12 @@ class Weblate:
 
             if status_code == 429:
                 raise WeblateException("Throttling on the server")
-            elif status_code == 404:
+            if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "
                     "(maybe operation is not supported on the server)"
                 )
-            elif status_code == 403:
+            if status_code == 403:
                 raise WeblateException(
                     "You don't have permission to access this object"
                 )
@@ -141,9 +141,9 @@ class Weblate:
         parts = path.strip("/").split("/")
         if len(parts) == 3:
             return self.get_translation(path)
-        elif len(parts) == 2:
+        if len(parts) == 2:
             return self.get_component(path)
-        elif len(parts) == 1:
+        if len(parts) == 1:
             return self.get_project(path)
         raise ValueError("Not supported path: {0}".format(path))
 

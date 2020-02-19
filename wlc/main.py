@@ -141,11 +141,11 @@ class Command:
         """Format value for rendering."""
         if isinstance(value, float):
             return "{0:.1f}".format(value)
-        elif isinstance(value, int):
+        if isinstance(value, int):
             return "{0}".format(value)
-        elif value is None:
+        if value is None:
             return ""
-        elif hasattr(value, "to_value"):
+        if hasattr(value, "to_value"):
             return value.to_value()
         return value
 
