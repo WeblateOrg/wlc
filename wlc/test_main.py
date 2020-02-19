@@ -383,6 +383,7 @@ class TestCommands(APITest):
             )
             self.assertEqual("", output)
 
-    def get_text_io_wrapper(self, string):
+    @staticmethod
+    def get_text_io_wrapper(string):
         """Create a text io wrapper from a string."""
         return TextIOWrapper(BytesIO(string.encode()), "utf8")

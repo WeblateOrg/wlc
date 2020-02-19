@@ -179,7 +179,8 @@ class Weblate:
         """List languages in the instance."""
         return self.list_factory("languages/", Language)
 
-    def _should_verify_ssl(self, path):
+    @staticmethod
+    def _should_verify_ssl(path):
         """Cheks if it should verify ssl certificates."""
         url = urlparse(path)
         is_localhost = url.netloc.startswith(LOCALHOST_NETLOC)
