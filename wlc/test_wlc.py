@@ -118,6 +118,12 @@ class WeblateTest(APITest):
         with self.assertRaises(AttributeError):
             getattr(obj, "missing")
 
+    def test_repr(self):
+        """Test str and repr behavior."""
+        obj = Weblate().get_object("hello")
+        self.assertIn("'slug': 'hello'", repr(obj))
+        self.assertIn("'slug': 'hello'", str(obj))
+
 
 class ObjectTest:
     """Base class for objects testing."""

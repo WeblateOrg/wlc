@@ -208,6 +208,12 @@ class LazyObject(dict):
     def get_data(self):
         return copy(self._data)
 
+    def __str__(self):
+        return str(self._data)
+
+    def __repr__(self):
+        return repr(self._data)
+
     def _load_params(self, **kwargs):
         for param in self.PARAMS:
             if param in kwargs:
