@@ -210,13 +210,19 @@ class TestCommands(APITest):
         self.assertIn("Hello", output)
 
     def test_list_components(self):
-        """Project listing."""
+        """Components listing."""
         output = execute(["list-components"])
         self.assertIn("/hello/weblate", output)
 
+        output = execute(["list-components", "hello"])
+        self.assertIn("/hello/weblate", output)
+
     def test_list_translations(self):
-        """Project listing."""
+        """Translations listing."""
         output = execute(["list-translations"])
+        self.assertIn("/hello/weblate/cs/", output)
+
+        output = execute(["list-translations", "hello/weblate"])
         self.assertIn("/hello/weblate/cs/", output)
 
     def test_show(self):

@@ -272,6 +272,21 @@ class ObjectCommand(Command):
             raise CommandError(message, result["detail"] if "detail" in result else "")
 
 
+class ProjectCommand(ObjectCommand):
+    """Wrapper to allow only project objects."""
+
+    def get_object(self):
+        """Return component object."""
+        obj = super(ProjectCommand, self).get_object()
+        if not isinstance(obj, wlc.Project):
+            raise CommandError("Not supported")
+        return obj
+
+    def run(self):
+        """Main execution of the command."""
+        raise NotImplementedError()
+
+
 class ComponentCommand(ObjectCommand):
     """Wrapper to allow only component objects."""
 
@@ -337,15 +352,31 @@ class ListProjects(Command):
 
 
 @register_command
-class ListComponents(Command):
+class ListComponents(ProjectCommand):
     """List components."""
 
     name = "list-components"
-    description = "Lists all components"
+    description = "Lists all components (optionally per project)"
 
     def run(self):
         """Main execution of the command."""
-        self.print(list(self.wlc.list_components()))
+        if self.args.object:
+            obj = self.get_object()
+
+            component_list = list(obj.list())
+            for component in component_list:
+                component.setattrvalue("project", obj)
+
+            self.print(component_list)
+        else:
+            self.print(list(self.wlc.list_components()))
+
+    def get_object(self):
+        """Return component object."""
+        obj = super(ListComponents, self).get_object()
+        if not isinstance(obj, wlc.Project):
+            raise CommandError("Not supported")
+        return obj
 
 
 @register_command
@@ -361,15 +392,31 @@ class ListLanguages(Command):
 
 
 @register_command
-class ListTranslations(Command):
+class ListTranslations(ComponentCommand):
     """List translations."""
 
     name = "list-translations"
-    description = "Lists all translations"
+    description = "Lists all translations (optionally per component)"
 
     def run(self):
         """Main execution of the command."""
-        self.print(list(self.wlc.list_translations()))
+        if self.args.object:
+            obj = self.get_object()
+
+            translation_list = list(obj.list())
+            for translation in translation_list:
+                translation.setattrvalue("component", obj)
+
+            self.print(translation_list)
+        else:
+            self.print(list(self.wlc.list_translations()))
+
+    def get_object(self):
+        """Return component object."""
+        obj = super(ListTranslations, self).get_object()
+        if not isinstance(obj, wlc.Component):
+            raise CommandError("Not supported")
+        return obj
 
 
 @register_command
