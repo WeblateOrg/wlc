@@ -252,6 +252,12 @@ class LazyObject(dict):
             self.refresh()
         return self._data[name]
 
+    def setattrvalue(self, name, value):
+        if name not in self.PARAMS:
+            raise AttributeError(name)
+
+        self._data[name] = value
+
     def __getitem__(self, name):
         return self.__getattr__(name)
 
