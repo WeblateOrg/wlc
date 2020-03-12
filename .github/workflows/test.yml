@@ -1,13 +1,12 @@
-name: Python package
+name: Test
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  test:
 
     runs-on: ${{ matrix.os }}
     strategy:
-      max-parallel: 3
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: [3.5, 3.6, 3.7, 3.8]
@@ -24,11 +23,15 @@ jobs:
             python-version: 3.6
           - os: macos-latest
             python-version: 3.7
-
-    name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
+    name: ${{ matrix.os }}, Python ${{ matrix.python-version }}
 
     steps:
     - uses: actions/checkout@v2
+    - name: Cache pip
+      uses: actions/cache@v1
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v1
       with:
@@ -36,26 +39,23 @@ jobs:
     - name: Install pip dependencies
       run: |
         python -m pip install --upgrade pip wheel
-        pip install -r requirements.txt -r requirements-test.txt -r requirements-ci.txt
-    - name: Lint with flake8
-      run: |
-        flake8
-    - name: Test with pytest
+        pip install -r requirements.txt -r requirements-test.txt
+    - name: Test
       run: |
         py.test --cov=wlc wlc
+    - name: Coverage
+      run: |
         coverage xml
     - uses: codecov/codecov-action@v1
       with:
         token: ${{secrets.CODECOV_TOKEN}}
+        flags: unittests
         name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
     - name: DeepSource
       if: matrix.os == 'ubuntu-latest'
+      continue-on-error: true
       env:
-        DEEPSOURCE_DSN: https://2d04f02d358e4cc4884c41332fcf56dd@deepsource.io
+        DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io
       run: |
         curl https://deepsource.io/cli | sh
         ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml
-    - name: Check sdist
-      run: |
-        python ./setup.py sdist
-        twine check dist/*
