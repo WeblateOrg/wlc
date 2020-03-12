@@ -1,8 +1,10 @@
 -r requirements.txt
-codecov
 codacy-coverage
+codecov
 HTTPretty!=0.8.11,!=0.8.12,!=0.8.13,!=0.8.14
+multipart
+pre-commit
 pytest
 pytest-cov
 requests-toolbelt
-multipart
+twine

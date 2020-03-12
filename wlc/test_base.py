@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
 #
@@ -24,6 +23,7 @@ import re
 from unittest import TestCase
 
 import httpretty
+
 from requests_toolbelt.multipart import decoder
 
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")

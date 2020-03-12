@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
 #
@@ -20,7 +19,8 @@
 #
 """Simple wrapper to execute wlc commandline"""
 
-import wlc.main
 import sys
+
+import wlc.main
 
 sys.exit(wlc.main.main())
