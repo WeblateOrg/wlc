@@ -1,16 +1,6 @@
 name: flake8
 
-on:
-  push:
-    paths:
-      - '**.py'
-      - 'setup.cfg'
-      - 'requirements*.txt'
-  pull_request:
-    paths:
-      - '**.py'
-      - 'setup.cfg'
-      - 'requirements*.txt'
+on: [push, pull_request]
 
 jobs:
   flake8:
