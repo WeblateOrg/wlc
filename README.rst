@@ -25,7 +25,7 @@ wlc is a `Weblate`_ commandline client using `Weblate's REST API`_.
     :target: https://pypi.org/project/wlc/
     :alt: PyPI package
 
-.. image:: https://img.shields.io/readthedocs/weblate.svg
+.. image:: https://readthedocs.org/projects/weblate/badge/
     :alt: Documentation
     :target: https://docs.weblate.org/en/latest/wlc.html
 
