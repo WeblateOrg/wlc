@@ -74,9 +74,8 @@ class WeblateErrorTest(APITest):
         """Test attributes getting."""
         obj = Weblate().get_object("hello")
         self.assertEqual(obj.name, "Hello")
-        self.assertEqual(getattr(obj, "name"), "Hello")
         with self.assertRaises(AttributeError):
-            getattr(obj, "invalid_attribute")
+            print(obj.invalid_attribute)
 
 
 class WeblateTest(APITest):
@@ -115,7 +114,7 @@ class WeblateTest(APITest):
         obj.ensure_loaded("missing")
         obj.ensure_loaded("missing")
         with self.assertRaises(AttributeError):
-            getattr(obj, "missing")
+            print(obj.missing)
 
     def test_repr(self):
         """Test str and repr behavior."""
