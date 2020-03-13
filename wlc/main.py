@@ -83,7 +83,7 @@ class CommandError(Exception):
         """Create CommandError exception."""
         if detail is not None:
             message = "\n".join((message, detail))
-        super(CommandError, self).__init__(message)
+        super().__init__(message)
 
 
 def sort_key(value):
@@ -234,7 +234,7 @@ class ObjectCommand(Command):
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
-        parser = super(ObjectCommand, cls).add_parser(subparser)
+        parser = super().add_parser(subparser)
         parser.add_argument(
             "object",
             nargs="*",
@@ -276,7 +276,7 @@ class ProjectCommand(ObjectCommand):
 
     def get_object(self):
         """Return component object."""
-        obj = super(ProjectCommand, self).get_object()
+        obj = super().get_object()
         if not isinstance(obj, wlc.Project):
             raise CommandError("Not supported")
         return obj
@@ -291,7 +291,7 @@ class ComponentCommand(ObjectCommand):
 
     def get_object(self):
         """Return component object."""
-        obj = super(ComponentCommand, self).get_object()
+        obj = super().get_object()
         if not isinstance(obj, wlc.Component):
             raise CommandError("This command is supported only at component level")
         return obj
@@ -306,7 +306,7 @@ class TranslationCommand(ObjectCommand):
 
     def get_object(self):
         """Return translation object."""
-        obj = super(TranslationCommand, self).get_object()
+        obj = super().get_object()
         if not isinstance(obj, wlc.Translation):
             raise CommandError("This command is supported only at translation level")
         return obj
@@ -326,7 +326,7 @@ class Version(Command):
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
-        parser = super(Version, cls).add_parser(subparser)
+        parser = super().add_parser(subparser)
         parser.add_argument("--bare", action="store_true", help="Print only version")
         return parser
 
@@ -372,7 +372,7 @@ class ListComponents(ProjectCommand):
 
     def get_object(self):
         """Return component object."""
-        obj = super(ListComponents, self).get_object()
+        obj = super().get_object()
         if not isinstance(obj, wlc.Project):
             raise CommandError("Not supported")
         return obj
@@ -412,7 +412,7 @@ class ListTranslations(ComponentCommand):
 
     def get_object(self):
         """Return component object."""
-        obj = super(ListTranslations, self).get_object()
+        obj = super().get_object()
         if not isinstance(obj, wlc.Component):
             raise CommandError("Not supported")
         return obj
@@ -637,7 +637,7 @@ class Download(TranslationCommand):
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
-        parser = super(Download, cls).add_parser(subparser)
+        parser = super().add_parser(subparser)
         parser.add_argument(
             "-c", "--convert", help="Convert file format on server (defaults to none)"
         )
@@ -667,7 +667,7 @@ class Upload(TranslationCommand):
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command line."""
-        parser = super(Upload, cls).add_parser(subparser)
+        parser = super().add_parser(subparser)
         parser.add_argument("-i", "--input", help="File to upload (defaults to stdin)")
         parser.add_argument(
             "--overwrite",

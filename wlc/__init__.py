@@ -195,7 +195,7 @@ class LazyObject(dict):
 
     def __init__(self, weblate, url, **kwargs):
         """Construct object for given Weblate instance."""
-        super(LazyObject, self).__init__()
+        super().__init__()
         self.weblate = weblate
         self._url = url
         self._data = {}
