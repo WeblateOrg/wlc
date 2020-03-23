@@ -224,6 +224,12 @@ class TestCommands(APITest):
         output = execute(["list-translations", "hello/weblate"])
         self.assertIn("/hello/weblate/cs/", output)
 
+        output = execute(["list-translations", "hello/weblate"])
+        self.assertIn("/hello/weblate/cs/", output)
+
+        output = execute(["--format", "json", "list-translations", "hello/weblate"])
+        self.assertIn("/hello/weblate/cs/", output)
+
     def test_show(self):
         """Project show."""
         output = execute(["show", "hello"])

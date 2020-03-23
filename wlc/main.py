@@ -23,6 +23,7 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
+from datetime import datetime
 
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
@@ -86,6 +87,14 @@ class CommandError(Exception):
         super().__init__(message)
 
 
+class DateTimeEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, datetime):
+            return o.isoformat()
+
+        return json.JSONEncoder.default(self, o)
+
+
 def sort_key(value):
     """Key getter for sorting."""
     try:
@@ -133,7 +142,7 @@ class Command:
 
     def print_json(self, value):
         """JSON print."""
-        json.dump(value, self.stdout, indent=2)
+        json.dump(value, self.stdout, cls=DateTimeEncoder, indent=2)
 
     @staticmethod
     def format_value(value):
