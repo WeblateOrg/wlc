@@ -62,7 +62,7 @@
             },
             "language_code": "hy",
             "last_author": null,
-            "last_change": null,
+            "last_change": "2016-03-07T10:20:05.499",
             "repository_url": "http://127.0.0.1:8000/api/translations/hello/weblate/hy/repository/",
             "revision": "afb17482bcfa8b87bc6d6e1a528f07b7a1eba2ce",
             "share_url": "http://127.0.0.1:8000/engage/hello/hy/",

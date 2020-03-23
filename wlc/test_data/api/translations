@@ -501,7 +501,7 @@
             },
             "language_code": "ar",
             "last_author": null,
-            "last_change": null,
+            "last_change": "2016-03-07T10:20:05.499",
             "repository_url": "http://127.0.0.1:8000/api/translations/hello/weblate/ar/repository/",
             "revision": "0fa1366cc77ccb3000160c605b9fde04557090a5",
             "share_url": "http://127.0.0.1:8000/engage/hello/ar/",
