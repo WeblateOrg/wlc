@@ -723,7 +723,18 @@ class Upload(TranslationCommand):
         else:
             result = obj.upload(self.stdin.buffer.read(), **kwargs)
 
-        self.check_result(result, "Failed to upload translations!")
+        if not (
+            "count" in result
+            and "result" in result
+            and "total" in result
+            and "accepted" in result
+            and "not_found" in result
+            and "skipped" in result
+        ):
+            raise CommandError(
+                "Failed to upload translations!",
+                result["detail"] if "detail" in result else "",
+            )
 
 
 def parse_settings(args, settings):
