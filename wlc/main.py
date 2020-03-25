@@ -1,3 +1,4 @@
+# PYTHON_ARGCOMPLETE_OK
 #
 # Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
 #
@@ -73,6 +74,13 @@ def get_parser():
 
     for command in COMMANDS.values():
         command.add_parser(subparser)
+
+    try:
+        import argcomplete
+
+        argcomplete.autocomplete(parser)
+    except ImportError:
+        pass
 
     return parser
 
