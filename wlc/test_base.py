@@ -23,6 +23,7 @@ import re
 from unittest import TestCase
 
 import responses
+from requests.exceptions import RequestException
 
 from requests_toolbelt.multipart import decoder
 
@@ -130,8 +131,9 @@ def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
 
 def raise_error(request):
     """Raise IOError."""
-    # pylint: disable=W0613
-    raise IOError("Some error")
+    if "/io" in request.path_url:
+        raise RequestException("Some error")
+    raise Exception("Bug")
 
 
 def register_error(path, code, domain="http://127.0.0.1:8000/api", **kwargs):
@@ -184,6 +186,7 @@ def register_uris():
     register_error("projects/throttled", 429)
     register_error("projects/error", 500)
     register_error("projects/io", 500, callback=raise_error)
+    register_error("projects/bug", 500, callback=raise_error)
 
 
 class APITest(TestCase):

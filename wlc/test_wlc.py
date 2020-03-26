@@ -19,6 +19,8 @@
 """Test the module."""
 import io
 
+from requests.exceptions import RequestException
+
 from wlc import (
     API_URL,
     Change,
@@ -57,8 +59,13 @@ class WeblateErrorTest(APITest):
 
     def test_oserror(self):
         """Test listing projects."""
-        with self.assertRaises(IOError):
+        with self.assertRaises(RequestException):
             Weblate().get_object("io")
+
+    def test_bug(self):
+        """Test listing projects."""
+        with self.assertRaises(Exception):
+            Weblate().get_object("bug")
 
     def test_invalid(self):
         """Test listing projects."""

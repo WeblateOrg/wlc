@@ -24,6 +24,8 @@ import sys
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile
 
+from requests.exceptions import RequestException
+
 import wlc
 from wlc.config import WeblateConfig
 from wlc.main import main
@@ -240,6 +242,12 @@ class TestCommands(APITest):
 
         output = execute(["show", "hello/weblate/cs"])
         self.assertIn("/hello/weblate/cs/", output)
+
+    def test_show_error(self):
+        with self.assertRaises(RequestException):
+            execute(["show", "io"])
+        with self.assertRaises(Exception):
+            execute(["show", "bug"])
 
     def test_delete(self):
         """Project delete."""
