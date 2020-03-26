@@ -123,6 +123,12 @@ class WeblateTest(APITest):
         with self.assertRaises(AttributeError):
             print(obj.missing)
 
+    def test_setattrvalue(self):
+        """Test lazy loading of attributes."""
+        obj = Weblate().get_object("hello")
+        with self.assertRaises(AttributeError):
+            obj.setattrvalue("missing", "")
+
     def test_repr(self):
         """Test str and repr behavior."""
         obj = Weblate().get_object("hello")
