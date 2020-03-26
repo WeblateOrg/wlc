@@ -1,9 +1,9 @@
 -r requirements.txt
-HTTPretty!=0.8.11,!=0.8.12,!=0.8.13,!=0.8.14
 argcomplete
 multipart
 pre-commit
 pytest
 pytest-cov
 requests-toolbelt
+responses>=0.10.1,<0.11.0
 twine

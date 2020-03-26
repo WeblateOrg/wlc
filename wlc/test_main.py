@@ -76,7 +76,7 @@ class TestSettings(APITest):
     def test_debug(self):
         """Debug mode."""
         output = execute(["--debug", "list-projects"], stdout=True)
-        self.assertIn("application/json", output)
+        self.assertIn("api/projects", output)
 
     def test_settings(self):
         """Configuration using settings param."""

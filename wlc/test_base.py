@@ -22,7 +22,7 @@ import os
 import re
 from unittest import TestCase
 
-import httpretty
+import responses
 
 from requests_toolbelt.multipart import decoder
 
@@ -30,7 +30,7 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
 
 
 class ResponseHandler:
-    """httpretty response handler."""
+    """responses response handler."""
 
     def __init__(self, body, filename, auth=False):
         """Construct response handler object."""
@@ -38,14 +38,14 @@ class ResponseHandler:
         self.filename = filename
         self.auth = auth
 
-    def __call__(self, request, uri, headers):
-        """Call interface for httpretty."""
-        if self.auth and request.headers["Authorization"] != "Token KEY":
-            return 403, headers, ""
+    def __call__(self, request):
+        """Call interface for responses."""
+        if self.auth and request.headers.get("Authorization") != "Token KEY":
+            return 403, {}, ""
 
         content = self.get_content(request)
 
-        return 200, headers, content
+        return 200, {}, content
 
     def get_content(self, request):
         """Return content for given request."""
@@ -66,12 +66,10 @@ class ResponseHandler:
                 "multipart/form-data"
             ):
                 return self.get_multipart_filename(content_type, request)
+            return "--".join((self.filename, request.method, request.body or ""))
+        if "?" in request.path_url:
             return "--".join(
-                (self.filename, request.method, request.body.decode("ascii"))
-            )
-        if "?" in request.path:
-            return "--".join(
-                (self.filename, request.method, request.path.split("?", 1)[-1])
+                (self.filename, request.method, request.path_url.split("?", 1)[-1])
             )
         return None
 
@@ -110,40 +108,43 @@ def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
     filename = os.path.join(DATA_TEST_BASE, path.replace("/", "-"))
     url = "/".join((domain, path, ""))
     with open(filename, "rb") as handle:
-        httpretty.register_uri(
-            httpretty.GET,
+        responses.add_callback(
+            responses.GET,
             url,
-            body=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth),
             content_type="application/json",
         )
-        httpretty.register_uri(
-            httpretty.POST,
+        responses.add_callback(
+            responses.POST,
             url,
-            body=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth),
             content_type="application/json",
         )
-        httpretty.register_uri(
-            httpretty.DELETE,
+        responses.add_callback(
+            responses.DELETE,
             url,
-            body=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth),
             content_type="application/json",
         )
 
 
-def raise_error(request, uri, headers):
+def raise_error(request):
     """Raise IOError."""
     # pylint: disable=W0613
     raise IOError("Some error")
 
 
-def register_error(path, code, domain="http://127.0.0.1:8000/api", body=None):
+def register_error(path, code, domain="http://127.0.0.1:8000/api", **kwargs):
     """Simplified URL error registration."""
     url = "/".join((domain, path, ""))
-    httpretty.register_uri(httpretty.GET, url, body=body, status=code)
+    if "callback" in kwargs:
+        responses.add_callback(responses.GET, url, **kwargs)
+    else:
+        responses.add(responses.GET, url, status=code, **kwargs)
 
 
 def register_uris():
-    """Register URIs for httpretty."""
+    """Register URIs for responses."""
     paths = (
         "changes",
         "projects",
@@ -182,18 +183,18 @@ def register_uris():
     register_error("projects/denied", 403)
     register_error("projects/throttled", 429)
     register_error("projects/error", 500)
-    register_error("projects/io", 500, body=raise_error)
+    register_error("projects/io", 500, callback=raise_error)
 
 
 class APITest(TestCase):
     """Base class for API testing."""
 
     def setUp(self):
-        """Enable httpretty and register urls."""
-        httpretty.enable()
+        """Enable responses and register urls."""
+        responses.mock.start()
         register_uris()
 
     def tearDown(self):
-        """Disable httpretty."""
-        httpretty.disable()
-        httpretty.reset()
+        """Disable responses."""
+        responses.mock.stop()
+        responses.mock.reset()
