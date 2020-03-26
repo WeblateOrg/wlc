@@ -1,5 +1,4 @@
 -r requirements.txt
-argcomplete
 multipart
 pre-commit
 pytest

@@ -26,6 +26,7 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime
 
+import argcomplete
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
 
@@ -75,12 +76,7 @@ def get_parser():
     for command in COMMANDS.values():
         command.add_parser(subparser)
 
-    try:
-        import argcomplete
-
-        argcomplete.autocomplete(parser)
-    except ImportError:
-        pass
+    argcomplete.autocomplete(parser)
 
     return parser
 

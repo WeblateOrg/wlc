@@ -3,6 +3,7 @@
 
 * Not yet released.
 * Mark Python 3.8 as supported.
+* Added support for shell completion.
 
 1.2
 ---
