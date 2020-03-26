@@ -376,7 +376,7 @@ class TestCommands(APITest):
 
     def test_upload(self):
         """Translation file uploads."""
-        msg = "Error: Failed to upload translations!\n\n"
+        msg = "Error: Failed to upload translations!\nNot found.\n"
 
         with self.get_text_io_wrapper("test upload data") as stdin:
             output = execute(["upload", "hello/weblate/cs"], stdin=stdin)
