@@ -54,7 +54,7 @@ class Weblate:
     @staticmethod
     def process_error(error):
         """Raise WeblateException for known HTTP errors."""
-        if type(error) is requests.HTTPError:
+        if isinstance(error, requests.HTTPError):
             status_code = error.response.status_code
 
             if status_code == 429:
