@@ -28,7 +28,7 @@ from requests.exceptions import RequestException
 
 import wlc
 from wlc.config import WeblateConfig
-from wlc.main import main
+from wlc.main import Version, main
 
 from .test_base import APITest
 
@@ -181,6 +181,13 @@ class TestOutput(APITest):
         """Test projects printing."""
         output = execute(["--format", "html", "list-projects"])
         self.assertIn("Hello", output)
+
+    def test_json_encoder(self):
+        """Test JSON encoder."""
+        output = StringIO()
+        cmd = Version(args=[], config=WeblateConfig(), stdout=output)
+        with self.assertRaises(TypeError):
+            cmd.print_json(self)
 
 
 class TestCommands(APITest):
