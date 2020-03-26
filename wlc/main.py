@@ -96,7 +96,7 @@ class DateTimeEncoder(json.JSONEncoder):
         if isinstance(o, datetime):
             return o.isoformat()
 
-        return super().default(self, o)
+        return super().default(o)
 
 
 def sort_key(value):
