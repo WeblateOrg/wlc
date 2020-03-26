@@ -4,6 +4,9 @@
 * Not yet released.
 * Mark Python 3.8 as supported.
 * Added support for shell completion.
+* Improved error messages to give better understanding of actual problem.
+* Fixed repr() and str() behavior on returned objects.
+* Added support for filtering components and translations.
 
 1.2
 ---
