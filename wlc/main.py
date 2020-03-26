@@ -420,13 +420,6 @@ class ListTranslations(ComponentCommand):
         else:
             self.print(list(self.wlc.list_translations()))
 
-    def get_object(self):
-        """Return component object."""
-        obj = super().get_object()
-        if not isinstance(obj, wlc.Component):
-            raise CommandError("Not supported")
-        return obj
-
 
 @register_command
 class Show(ObjectCommand):
