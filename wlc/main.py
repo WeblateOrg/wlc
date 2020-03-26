@@ -387,13 +387,6 @@ class ListComponents(ProjectCommand):
         else:
             self.print(list(self.wlc.list_components()))
 
-    def get_object(self):
-        """Return component object."""
-        obj = super().get_object()
-        if not isinstance(obj, wlc.Project):
-            raise CommandError("Not supported")
-        return obj
-
 
 @register_command
 class ListLanguages(Command):
