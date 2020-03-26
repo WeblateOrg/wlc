@@ -218,6 +218,9 @@ class TestCommands(APITest):
         output = execute(["list-components", "hello"])
         self.assertIn("/hello/weblate", output)
 
+        output = execute(["list-components", "hello/weblate"], expected=1)
+        self.assertIn("Not supported", output)
+
     def test_list_translations(self):
         """Translations listing."""
         output = execute(["list-translations"])
