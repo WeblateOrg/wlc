@@ -34,9 +34,6 @@ with open("README.rst") as handle:
 with open("requirements.txt") as handle:
     REQUIRES = handle.read().split()
 
-with open("requirements-test.txt") as handle:
-    REQUIRES_TEST = handle.read().split()[2:]
-
 setup(
     name="wlc",
     version=VERSION,
@@ -79,6 +76,4 @@ setup(
     ],
     entry_points={"console_scripts": ["wlc = wlc.main:main"]},
     python_requires=">=3.5",
-    setup_requires=["pytest-runner"],
-    tests_require=REQUIRES_TEST,
 )
