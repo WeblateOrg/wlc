@@ -38,6 +38,21 @@ class WeblateException(Exception):
     """Generic error."""
 
 
+class WeblateThrottlingError(WeblateException):
+    def __init__(self):
+        super().__init__("Throttling on the server")
+
+
+class WeblatePermissionError(WeblateException):
+    def __init__(self):
+        super().__init__("You don't have permission to access this object")
+
+
+class WeblateDeniedError(WeblateException):
+    def __init__(self):
+        super().__init__("Access denied, API key is wrong or missing")
+
+
 class Weblate:
     """Weblate API wrapper object."""
 
@@ -58,16 +73,17 @@ class Weblate:
             status_code = error.response.status_code
 
             if status_code == 429:
-                raise WeblateException("Throttling on the server")
+                raise WeblateThrottlingError()
             if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "
                     "(maybe operation is not supported on the server)"
                 )
             if status_code == 403:
-                raise WeblateException(
-                    "You don't have permission to access this object"
-                )
+                raise WeblatePermissionError()
+
+            if status_code == 401:
+                raise WeblateDeniedError()
 
             reason = error.response.reason
             raise WeblateException("HTTP error {0}: {1}".format(status_code, reason))

@@ -7,6 +7,7 @@
 * Improved error messages to give better understanding of actual problem.
 * Fixed repr() and str() behavior on returned objects.
 * Added support for filtering components and translations.
+* Better report errors when accessing API.
 
 1.2
 ---
