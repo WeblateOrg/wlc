@@ -1,7 +1,7 @@
 1.3
 ---
 
-* Not yet released.
+* Released on 6th May 2020.
 * Mark Python 3.8 as supported, dropped support for Python 3.5.
 * Added support for shell completion.
 * Improved error messages to give better understanding of actual problem.
