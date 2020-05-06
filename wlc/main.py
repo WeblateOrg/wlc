@@ -758,6 +758,19 @@ def main(settings=None, stdout=None, stdin=None, args=None):
     try:
         command.run()
         return 0
+    except wlc.WeblateDeniedError:
+        url, key = config.get_url_key()
+        if key:
+            print(
+                f"API key configured for {url} was rejected by server.", file=sys.stderr
+            )
+        else:
+            print(f"Missing API key for {url}.", file=sys.stderr)
+            print(
+                f"The API key can be specified by --key or in the configuration file.",
+                file=sys.stderr,
+            )
+        return 1
     except (CommandError, wlc.WeblateException) as error:
         print("Error: {0}".format(error), file=sys.stderr)
         return 1
