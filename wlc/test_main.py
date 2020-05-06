@@ -416,3 +416,20 @@ class TestCommands(APITest):
     def get_text_io_wrapper(string):
         """Create a text io wrapper from a string."""
         return TextIOWrapper(BytesIO(string.encode()), "utf8")
+
+
+class TestErrors(APITest):
+    def test_commandline_missing_key(self):
+        """Configuration using commandline."""
+        output = execute(
+            ["--url", "http://denied.example.com", "list-projects"], expected=1
+        )
+        self.assertIn("Missing API key", output)
+
+    def test_commandline_wrong_key(self):
+        """Configuration using commandline."""
+        output = execute(
+            ["--key", "x", "--url", "http://denied.example.com", "list-projects"],
+            expected=1,
+        )
+        self.assertIn("was rejected by server", output)

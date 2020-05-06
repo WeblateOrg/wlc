@@ -187,6 +187,7 @@ def register_uris():
     register_error("projects/error", 500)
     register_error("projects/io", 500, callback=raise_error)
     register_error("projects/bug", 500, callback=raise_error)
+    register_error("projects", 401, domain="http://denied.example.com")
 
 
 class APITest(TestCase):
