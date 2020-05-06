@@ -2,7 +2,7 @@
 ---
 
 * Not yet released.
-* Mark Python 3.8 as supported.
+* Mark Python 3.8 as supported, dropped support for Python 3.5.
 * Added support for shell completion.
 * Improved error messages to give better understanding of actual problem.
 * Fixed repr() and str() behavior on returned objects.
