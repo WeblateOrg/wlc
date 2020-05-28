@@ -555,12 +555,10 @@ class Statistics(LazyObject):
 
     PARAMS = (
         "failing_percent",
-        "url",
         "translated_percent",
         "total_words",
         "failing",
         "translated_words",
-        "url_translate",
         "fuzzy_percent",
         "recent_changes",
         "translated",
