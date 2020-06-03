@@ -397,9 +397,10 @@ class Project(LazyObject, RepoObjectMixin):
         """Return statistics for translation."""
         self.ensure_loaded("statistics_url")
         data = self.weblate.get(self._attribs["statistics_url"])
-        return Statistics(
-            weblate=self.weblate, url=self._attribs["statistics_url"], **data
-        )
+        # Changed in Weblate 4.1:
+        if "url" not in data:
+            data["url"] = self._attribs["statistics_url"]
+        return Statistics(weblate=self.weblate, **data)
 
     def languages(self):
         """Return language statistics for component."""
@@ -522,9 +523,10 @@ class Translation(LazyObject, RepoObjectMixin):
         """Return statistics for translation."""
         self.ensure_loaded("statistics_url")
         data = self.weblate.get(self._attribs["statistics_url"])
-        return TranslationStatistics(
-            weblate=self.weblate, url=self._attribs["statistics_url"], **data
-        )
+        # Changed in Weblate 4.1:
+        if "url" not in data:
+            data["url"] = self._attribs["statistics_url"]
+        return TranslationStatistics(weblate=self.weblate, **data)
 
     def changes(self):
         """List changes in the project."""
