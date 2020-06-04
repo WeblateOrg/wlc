@@ -572,6 +572,7 @@ class Statistics(LazyObject):
         "total",
         "last_change",
         "name",
+        "url",
     )
 
 
