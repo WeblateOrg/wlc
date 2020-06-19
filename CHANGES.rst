@@ -1,7 +1,8 @@
 1.5
 ---
 
-* Not yet released.
+* Released on 19th June 2020.
+* Fixed compatibility of some API calls with Weblate 4.1.
 
 1.4
 ---
