@@ -27,6 +27,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 
 import argcomplete
+
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
 
@@ -767,7 +768,7 @@ def main(settings=None, stdout=None, stdin=None, args=None):
         else:
             print(f"Missing API key for {url}.", file=sys.stderr)
             print(
-                f"The API key can be specified by --key or in the configuration file.",
+                "The API key can be specified by --key or in the configuration file.",
                 file=sys.stderr,
             )
         return 1
