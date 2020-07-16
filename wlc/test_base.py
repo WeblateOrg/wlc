@@ -24,7 +24,6 @@ from unittest import TestCase
 
 import responses
 from requests.exceptions import RequestException
-
 from requests_toolbelt.multipart import decoder
 
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
