@@ -66,7 +66,13 @@ class ResponseHandler:
                 "multipart/form-data"
             ):
                 return self.get_multipart_filename(content_type, request)
-            return "--".join((self.filename, request.method, request.body or ""))
+            return "--".join(
+                (
+                    self.filename,
+                    request.method,
+                    request.body.decode() if request.body else "",
+                )
+            )
         if "?" in request.path_url:
             return "--".join(
                 (self.filename, request.method, request.path_url.split("?", 1)[-1])

@@ -111,14 +111,15 @@ class Weblate:
         if self.key:
             headers["Authorization"] = "Token {}".format(self.key)
         verify_ssl = self._should_verify_ssl(path)
+        if files:
+            # mulitpart/form upload
+            kwargs = {"data": params}
+        else:
+            # JSON params to handle complex structures
+            kwargs = {"json": params}
         try:
             response = requests.request(
-                method,
-                path,
-                headers=headers,
-                data=params,
-                verify=verify_ssl,
-                files=files,
+                method, path, headers=headers, verify=verify_ssl, files=files, **kwargs,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as error:

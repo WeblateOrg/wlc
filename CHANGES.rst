@@ -2,6 +2,7 @@
 ---
 
 * Not yet released.
+* Post payload as JSON to allow handling complex data structures.
 
 1.5
 ---
