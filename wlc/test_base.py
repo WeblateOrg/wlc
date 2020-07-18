@@ -57,6 +57,16 @@ class ResponseHandler:
 
         return self.body
 
+    def format_body(self, body):
+        if not body:
+            return ""
+        body = body.decode()
+        body = (
+            body.replace(": ", "=").replace("{", "").replace("}", "").replace('"', "")
+        )
+
+        return body
+
     def get_filename(self, request):
         """Return filename for given request."""
         if request.method != "GET":
@@ -67,11 +77,7 @@ class ResponseHandler:
             ):
                 return self.get_multipart_filename(content_type, request)
             return "--".join(
-                (
-                    self.filename,
-                    request.method,
-                    request.body.decode() if request.body else "",
-                )
+                (self.filename, request.method, self.format_body(request.body))
             )
         if "?" in request.path_url:
             return "--".join(
