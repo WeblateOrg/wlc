@@ -135,6 +135,30 @@ class WeblateTest(APITest):
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
 
+    def test_create_project(self):
+        resp = Weblate().create_project(
+            "Hello", "hello", "http://example.com/", "Malayalam", "ml"
+        )
+        self.assertIn("'name': 'Hello', 'slug': 'hello'", str(resp))
+
+    def test_create_component(self):
+        resp = Weblate().create_component(
+            project="hello",
+            branch="master",
+            file_format="po",
+            filemask="po/*.po",
+            git_export="",
+            license="",
+            license_url="",
+            name="Weblate",
+            slug="weblate",
+            repo="file:///home/nijel/work/weblate-hello",
+            template="",
+            new_base="",
+            vcs="git",
+        )
+        self.assertIn("'name': 'Weblate', 'slug': 'weblate'", str(resp))
+
 
 class ObjectTest:
     """Base class for objects testing."""
@@ -254,6 +278,25 @@ class ProjectTest(ObjectTest, APITest):
         obj = self.get()
         stats = obj.statistics()
         self.assertEqual(stats["name"], "Hello")
+
+    def test_create_component(self):
+        """Component creation test."""
+        obj = self.get()
+        resp = obj.create_component(
+            branch="master",
+            file_format="po",
+            filemask="po/*.po",
+            git_export="",
+            license="",
+            license_url="",
+            name="Weblate",
+            slug="weblate",
+            repo="file:///home/nijel/work/weblate-hello",
+            template="",
+            new_base="",
+            vcs="git",
+        )
+        self.assertIn("'name': 'Weblate', 'slug': 'weblate'", str(resp))
 
 
 class ComponentTest(ObjectTest, APITest):
