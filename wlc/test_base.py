@@ -70,7 +70,6 @@ class ResponseHandler:
             .replace("/", ":")
             .replace(", ", "--")
         )
-
         return body
 
     def get_filename(self, request):
@@ -166,31 +165,32 @@ def register_uris():
     """Register URIs for responses."""
     paths = (
         "changes",
-        "projects",
         "components",
-        "translations",
+        "components/hello/android",
+        "components/hello/weblate",
+        "components/hello/weblate/changes",
+        "components/hello/weblate/lock",
+        "components/hello/weblate/repository",
+        "components/hello/weblate/statistics",
+        "components/hello/weblate/translations",
+        "languages",
+        "projects",
+        "projects/empty",
+        "projects/empty/components",
         "projects/hello",
         "projects/hello/changes",
         "projects/hello/components",
-        "projects/hello/statistics",
         "projects/hello/languages",
-        "projects/empty",
-        "projects/empty/components",
-        "projects/invalid",
-        "components/hello/weblate",
-        "components/hello/android",
-        "translations/hello/weblate/cs",
         "projects/hello/repository",
-        "components/hello/weblate/repository",
-        "components/hello/weblate/changes",
+        "projects/hello/statistics",
+        "projects/invalid",
+        "translations",
+        "translations/hello/weblate/cs",
+        "translations/hello/weblate/cs/changes",
         "translations/hello/weblate/cs/file",
         "translations/hello/weblate/cs/repository",
-        "translations/hello/weblate/cs/changes",
-        "components/hello/weblate/statistics",
         "translations/hello/weblate/cs/statistics",
-        "components/hello/weblate/translations",
-        "components/hello/weblate/lock",
-        "languages",
+        "translations/hello/android/en/units",
     )
     for path in paths:
         register_uri(path)
