@@ -29,6 +29,7 @@ from wlc import (
     Translation,
     Weblate,
     WeblateException,
+    IsNotMonolingual,
 )
 
 from .test_base import APITest
@@ -134,6 +135,27 @@ class WeblateTest(APITest):
         obj = Weblate().get_object("hello")
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
+
+    def test_add_source_string_to_bilingual_component(self):
+        with self.assertRaises(IsNotMonolingual):
+            Weblate().add_source_string(
+                project="hello",
+                component="weblate",
+                msgid="test-bilingual",
+                msgstr="test it good"
+            )
+
+    def test_add_source_string_to_monolingual_component(self):
+        resp = Weblate().add_source_string(
+            project="hello",
+            component="android",
+            msgid="test-monolingual",
+            msgstr="test-me"
+        )
+        # ensure it is definitely monolingual
+        self.assertEqual(resp["component"]["template"], "android/values/strings.xml")
+        self.assertEqual(resp["component"]["slug"], "android")
+        self.assertEqual(resp["id"], 1646)
 
 
 class ObjectTest:

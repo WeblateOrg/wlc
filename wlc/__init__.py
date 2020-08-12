@@ -53,6 +53,13 @@ class WeblateDeniedError(WeblateException):
         super().__init__("Access denied, API key is wrong or missing")
 
 
+class IsNotMonolingual(WeblateException):
+    def __init__(self):
+        super().__init__(
+            "Source strings can only be added to monolingual components"
+        )
+
+
 class Weblate:
     """Weblate API wrapper object."""
 
@@ -131,6 +138,10 @@ class Weblate:
         """Perform POST request on the API."""
         return self.request("post", path, kwargs)
 
+    def _post_factory(self, prefix, path, kwargs):
+        resp = self.post("/".join((prefix, path, "")), **kwargs)
+        return resp
+
     def get(self, path):
         """Perform GET request on the API."""
         return self.request("get", path)
@@ -194,6 +205,22 @@ class Weblate:
     def list_languages(self):
         """List languages in the instance."""
         return self.list_factory("languages/", Language)
+
+    def _is_component_monolingual(self, path):
+        comp = self.get_component(path)
+        if comp["template"]:
+            return True
+        return False
+
+    def add_source_string(self, project, component, msgid, msgstr):
+        """Adds a source string to a monolingual base file"""
+        source_language = self.get_project(project)["source_language"]["code"]
+        is_monolingual = self._is_component_monolingual(f"{project}/{component}")
+        if not is_monolingual:
+            raise IsNotMonolingual()
+        path = f"{project}/{component}/{source_language}/units"
+        payload = {"key": msgid, "value": msgstr}
+        return self._post_factory("translations", path, payload)
 
     @staticmethod
     def _should_verify_ssl(path):
