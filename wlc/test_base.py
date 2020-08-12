@@ -62,7 +62,12 @@ class ResponseHandler:
             return ""
         body = body.decode()
         body = (
-            body.replace(": ", "=").replace("{", "").replace("}", "").replace('"', "")
+            body.replace(": ", "=")
+            .replace("{", "")
+            .replace("}", "")
+            .replace('"', "")
+            .replace("://", "-::")
+            .replace("/", ":")
         )
 
         return body
