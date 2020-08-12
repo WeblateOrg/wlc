@@ -139,6 +139,7 @@ class Weblate:
         return self.request("post", path, kwargs)
 
     def _post_factory(self, prefix, path, kwargs):
+        """Wrapper for posting objects."""
         resp = self.post("/".join((prefix, path, "")), **kwargs)
         return resp
 
@@ -207,6 +208,7 @@ class Weblate:
         return self.list_factory("languages/", Language)
 
     def _is_component_monolingual(self, path):
+        """ Determines if a component is configured monolinugally"""
         comp = self.get_component(path)
         if comp["template"]:
             return True
@@ -443,10 +445,6 @@ class Project(LazyObject, RepoObjectMixin):
     def delete(self):
         self.weblate.raw_request("delete", self._url)
 
-    def add_source_string(self, component, msgid, msgstr):
-        """Adds a source string to a monolingual base file"""
-        return self.weblate.add_source_string(self.slug, component, msgid, msgstr)
-
 
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
@@ -507,6 +505,12 @@ class Component(LazyObject, RepoObjectMixin):
 
     def delete(self):
         self.weblate.raw_request("delete", self._url)
+
+    def add_source_string(self, msgid, msgstr):
+        """Adds a source string to a monolingual base file"""
+        return self.weblate.add_source_string(
+            project=self.project.slug, component=self.slug, msgid=msgid, msgstr=msgstr
+        )
 
 
 class Translation(LazyObject, RepoObjectMixin):
