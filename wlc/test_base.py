@@ -62,10 +62,14 @@ class ResponseHandler:
             return ""
         body = body.decode()
         body = (
-            body.replace(": ", "=").replace("{", "").replace("}", "").replace('"', "")
+            body.replace(": ", "=")
+            .replace("{", "")
+            .replace("}", "")
+            .replace('"', "")
+            .replace("://", "-::")
+            .replace("/", ":")
+            .replace(", ", "--")
         )
-        # for POST requests with multiple kwargs
-        body = body.replace(", ", "--")
         return body
 
     def get_filename(self, request):

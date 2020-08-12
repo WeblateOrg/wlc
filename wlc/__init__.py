@@ -93,7 +93,14 @@ class Weblate:
                 raise WeblateDeniedError()
 
             reason = error.response.reason
-            raise WeblateException("HTTP error {0}: {1}".format(status_code, reason))
+            error_string = ""
+            try:
+                error_string = str(error.response.json())
+            except Exception:
+                pass
+            raise WeblateException(
+                "HTTP error {0}: {1} {2}".format(status_code, reason, error_string)
+            )
 
     def raw_request(self, method, path, params=None, files=None):
         """Construct request object and returns raw content."""
@@ -223,6 +230,28 @@ class Weblate:
         path = f"{project}/{component}/{source_language}/units"
         payload = {"key": msgid, "value": msgstr}
         return self._post_factory("translations", path, payload)
+
+    def create_project(
+        self, name, slug, website, source_language_name=None, source_language_code=None
+    ):
+        """Create a new project in the instance."""
+        data = {
+            "name": name,
+            "slug": slug,
+            "web": website,
+        }
+        if source_language_name and source_language_code:
+            data["source_language"] = {
+                "name": source_language_name,
+                "code": source_language_code,
+            }
+
+        return self.post("projects/", **data)
+
+    def create_component(self, project, **kwargs):
+        """Create a new component for project in the instance."""
+
+        return self.post("projects/{}/components/".format(project), **kwargs)
 
     @staticmethod
     def _should_verify_ssl(path):
@@ -444,6 +473,9 @@ class Project(LazyObject, RepoObjectMixin):
 
     def delete(self):
         self.weblate.raw_request("delete", self._url)
+
+    def create_component(self, **kwargs):
+        return self.weblate.create_component(self.slug, **kwargs)
 
 
 class Component(LazyObject, RepoObjectMixin):
