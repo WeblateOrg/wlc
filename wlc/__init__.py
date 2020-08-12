@@ -443,6 +443,10 @@ class Project(LazyObject, RepoObjectMixin):
     def delete(self):
         self.weblate.raw_request("delete", self._url)
 
+    def add_source_string(self, component, msgid, msgstr):
+        """Adds a source string to a monolingual base file"""
+        return self.weblate.add_source_string(self.slug, component, msgid, msgstr)
+
 
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
