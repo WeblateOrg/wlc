@@ -251,6 +251,11 @@ class Weblate:
     def create_component(self, project, **kwargs):
         """Create a new component for project in the instance."""
 
+        required_keys = ["name", "slug", "file_format", "filemask", "repo"]
+        for key in required_keys:
+            if key not in kwargs:
+                raise WeblateException("{} is required.".format(key))
+
         return self.post("projects/{}/components/".format(project), **kwargs)
 
     @staticmethod
