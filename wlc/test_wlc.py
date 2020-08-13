@@ -161,7 +161,11 @@ class WeblateTest(APITest):
         resp = Weblate().create_project(
             "Hello", "hello", "http://example.com/", "Malayalam", "ml"
         )
-        self.assertIn("'name': 'Hello', 'slug': 'hello'", str(resp))
+        self.assertEqual("Hello", resp["name"])
+        self.assertEqual("hello", resp["slug"])
+        self.assertEqual("http://example.com/", resp["web"])
+        self.assertEqual("Malayalam", resp["source_language"]["name"])
+        self.assertEqual("ml", resp["source_language"]["code"])
 
     def test_create_component(self):
         resp = Weblate().create_component(
@@ -179,7 +183,39 @@ class WeblateTest(APITest):
             new_base="",
             vcs="git",
         )
-        self.assertIn("'name': 'Weblate', 'slug': 'weblate'", str(resp))
+        self.assertEqual("Hello", resp["project"]["name"])
+        self.assertEqual("hello", resp["project"]["slug"])
+        self.assertEqual("Weblate", resp["name"])
+        self.assertEqual("weblate", resp["slug"])
+        self.assertEqual("file:///home/nijel/work/weblate-hello", resp["repo"])
+        self.assertEqual("http://example.com/git/hello/weblate/", resp["git_export"])
+        self.assertEqual("master", resp["branch"])
+        self.assertEqual("po/*.po", resp["filemask"])
+        self.assertEqual("git", resp["vcs"])
+        self.assertEqual("po", resp["file_format"])
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(project="hello")
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(project="hello", name="Weblate")
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(project="hello", name="Weblate", slug="weblate")
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(
+                project="hello", name="Weblate", slug="weblate", file_format="po"
+            )
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(
+                project="hello",
+                name="Weblate",
+                slug="weblate",
+                file_format="po",
+                filemask="po/*.po",
+            )
 
 
 class ObjectTest:
@@ -318,7 +354,16 @@ class ProjectTest(ObjectTest, APITest):
             new_base="",
             vcs="git",
         )
-        self.assertIn("'name': 'Weblate', 'slug': 'weblate'", str(resp))
+        self.assertEqual("Hello", resp["project"]["name"])
+        self.assertEqual("hello", resp["project"]["slug"])
+        self.assertEqual("Weblate", resp["name"])
+        self.assertEqual("weblate", resp["slug"])
+        self.assertEqual("file:///home/nijel/work/weblate-hello", resp["repo"])
+        self.assertEqual("http://example.com/git/hello/weblate/", resp["git_export"])
+        self.assertEqual("master", resp["branch"])
+        self.assertEqual("po/*.po", resp["filemask"])
+        self.assertEqual("git", resp["vcs"])
+        self.assertEqual("po", resp["file_format"])
 
 
 class ComponentTest(ObjectTest, APITest):
