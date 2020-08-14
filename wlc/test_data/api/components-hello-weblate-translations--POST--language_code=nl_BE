@@ -1,0 +1,52 @@
+{
+ "data": {
+  "language": {
+   "code": "nl_BE",
+   "name": "Flemish",
+   "plural": {
+    "id": 305,
+    "source": 0,
+    "number": 2,
+    "formula": "n != 1",
+    "type": 1
+   },
+   "aliases": [
+    "swe"
+   ],
+   "direction": "ltr",
+   "web_url": "http://127.0.0.1:8000/languages/nl_BE/",
+   "url": "http://127.0.0.1:8000/api/languages/nl_BE/",
+   "statistics_url": "http://127.0.0.1:8000/api/languages/nl_BE/statistics/"
+  },
+  "language_code": "nl_BE",
+  "id": 827,
+  "filename": "po/sv.po",
+  "revision": "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a",
+  "web_url": "http://127.0.0.1:8000/projects/hello/weblate/nl_BE/",
+  "share_url": "http://127.0.0.1:8000/engage/hello/nl_BE/",
+  "translate_url": "http://127.0.0.1:8000/translate/hello/weblate/nl_BE/",
+  "url": "http://127.0.0.1:8000/api/translations/hello/weblate/nl_BE/",
+  "is_template": false,
+  "is_source": false,
+  "total": 0,
+  "total_words": 0,
+  "translated": 0,
+  "translated_words": 0,
+  "translated_percent": 0.0,
+  "fuzzy": 0,
+  "fuzzy_words": 0,
+  "fuzzy_percent": 0.0,
+  "failing_checks": 0,
+  "failing_checks_words": 0,
+  "failing_checks_percent": 0.0,
+  "have_suggestion": 0,
+  "have_comment": 0,
+  "last_change": null,
+  "last_author": null,
+  "repository_url": "http://127.0.0.1:8000/api/translations/hello/weblate/nl_BE/repository/",
+  "file_url": "http://127.0.0.1:8000/api/translations/hello/weblate/nl_BE/file/",
+  "statistics_url": "http://127.0.0.1:8000/api/translations/hello/weblate/nl_BE/statistics/",
+  "changes_list_url": "http://127.0.0.1:8000/api/translations/hello/weblate/nl_BE/changes/",
+  "units_list_url": "http://127.0.0.1:8000/api/translations/hello/weblate/nl_BE/units/"
+ }
+}
