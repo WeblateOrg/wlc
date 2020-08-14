@@ -512,6 +512,12 @@ class Component(LazyObject, RepoObjectMixin):
         self.ensure_loaded("translations_url")
         return self.weblate.list_translations(self._attribs["translations_url"])
 
+    def add_translation(self, language):
+        """Creates a new translation in the component"""
+        self.ensure_loaded("translations_url")
+        return self.weblate.post(path=self._attribs["translations_url"],
+                                 language_code=language)
+
     def statistics(self):
         """Return statistics for component."""
         self.ensure_loaded("statistics_url")

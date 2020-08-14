@@ -382,6 +382,14 @@ class ComponentTest(ObjectTest, APITest):
         self.assertEqual(len(lst), 33)
         self.assertIsInstance(lst[0], Translation)
 
+    def test_add_translation(self):
+        """Perform verification that the correct endpoint is accessed"""
+        obj = self.get()
+        resp = obj.add_translation("sv")
+        self.assertEqual(resp["data"]["id"], 827)
+        self.assertEqual(resp["data"]["revision"],
+                         "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a")
+
     def test_statistics(self):
         """Component statistics test."""
         obj = self.get()
