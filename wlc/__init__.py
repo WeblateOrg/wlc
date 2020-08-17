@@ -23,6 +23,8 @@ from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
 
 __version__ = "1.6"
 
@@ -55,21 +57,49 @@ class WeblateDeniedError(WeblateException):
 
 class IsNotMonolingual(WeblateException):
     def __init__(self):
-        super().__init__(
-            "Source strings can only be added to monolingual components"
-        )
+        super().__init__("Source strings can only be added to monolingual components")
 
 
 class Weblate:
     """Weblate API wrapper object."""
 
-    def __init__(self, key="", url=API_URL, config=None):
-        """Create the object, storing key and API url."""
+    def __init__(
+        self,
+        key="",
+        url=API_URL,
+        config=None,
+        retries=0,
+        status_forcelist=None,
+        method_whitelist=None,
+        backoff_factor=0,
+    ):
+        """Create the object, storing key, API url and requests retry args."""
         if config is not None:
             self.url, self.key = config.get_url_key()
+            (
+                self.retries,
+                self.status_forcelist,
+                self.method_whitelist,
+                self.backoff_factor,
+            ) = config.get_retry_options()
         else:
             self.key = key
             self.url = url
+            self.retries = retries
+            self.status_forcelist = status_forcelist
+            if method_whitelist is None:
+                self.method_whitelist = [
+                    "HEAD",
+                    "GET",
+                    "PUT",
+                    "DELETE",
+                    "OPTIONS",
+                    "TRACE",
+                ]
+            else:
+                self.method_whitelist = method_whitelist
+            self.backoff_factor = backoff_factor
+
         if not self.url.endswith("/"):
             self.url += "/"
 
@@ -132,7 +162,16 @@ class Weblate:
             # JSON params to handle complex structures
             kwargs = {"json": params}
         try:
-            response = requests.request(
+            req = requests.Session()
+            retries = Retry(
+                total=self.retries,
+                backoff_factor=self.backoff_factor,
+                status_forcelist=self.status_forcelist,
+                method_whitelist=self.method_whitelist,
+            )
+            for protocol in ["http", "https"]:
+                req.mount(f"{protocol}://", HTTPAdapter(max_retries=retries))
+            response = req.request(
                 method, path, headers=headers, verify=verify_ssl, files=files, **kwargs,
             )
             response.raise_for_status()
@@ -147,8 +186,7 @@ class Weblate:
 
     def _post_factory(self, prefix, path, kwargs):
         """Wrapper for posting objects."""
-        resp = self.post("/".join((prefix, path, "")), **kwargs)
-        return resp
+        return self.post("/".join((prefix, path, "")), **kwargs)
 
     def get(self, path):
         """Perform GET request on the API."""
@@ -215,14 +253,14 @@ class Weblate:
         return self.list_factory("languages/", Language)
 
     def _is_component_monolingual(self, path):
-        """ Determines if a component is configured monolinugally"""
+        """Determines if a component is configured monolinugally."""
         comp = self.get_component(path)
         if comp["template"]:
             return True
         return False
 
     def add_source_string(self, project, component, msgid, msgstr):
-        """Adds a source string to a monolingual base file"""
+        """Adds a source string to a monolingual base file."""
         source_language = self.get_project(project)["source_language"]["code"]
         is_monolingual = self._is_component_monolingual(f"{project}/{component}")
         if not is_monolingual:
@@ -544,7 +582,7 @@ class Component(LazyObject, RepoObjectMixin):
         self.weblate.raw_request("delete", self._url)
 
     def add_source_string(self, msgid, msgstr):
-        """Adds a source string to a monolingual base file"""
+        """Adds a source string to a monolingual base file."""
         return self.weblate.add_source_string(
             project=self.project.slug, component=self.slug, msgid=msgid, msgstr=msgstr
         )

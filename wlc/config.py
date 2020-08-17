@@ -43,6 +43,12 @@ class WeblateConfig(RawConfigParser):
         self.add_section(self.section)
         self.set(self.section, "key", "")
         self.set(self.section, "url", wlc.API_URL)
+        self.set(self.section, "retries", 0)
+        self.set(self.section, "status_forcelist", None)
+        self.set(
+            self.section, "method_whitelist", "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET"
+        )
+        self.set(self.section, "backoff_factor", 0)
 
     def load(self, path=None):
         """Load configuration from XDG paths."""
@@ -71,3 +77,12 @@ class WeblateConfig(RawConfigParser):
             except NoOptionError:
                 key = ""
         return url, key
+
+    def get_retry_options(self):
+        retries = int(self.get(self.section, "retries"))
+        status_forcelist = self.get(self.section, "status_forcelist")
+        if status_forcelist is not None:
+            status_forcelist = [int(option) for option in status_forcelist.split(",")]
+        method_whitelist = self.get(self.section, "method_whitelist").split(",")
+        backoff_factor = float(self.get(self.section, "backoff_factor"))
+        return retries, status_forcelist, method_whitelist, backoff_factor
