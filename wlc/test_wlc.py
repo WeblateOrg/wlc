@@ -30,6 +30,7 @@ from wlc import (
     Weblate,
     WeblateException,
     IsNotMonolingual,
+    ContentExists,
 )
 
 from .test_base import APITest
@@ -381,6 +382,21 @@ class ComponentTest(ObjectTest, APITest):
         lst = list(obj)
         self.assertEqual(len(lst), 33)
         self.assertIsInstance(lst[0], Translation)
+
+    def test_add_translation(self):
+        """Perform verification that the correct endpoint is accessed"""
+        obj = self.get()
+        resp = obj.add_translation("nl_BE")
+        self.assertEqual(resp["data"]["id"], 827)
+        self.assertEqual(resp["data"]["revision"],
+                         "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a")
+
+    def test_add_existing_translation(self):
+        """Check that a ContentExists error is raised"""
+        with self.assertRaises(ContentExists):
+            obj = self.get()
+            obj.add_translation("sv")
+
 
     def test_statistics(self):
         """Component statistics test."""
