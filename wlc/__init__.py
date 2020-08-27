@@ -119,7 +119,12 @@ class Weblate:
             kwargs = {"json": params}
         try:
             response = requests.request(
-                method, path, headers=headers, verify=verify_ssl, files=files, **kwargs,
+                method,
+                path,
+                headers=headers,
+                verify=verify_ssl,
+                files=files,
+                **kwargs,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
