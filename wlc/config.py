@@ -52,12 +52,13 @@ class WeblateConfig(RawConfigParser):
                 yield win_path
 
         # Generic XDG paths
-        yield from load_config_paths("weblate", "weblate.ini")
+        yield from load_config_paths("weblate")
+        yield from load_config_paths("weblate.ini")
 
     def load(self, path=None):
         """Load configuration from XDG paths."""
         if path is None:
-            path = self.find_configs()
+            path = list(self.find_configs())
         self.read(path)
 
         # Try reading from current dir
