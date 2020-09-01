@@ -44,10 +44,20 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "key", "")
         self.set(self.section, "url", wlc.API_URL)
 
+    def find_configs(self):
+        # Handle Windows specifically
+        if "APPDATA" in os.environ:
+            win_path = os.path.join(os.environ["APPDATA"], "weblate.ini")
+            if os.path.exists(win_path):
+                yield win_path
+
+        # Generic XDG paths
+        yield from load_config_paths("weblate", "weblate.ini")
+
     def load(self, path=None):
         """Load configuration from XDG paths."""
         if path is None:
-            path = load_config_paths("weblate", "weblate.ini")
+            path = self.find_configs()
         self.read(path)
 
         # Try reading from current dir
