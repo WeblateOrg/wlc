@@ -69,7 +69,10 @@ def get_parser():
     parser.add_argument("--url", "-u", help="API URL")
     subparser = parser.add_subparsers(
         title="Command",
-        description="Specifies what action to perform.",
+        description="""
+Specifies what action to perform.
+Invoke with --help to get more detailed help.
+    """,
         dest="command",
     )
     subparser.required = True
