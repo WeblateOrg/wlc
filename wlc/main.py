@@ -259,7 +259,7 @@ class ObjectCommand(Command):
         )
         return parser
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return object."""
         if self.args.object:
             path = self.args.object[0]
@@ -270,6 +270,8 @@ class ObjectCommand(Command):
                 path = None
 
         if not path:
+            if blank:
+                return None
             raise CommandError("No object passed on command line!")
 
         return self.wlc.get_object(path)
@@ -288,9 +290,9 @@ class ObjectCommand(Command):
 class ProjectCommand(ObjectCommand):
     """Wrapper to allow only project objects."""
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return component object."""
-        obj = super().get_object()
+        obj = super().get_object(blank=blank)
         if not isinstance(obj, wlc.Project):
             raise CommandError("Not supported")
         return obj
@@ -303,9 +305,9 @@ class ProjectCommand(ObjectCommand):
 class ComponentCommand(ObjectCommand):
     """Wrapper to allow only component objects."""
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return component object."""
-        obj = super().get_object()
+        obj = super().get_object(blank=blank)
         if not isinstance(obj, wlc.Component):
             raise CommandError("This command is supported only at component level")
         return obj
@@ -318,9 +320,9 @@ class ComponentCommand(ObjectCommand):
 class TranslationCommand(ObjectCommand):
     """Wrapper to allow only translation objects."""
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return translation object."""
-        obj = super().get_object()
+        obj = super().get_object(blank=blank)
         if not isinstance(obj, wlc.Translation):
             raise CommandError("This command is supported only at translation level")
         return obj
@@ -451,10 +453,10 @@ class List(ObjectCommand):
 
     def run(self):
         """Executor."""
-        try:
-            obj = self.get_object()
+        obj = self.get_object(blank=True)
+        if obj:
             self.print(list(obj.list()))
-        except CommandError:
+        else:
             # Called without params
             lsproj = ListProjects(self.args, self.config, self.stdout)
             lsproj.run()
