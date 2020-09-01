@@ -70,7 +70,7 @@ def get_parser():
     subparser = parser.add_subparsers(
         title="subcommands",
         description="Subcommands specify what action to perform.",
-        dest="cmd",
+        dest="command",
     )
     subparser.required = True
 
@@ -755,7 +755,7 @@ def main(settings=None, stdout=None, stdin=None, args=None):
 
     config = parse_settings(args, settings)
 
-    command = COMMANDS[args.cmd](args, config, stdout, stdin)
+    command = COMMANDS[args.command](args, config, stdout, stdin)
     try:
         command.run()
         return 0
