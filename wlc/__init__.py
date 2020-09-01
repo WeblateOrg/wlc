@@ -59,12 +59,6 @@ class IsNotMonolingual(WeblateException):
     def __init__(self):
         super().__init__("Source strings can only be added to monolingual components")
 
-class ContentExists(WeblateException):
-    def __init__(self):
-        super().__init__(
-            "Conflict, content exists at this address. "
-            "Try updating the existing content instead."
-        )
 
 class Weblate:
     """Weblate API wrapper object."""
@@ -559,9 +553,6 @@ class Component(LazyObject, RepoObjectMixin):
     def add_translation(self, language):
         """Creates a new translation in the component"""
         self.ensure_loaded("translations_url")
-        language_list = [l["language"]["code"] for l in self.list()]
-        if language in language_list:
-            raise ContentExists()
         return self.weblate.post(path=self._attribs["translations_url"],
                                  language_code=language)
 
