@@ -1,8 +1,10 @@
 1.6
 ---
 
-* Not yet released.
+* Released on 1st September 2020.
 * Post payload as JSON to allow handling complex data structures.
+* Added support for finding configuration file on Windows in AppData dir.
+* Improved error reporting.
 
 1.5
 ---
