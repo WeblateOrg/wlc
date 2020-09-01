@@ -68,8 +68,8 @@ def get_parser():
     parser.add_argument("--key", "-k", help="API key")
     parser.add_argument("--url", "-u", help="API URL")
     subparser = parser.add_subparsers(
-        title="subcommands",
-        description="Subcommands specify what action to perform.",
+        title="Command",
+        description="Specifies what action to perform.",
         dest="command",
     )
     subparser.required = True
