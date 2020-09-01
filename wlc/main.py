@@ -27,6 +27,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 
 import argcomplete
+from requests.exceptions import RequestException
 
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
@@ -777,6 +778,9 @@ def main(settings=None, stdout=None, stdin=None, args=None):
                 file=sys.stderr,
             )
         return 1
+    except RequestException as error:
+        print(f"Request failed: {error}", file=sys.stderr)
+        return 10
     except (CommandError, wlc.WeblateException) as error:
         print("Error: {0}".format(error), file=sys.stderr)
         return 1
