@@ -2,6 +2,7 @@
 ---
 
 * Not yet released.
+* Fixed installation of wlc command line.
 
 1.6
 ---
