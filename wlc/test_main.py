@@ -383,6 +383,8 @@ class TestCommands(APITest):
 
     def test_download(self):
         """Translation file downloads."""
+        output = execute(["download"], expected=1)
+
         output = execute(["download", "hello/weblate/cs"])
         self.assertIn(b"Plural-Forms:", output)
 
