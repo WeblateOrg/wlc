@@ -30,8 +30,9 @@ from wlc.main import Version, main
 
 from .test_base import APITest
 
-TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test_data", "wlc")
-TEST_SECTION = os.path.join(os.path.dirname(__file__), "test_data", "section")
+TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
+TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
+TEST_SECTION = os.path.join(TEST_DATA, "section")
 
 
 def execute(args, settings=None, stdout=None, stdin=None, expected=0):
@@ -105,6 +106,15 @@ class TestSettings(APITest):
             settings=False,
         )
         self.assertIn("ACL", output)
+
+    def test_config_appdata(self):
+        """Configuration using custom config file section and key set."""
+        try:
+            os.environ["APPDATA"] = TEST_DATA
+            output = execute(["show", "acl"], settings=False)
+            self.assertIn("ACL", output)
+        finally:
+            del os.environ["APPDATA"]
 
     def test_config_cwd(self):
         """Test loading settings from current dir."""
