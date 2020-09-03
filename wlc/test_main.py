@@ -109,6 +109,7 @@ class TestSettings(APITest):
 
     def test_config_appdata(self):
         """Configuration using custom config file section and key set."""
+        output = execute(["show", "acl"], settings=False, expected=1)
         try:
             os.environ["APPDATA"] = TEST_DATA
             output = execute(["show", "acl"], settings=False)
