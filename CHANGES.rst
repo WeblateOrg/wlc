@@ -2,6 +2,7 @@
 ---
 
 * Not yet released.
+* Compatibility with Weblate 4.3 which moves source language from component to a project.
 
 1.7
 ---

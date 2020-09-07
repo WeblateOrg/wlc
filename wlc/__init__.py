@@ -212,6 +212,7 @@ class LazyObject(dict):
     """Object which supports deferred loading."""
 
     PARAMS = ()
+    OPTIONALS = set()
     MAPPINGS = {}
     ID = "url"
 
@@ -238,6 +239,8 @@ class LazyObject(dict):
     def _load_params(self, **kwargs):
         for param in self.PARAMS:
             if param in kwargs:
+                if param in self.OPTIONALS and param not in kwargs:
+                    continue
                 value = kwargs[param]
                 if value is not None and param in self.MAPPINGS:
                     if isinstance(value, str):
@@ -284,15 +287,19 @@ class LazyObject(dict):
         return self.__getattr__(name)
 
     def __len__(self):
-        return len(self.PARAMS)
+        return len(list(self.keys()))
 
     def keys(self):
         """Return list of attributes."""
-        return self.PARAMS
+        if not self._data:
+            self.refresh()
+        for param in self.PARAMS:
+            if param not in self.OPTIONALS or param in self._data:
+                yield param
 
     def items(self):
         """Iterator over attributes."""
-        for key in self.PARAMS:
+        for key in self.keys():
             yield key, self.__getattr__(key)
 
     def to_value(self):
@@ -391,6 +398,7 @@ class Project(LazyObject, RepoObjectMixin):
     """Project object."""
 
     PARAMS = ("url", "web_url", "name", "slug", "web", "source_language")
+    OPTIONALS = {"source_language"}
     ID = "slug"
     MAPPINGS = {"source_language": Language}
 
@@ -431,6 +439,7 @@ class Component(LazyObject, RepoObjectMixin):
         "name",
         "slug",
         "project",
+        "source_language",
         "vcs",
         "repo",
         "git_export",
@@ -442,8 +451,9 @@ class Component(LazyObject, RepoObjectMixin):
         "license",
         "license_url",
     )
+    OPTIONALS = {"source_language"}
     ID = "slug"
-    MAPPINGS = {"project": Project}
+    MAPPINGS = {"project": Project, "source_language": Language}
     REPOSITORY_CLASS = Repository
 
     def list(self):
