@@ -296,6 +296,12 @@ class Weblate:
 
         return self.post("projects/{}/components/".format(project), **kwargs)
 
+    def create_language(self, code, name, direction="ltr", plural=None):
+        """Create a new language."""
+        plural = plural if plural else {"number": 2, "formula": "n != 1"}
+        data = {"code": code, "name": name, "direction": direction, "plural": plural}
+        return self.post("languages/", **data)
+
     @staticmethod
     def _should_verify_ssl(path):
         """Cheks if it should verify ssl certificates."""
@@ -551,10 +557,11 @@ class Component(LazyObject, RepoObjectMixin):
         return self.weblate.list_translations(self._attribs["translations_url"])
 
     def add_translation(self, language):
-        """Creates a new translation in the component"""
+        """Creates a new translation in the component."""
         self.ensure_loaded("translations_url")
-        return self.weblate.post(path=self._attribs["translations_url"],
-                                 language_code=language)
+        return self.weblate.post(
+            path=self._attribs["translations_url"], language_code=language
+        )
 
     def statistics(self):
         """Return statistics for component."""

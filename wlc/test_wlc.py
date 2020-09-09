@@ -25,11 +25,11 @@ from wlc import (
     API_URL,
     Change,
     Component,
+    IsNotMonolingual,
     Project,
     Translation,
     Weblate,
     WeblateException,
-    IsNotMonolingual,
 )
 
 from .test_base import APITest
@@ -142,7 +142,7 @@ class WeblateTest(APITest):
                 project="hello",
                 component="weblate",
                 msgid="test-bilingual",
-                msgstr="test it good"
+                msgstr="test it good",
             )
 
     def test_add_source_string_to_monolingual_component(self):
@@ -150,7 +150,7 @@ class WeblateTest(APITest):
             project="hello",
             component="android",
             msgid="test-monolingual",
-            msgstr="test-me"
+            msgstr="test-me",
         )
         # ensure it is definitely monolingual
         self.assertEqual(resp["component"]["template"], "android/values/strings.xml")
@@ -166,6 +166,19 @@ class WeblateTest(APITest):
         self.assertEqual("http://example.com/", resp["web"])
         self.assertEqual("Malayalam", resp["source_language"]["name"])
         self.assertEqual("ml", resp["source_language"]["code"])
+
+    def test_create_language(self):
+        resp = Weblate().create_language(
+            name="Test Language",
+            code="tst",
+            direction="rtl",
+            plural={"number": 2, "formula": "n != 1"},
+        )
+        self.assertEqual("Test Language", resp["name"])
+        self.assertEqual("tst", resp["code"])
+        self.assertEqual("rtl", resp["direction"])
+        self.assertEqual(2, resp["plural"]["number"])
+        self.assertEqual("n != 1", resp["plural"]["formula"])
 
     def test_create_component(self):
         resp = Weblate().create_component(
@@ -383,12 +396,13 @@ class ComponentTest(ObjectTest, APITest):
         self.assertIsInstance(lst[0], Translation)
 
     def test_add_translation(self):
-        """Perform verification that the correct endpoint is accessed"""
+        """Perform verification that the correct endpoint is accessed."""
         obj = self.get()
         resp = obj.add_translation("nl_BE")
         self.assertEqual(resp["data"]["id"], 827)
-        self.assertEqual(resp["data"]["revision"],
-                         "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a")
+        self.assertEqual(
+            resp["data"]["revision"], "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a"
+        )
 
     def test_statistics(self):
         """Component statistics test."""
