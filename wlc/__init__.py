@@ -26,7 +26,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-__version__ = "1.6"
+__version__ = "1.6.1b1"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
@@ -168,6 +168,7 @@ class Weblate:
                 backoff_factor=self.backoff_factor,
                 status_forcelist=self.status_forcelist,
                 method_whitelist=self.method_whitelist,
+                raise_on_status=False,
             )
             for protocol in ["http", "https"]:
                 req.mount(f"{protocol}://", HTTPAdapter(max_retries=retries))
