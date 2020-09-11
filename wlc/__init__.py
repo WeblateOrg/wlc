@@ -291,7 +291,8 @@ class LazyObject(dict):
 
     def keys(self):
         """Return list of attributes."""
-        if not self._data:
+        # There is always at least url present
+        if len(self._data) <= 1:
             self.refresh()
         for param in self.PARAMS:
             if param not in self.OPTIONALS or param in self._data:
