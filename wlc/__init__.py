@@ -239,8 +239,6 @@ class LazyObject(dict):
     def _load_params(self, **kwargs):
         for param in self.PARAMS:
             if param in kwargs:
-                if param in self.OPTIONALS and param not in kwargs:
-                    continue
                 value = kwargs[param]
                 if value is not None and param in self.MAPPINGS:
                     if isinstance(value, str):
