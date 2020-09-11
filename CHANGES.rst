@@ -1,7 +1,7 @@
 1.8
 ---
 
-* Not yet released.
+* Released on 11th September 2020.
 * Compatibility with Weblate 4.3 which moves source language from component to a project.
 
 1.7
