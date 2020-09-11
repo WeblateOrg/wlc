@@ -168,6 +168,7 @@ class Weblate:
                 backoff_factor=self.backoff_factor,
                 status_forcelist=self.status_forcelist,
                 method_whitelist=self.method_whitelist,
+                raise_on_status=False,
             )
             for protocol in ["http", "https"]:
                 req.mount(f"{protocol}://", HTTPAdapter(max_retries=retries))
