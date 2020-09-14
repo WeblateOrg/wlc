@@ -603,7 +603,11 @@ class Component(LazyObject, RepoObjectMixin):
     def add_source_string(self, msgid, msgstr):
         """Adds a source string to a monolingual base file."""
         return self.weblate.add_source_string(
-            project=self.project.slug, component=self.slug, msgid=msgid, msgstr=msgstr
+            project=self.project.slug,
+            component=self.slug,
+            msgid=msgid,
+            msgstr=msgstr,
+            source_language=self.source_language,
         )
 
 
