@@ -260,9 +260,13 @@ class Weblate:
             return True
         return False
 
-    def add_source_string(self, project, component, msgid, msgstr):
+    def add_source_string(
+        self, project, component, msgid, msgstr, source_language=None
+    ):
         """Adds a source string to a monolingual base file."""
-        source_language = self.get_project(project)["source_language"]["code"]
+        if not source_language:
+            component = self.get_component(f"{project}/{component}")
+            source_language = component["source_language"]["code"]
         is_monolingual = self._is_component_monolingual(f"{project}/{component}")
         if not is_monolingual:
             raise IsNotMonolingual()
@@ -547,6 +551,7 @@ class Component(LazyObject, RepoObjectMixin):
         "file_format",
         "license",
         "license_url",
+        "source_language",
     )
     ID = "slug"
     MAPPINGS = {"project": Project}
