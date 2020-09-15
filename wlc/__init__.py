@@ -265,8 +265,8 @@ class Weblate:
     ):
         """Adds a source string to a monolingual base file."""
         if not source_language:
-            component = self.get_component(f"{project}/{component}")
-            source_language = component["source_language"]["code"]
+            component_obj = self.get_component(f"{project}/{component}")
+            source_language = component_obj["source_language"]["code"]
         is_monolingual = self._is_component_monolingual(f"{project}/{component}")
         if not is_monolingual:
             raise IsNotMonolingual()
