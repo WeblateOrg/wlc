@@ -607,7 +607,7 @@ class Component(LazyObject, RepoObjectMixin):
             component=self.slug,
             msgid=msgid,
             msgstr=msgstr,
-            source_language=self.source_language,
+            source_language=self.source_language["code"],
         )
 
 
