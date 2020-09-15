@@ -7,24 +7,6 @@
         "slug":"hello",
         "id":15,
         "web":"http://example.com",
-        "source_language":{
-            "code":"ml",
-            "name":"Malayalam",
-            "plural":{
-                "id":218,
-                "source":0,
-                "number":2,
-                "formula":"n != 1",
-                "type":1
-            },
-            "aliases":[
-                "mal"
-            ],
-            "direction":"ltr",
-            "web_url":"http://example.com/languages/ml/",
-            "url":"http://127.0.0.1:8000/api/languages/ml/",
-            "statistics_url":"http://127.0.0.1:8000/api/languages/ml/statistics/"
-        },
         "web_url":"http://example.com/projects/hello/",
         "url":"http://127.0.0.1:8000/api/projects/hello/",
         "components_list_url":"http://127.0.0.1:8000/api/projects/hello/components/",
@@ -52,6 +34,28 @@
     "repository_url":"http://127.0.0.1:8000/api/components/hello/weblate/repository/",
     "translations_url":"http://127.0.0.1:8000/api/components/hello/weblate/translations/",
     "statistics_url":"http://127.0.0.1:8000/api/components/hello/weblate/statistics/",
+    "source_language": {
+        "code": "en",
+        "name": "English",
+        "plural": {
+            "id": 82,
+            "source": 0,
+            "number": 2,
+            "formula": "n != 1",
+            "type": 1
+        },
+        "aliases": [
+            "english",
+            "en_en",
+            "base",
+            "source",
+            "eng"
+        ],
+        "direction": "ltr",
+        "web_url": "http://127.0.0.1:8000/api/languages/en/",
+        "url": "http://127.0.0.1:8000/api/languages/en/",
+        "statistics_url": "http://127.0.0.1:8000/api/languages/en/statistics/"
+    },
     "lock_url":"http://127.0.0.1:8000/api/components/hello/weblate/lock/",
     "changes_list_url":"http://127.0.0.1:8000/api/components/hello/weblate/changes/",
     "new_lang":"add",
