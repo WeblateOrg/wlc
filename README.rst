@@ -79,3 +79,32 @@ Configuration is stored in ``~/.config/weblate``:
 .. _Weblate's REST API: https://docs.weblate.org/en/latest/api.html
 .. _Weblate documentation: https://docs.weblate.org/en/latest/wlc.html
 .. _Weblate: https://weblate.org/
+
+Docker image
+------------
+
+Building:
+
+.. code-block:: sh
+
+    $docker build -t weblate/wlc .
+
+Usage:
+
+Weblate can be run using a Docker container.
+
+The Docker container uses Weblate's default settings and connects to the API deployed in localhost. The API URL and API_KEY can be configured through the arguments accepted by Weblate.
+
+Please refer to the Weblate documentation to configure these parameters.
+
+The command to launch the container uses the following syntax:
+
+.. code-block:: sh
+
+    $docker run --rm weblate/wlc [WEBLATE_ARGS]
+
+Example:
+
+.. code-block:: sh
+
+    $docker run --rm weblate/wlc --url https://hosted.weblate.org/api/ list-projects

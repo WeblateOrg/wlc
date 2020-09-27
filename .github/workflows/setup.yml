@@ -30,3 +30,12 @@ jobs:
         with:
           user: __token__
           password: ${{ secrets.pypi_password }}
+  docker:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Build docker image
+        run: docker build -t weblate/wlc .
+      - name: Test docker image
+        run: docker run --rm weblate/wlc version | grep "version"
