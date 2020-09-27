@@ -31,4 +31,4 @@ Every image is tested by our CI before it gets published, so even the `bleeding`
 
 Detailed documentation is available in Weblate documentation:
 
-<https://docs.weblate.org/en/latest/wlc.html>
+<https://docs.weblate.org/en/latest/wlc.html#docker-wlc>
