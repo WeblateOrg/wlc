@@ -80,7 +80,7 @@ jobs:
       - name: List Docker images
         run: docker image ls --all
       - name: Test the Docker image
-        run: docker run --rm weblate/wlc version | grep "version"
+        run: docker run --rm weblate/wlc:test version | grep "version"
 
   anchore:
     runs-on: ubuntu-latest
@@ -110,7 +110,7 @@ jobs:
       - name: Anchore scan action
         uses: anchore/scan-action@master
         with:
-          image-reference: "weblate/weblate:test"
+          image-reference: "weblate/wlc:test"
           dockerfile-path: "Dockerfile"
           acs-report-enable: true
           fail-build: true
