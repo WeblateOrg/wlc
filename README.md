@@ -63,9 +63,9 @@ The image is published on [Docker Hub](https://hub.docker.com/r/weblate/wlc).
 
 Building locally:
 
-    $docker build -t weblate/wlc .
+    docker build -t weblate/wlc .
 
-Detailed documentation is available in [Weblate documentation](<https://docs.weblate.org/en/latest/wlc.html#docker-wlc).
+Detailed documentation is available in [Weblate documentation](https://docs.weblate.org/en/latest/wlc.html#docker-wlc).
 
 ## Docker hub tags
 
