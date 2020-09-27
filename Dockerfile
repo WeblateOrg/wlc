@@ -1,32 +1,15 @@
-FROM alpine:3.12
+FROM python:3.8.6-alpine
 
-COPY ./wlc/ /wlc
-COPY ./completion/ /completion
-COPY ./setup.cfg /setup.cfg
-COPY ./setup.py /setup.py
-COPY ./wl /wl
-COPY ./LICENSE /LICENSE
-COPY ./requirements.txt /requirements.txt
+COPY ./wlc/ LICENSE setup.cfg setup.py requirements.txt /app
 
 # This hack is widely applied to avoid python printing issues in docker containers.
 # See: https://github.com/Docker-Hub-frolvlad/docker-alpine-python3/pull/13
 ENV PYTHONUNBUFFERED=1
 
-RUN echo "**** install Python ****" && \
-    apk update && \
-    apk add --no-cache python3 && \
-    if [ ! -e /usr/bin/python ]; then ln -sf python3 /usr/bin/python ; fi && \
-    \
-    echo "**** install pip ****" && \
-    python3 -m ensurepip && \
-    rm -r /usr/lib/python*/ensurepip && \
-    pip3 install --no-cache --upgrade pip setuptools wheel && \
-    if [ ! -e /usr/bin/pip ]; then ln -s pip3 /usr/bin/pip ; fi && \
-    \
-    echo "**** run setup.py build script ****" && \
-    python3 setup.py build && \
-    \
-    echo "**** run setup.py install script ****" && \
-    python3 setup.py install
+RUN pip install -e /app/wlc
+
+RUN useradd --create-home weblate
+WORKDIR /home/weblate
+USER weblate
 
 ENTRYPOINT ["wlc"]
