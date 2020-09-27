@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    name: Build, stable, ${{ matrix.architecture }}
+    name: Build, ${{ matrix.architecture }}
     strategy:
       matrix:
         architecture: [linux/amd64]
@@ -34,7 +34,7 @@ jobs:
 
   buildx:
     runs-on: ubuntu-latest
-    name: Build, stable, ${{ matrix.architecture }}
+    name: Build, ${{ matrix.architecture }}
     strategy:
       matrix:
         architecture: [linux/arm/v7, linux/arm64]
@@ -57,7 +57,7 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    name: Test, stable, ${{ matrix.architecture }}
+    name: Test, ${{ matrix.architecture }}
     needs: [build]
     strategy:
       matrix:
@@ -122,7 +122,7 @@ jobs:
 
   push_dockerhub:
     runs-on: ubuntu-latest
-    name: Publish, stable
+    name: Publish
     needs: [test, anchore, buildx]
     if: startsWith(github.ref, 'refs/tags/') || (github.ref == 'refs/heads/master')
     steps:
