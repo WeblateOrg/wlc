@@ -231,8 +231,13 @@ class WeblateTest(APITest):
             )
 
 
-class ObjectTest:
-    """Base class for objects testing."""
+class ObjectTest(APITest):
+    """
+    Base class for objects testing.
+
+    The reference to it is deleted in the end of this module to avoid discovering
+    it while running tests.
+    """
 
     _name = None
     _cls = None
@@ -323,7 +328,7 @@ class ObjectTest:
         self.assertIsNone(obj.delete())
 
 
-class ProjectTest(ObjectTest, APITest):
+class ProjectTest(ObjectTest):
     """Project object tests."""
 
     _name = "hello"
@@ -379,7 +384,7 @@ class ProjectTest(ObjectTest, APITest):
         self.assertEqual("po", resp["file_format"])
 
 
-class ComponentTest(ObjectTest, APITest):
+class ComponentTest(ObjectTest):
     """Component object tests."""
 
     _name = "hello/weblate"
@@ -453,7 +458,7 @@ class ComponentTest(ObjectTest, APITest):
         )
 
 
-class TranslationTest(ObjectTest, APITest):
+class TranslationTest(ObjectTest):
     """Translation object tests."""
 
     _name = "hello/weblate/cs"
@@ -498,3 +503,8 @@ class TranslationTest(ObjectTest, APITest):
         file = io.StringIO("test upload data")
 
         obj.upload(file, method="translate")
+
+
+# Delete the reference, so that the abstract class is not discovered
+# when running tests
+del ObjectTest
