@@ -1,8 +1,27 @@
-1.6
+1.9
 ---
 
 * Not yet released.
+
+1.8
+---
+
+* Released on 11th September 2020.
+* Compatibility with Weblate 4.3 which moves source language from component to a project.
+
+1.7
+---
+
+* Released on 3rd September 2020.
+* Fixed installation of wlc command line.
+
+1.6
+---
+
+* Released on 1st September 2020.
 * Post payload as JSON to allow handling complex data structures.
+* Added support for finding configuration file on Windows in AppData dir.
+* Improved error reporting.
 
 1.5
 ---
