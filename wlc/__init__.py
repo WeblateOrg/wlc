@@ -275,6 +275,8 @@ class Weblate:
         is_monolingual = self._is_component_monolingual(f"{project}/{component}")
         if not is_monolingual:
             raise IsNotMonolingual()
+        if not isinstance(msgstr, list):
+            msgstr = [msgstr]
         path = f"{project}/{component}/{source_language}/units"
         payload = {"key": msgid, "value": msgstr}
         return self._post_factory("translations", path, payload)
