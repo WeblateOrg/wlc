@@ -155,12 +155,13 @@ class Weblate:
         if self.key:
             headers["Authorization"] = "Token {}".format(self.key)
         verify_ssl = self._should_verify_ssl(path)
+        data = json = None
         if files:
             # mulitpart/form upload
-            kwargs = {"data": params}
+            data = params
         else:
             # JSON params to handle complex structures
-            kwargs = {"json": params}
+            json = params
         try:
             req = requests.Session()
             retries = Retry(
@@ -178,7 +179,8 @@ class Weblate:
                 headers=headers,
                 verify=verify_ssl,
                 files=files,
-                **kwargs,
+                data=data,
+                json=json,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as error:

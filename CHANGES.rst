@@ -2,6 +2,7 @@
 ---
 
 * Not yet released.
+* Added Docker image published as weblate/wlc on Docker Hub.
 
 1.8
 ---
