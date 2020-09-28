@@ -26,7 +26,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 
-__version__ = "1.6"
+__version__ = "1.9.1b0"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
@@ -172,8 +172,13 @@ class Weblate:
             )
             for protocol in ["http", "https"]:
                 req.mount(f"{protocol}://", HTTPAdapter(max_retries=retries))
-            response = req.request(
-                method, path, headers=headers, verify=verify_ssl, files=files, **kwargs,
+            response = requests.request(
+                method,
+                path,
+                headers=headers,
+                verify=verify_ssl,
+                files=files,
+                **kwargs,
             )
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
@@ -319,6 +324,7 @@ class LazyObject(dict):
     """Object which supports deferred loading."""
 
     PARAMS = ()
+    OPTIONALS = set()
     MAPPINGS = {}
     ID = "url"
 
@@ -391,15 +397,20 @@ class LazyObject(dict):
         return self.__getattr__(name)
 
     def __len__(self):
-        return len(self.PARAMS)
+        return len(list(self.keys()))
 
     def keys(self):
         """Return list of attributes."""
-        return self.PARAMS
+        # There is always at least url present
+        if len(self._data) <= 1:
+            self.refresh()
+        for param in self.PARAMS:
+            if param not in self.OPTIONALS or param in self._data:
+                yield param
 
     def items(self):
         """Iterator over attributes."""
-        for key in self.PARAMS:
+        for key in self.keys():
             yield key, self.__getattr__(key)
 
     def to_value(self):
@@ -498,6 +509,7 @@ class Project(LazyObject, RepoObjectMixin):
     """Project object."""
 
     PARAMS = ("url", "web_url", "name", "slug", "web", "source_language")
+    OPTIONALS = {"source_language"}
     ID = "slug"
     MAPPINGS = {"source_language": Language}
 
@@ -541,6 +553,7 @@ class Component(LazyObject, RepoObjectMixin):
         "name",
         "slug",
         "project",
+        "source_language",
         "vcs",
         "repo",
         "git_export",
@@ -553,8 +566,9 @@ class Component(LazyObject, RepoObjectMixin):
         "license_url",
         "source_language",
     )
+    OPTIONALS = {"source_language"}
     ID = "slug"
-    MAPPINGS = {"project": Project}
+    MAPPINGS = {"project": Project, "source_language": Language}
     REPOSITORY_CLASS = Repository
 
     def list(self):

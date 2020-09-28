@@ -27,6 +27,7 @@ from argparse import ArgumentParser
 from datetime import datetime
 
 import argcomplete
+from requests.exceptions import RequestException
 
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
@@ -68,9 +69,12 @@ def get_parser():
     parser.add_argument("--key", "-k", help="API key")
     parser.add_argument("--url", "-u", help="API URL")
     subparser = parser.add_subparsers(
-        title="subcommands",
-        description="Subcommands specify what action to perform.",
-        dest="cmd",
+        title="Command",
+        description="""
+Specifies what action to perform.
+Invoke with --help to get more detailed help.
+    """,
+        dest="command",
     )
     subparser.required = True
 
@@ -259,7 +263,7 @@ class ObjectCommand(Command):
         )
         return parser
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return object."""
         if self.args.object:
             path = self.args.object[0]
@@ -270,6 +274,8 @@ class ObjectCommand(Command):
                 path = None
 
         if not path:
+            if blank:
+                return None
             raise CommandError("No object passed on command line!")
 
         return self.wlc.get_object(path)
@@ -288,9 +294,9 @@ class ObjectCommand(Command):
 class ProjectCommand(ObjectCommand):
     """Wrapper to allow only project objects."""
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return component object."""
-        obj = super().get_object()
+        obj = super().get_object(blank=blank)
         if not isinstance(obj, wlc.Project):
             raise CommandError("Not supported")
         return obj
@@ -303,9 +309,9 @@ class ProjectCommand(ObjectCommand):
 class ComponentCommand(ObjectCommand):
     """Wrapper to allow only component objects."""
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return component object."""
-        obj = super().get_object()
+        obj = super().get_object(blank=blank)
         if not isinstance(obj, wlc.Component):
             raise CommandError("This command is supported only at component level")
         return obj
@@ -318,9 +324,9 @@ class ComponentCommand(ObjectCommand):
 class TranslationCommand(ObjectCommand):
     """Wrapper to allow only translation objects."""
 
-    def get_object(self):
+    def get_object(self, blank: bool = False):
         """Return translation object."""
-        obj = super().get_object()
+        obj = super().get_object(blank=blank)
         if not isinstance(obj, wlc.Translation):
             raise CommandError("This command is supported only at translation level")
         return obj
@@ -451,10 +457,10 @@ class List(ObjectCommand):
 
     def run(self):
         """Executor."""
-        try:
-            obj = self.get_object()
+        obj = self.get_object(blank=True)
+        if obj:
             self.print(list(obj.list()))
-        except CommandError:
+        else:
             # Called without params
             lsproj = ListProjects(self.args, self.config, self.stdout)
             lsproj.run()
@@ -755,7 +761,7 @@ def main(settings=None, stdout=None, stdin=None, args=None):
 
     config = parse_settings(args, settings)
 
-    command = COMMANDS[args.cmd](args, config, stdout, stdin)
+    command = COMMANDS[args.command](args, config, stdout, stdin)
     try:
         command.run()
         return 0
@@ -772,6 +778,9 @@ def main(settings=None, stdout=None, stdin=None, args=None):
                 file=sys.stderr,
             )
         return 1
+    except RequestException as error:
+        print(f"Request failed: {error}", file=sys.stderr)
+        return 10
     except (CommandError, wlc.WeblateException) as error:
         print("Error: {0}".format(error), file=sys.stderr)
         return 1

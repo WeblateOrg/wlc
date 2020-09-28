@@ -424,6 +424,34 @@ class ComponentTest(ObjectTest, APITest):
         obj = self.get()
         self.assertEqual({"locked": False}, obj.unlock())
 
+    def test_keys(self):
+        """Test keys lazy loading."""
+        obj = Component(Weblate(), f"components/{self._name}/")
+        self.assertEqual(
+            sorted(obj.keys()),
+            sorted(
+                [
+                    "branch",
+                    "file_format",
+                    "filemask",
+                    "git_export",
+                    "license",
+                    "license_url",
+                    "name",
+                    "new_base",
+                    "project",
+                    "repo",
+                    "slug",
+                    "source_language",
+                    "source_language",
+                    "template",
+                    "url",
+                    "vcs",
+                    "web_url",
+                ]
+            ),
+        )
+
 
 class TranslationTest(ObjectTest, APITest):
     """Translation object tests."""

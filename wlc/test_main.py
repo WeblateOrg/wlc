@@ -24,16 +24,15 @@ import sys
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile
 
-from requests.exceptions import RequestException
-
 import wlc
 from wlc.config import WeblateConfig
 from wlc.main import Version, main
 
 from .test_base import APITest
 
-TEST_CONFIG = os.path.join(os.path.dirname(__file__), "test_data", "wlc")
-TEST_SECTION = os.path.join(os.path.dirname(__file__), "test_data", "section")
+TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
+TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
+TEST_SECTION = os.path.join(TEST_DATA, "section")
 
 
 def execute(args, settings=None, stdout=None, stdin=None, expected=0):
@@ -107,6 +106,16 @@ class TestSettings(APITest):
             settings=False,
         )
         self.assertIn("ACL", output)
+
+    def test_config_appdata(self):
+        """Configuration using custom config file section and key set."""
+        output = execute(["show", "acl"], settings=False, expected=1)
+        try:
+            os.environ["APPDATA"] = TEST_DATA
+            output = execute(["show", "acl"], settings=False)
+            self.assertIn("ACL", output)
+        finally:
+            del os.environ["APPDATA"]
 
     def test_config_cwd(self):
         """Test loading settings from current dir."""
@@ -288,8 +297,7 @@ class TestCommands(APITest):
         self.assertIn("/hello/weblate/cs/", output)
 
     def test_show_error(self):
-        with self.assertRaises(RequestException):
-            execute(["show", "io"])
+        execute(["show", "io"], expected=10)
         with self.assertRaises(Exception):
             execute(["show", "bug"])
 
@@ -410,6 +418,8 @@ class TestCommands(APITest):
 
     def test_download(self):
         """Translation file downloads."""
+        output = execute(["download"], expected=1)
+
         output = execute(["download", "hello/weblate/cs"])
         self.assertIn(b"Plural-Forms:", output)
 
