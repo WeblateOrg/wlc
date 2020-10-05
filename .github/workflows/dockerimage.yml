@@ -108,7 +108,7 @@ jobs:
       - name: Checkout the code
         uses: actions/checkout@v2
       - name: Anchore scan action
-        uses: anchore/scan-action@master
+        uses: anchore/scan-action@v2.0.0
         with:
           image-reference: "weblate/wlc:test"
           dockerfile-path: "Dockerfile"
