@@ -111,7 +111,6 @@ jobs:
         uses: anchore/scan-action@v2.0.0
         with:
           image: "weblate/wlc:test"
-          path: "Dockerfile"
           acs-report-enable: true
           fail-build: true
       - name: Upload Anchore Scan Report
