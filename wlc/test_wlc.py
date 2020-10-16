@@ -28,6 +28,7 @@ from wlc import (
     IsNotMonolingual,
     Project,
     Translation,
+    Unit,
     Weblate,
     WeblateException,
 )
@@ -231,16 +232,15 @@ class WeblateTest(APITest):
             )
 
 
-class ObjectTest(APITest):
-    """
-    Base class for objects testing.
-
-    The reference to it is deleted in the end of this module to avoid discovering
-    it while running tests.
-    """
+class ObjectTestBaseClass:
+    """Base class for objects testing."""
 
     _name = None
     _cls = None
+
+    def check_object(self, obj):
+        """Perform verification whether object is valid."""
+        raise NotImplementedError()
 
     def get(self):
         """Return remote object."""
@@ -252,17 +252,6 @@ class ObjectTest(APITest):
         self.assertIsInstance(obj, self._cls)
         self.check_object(obj)
 
-    def check_object(self, obj):
-        """Perform verification whether object is valid."""
-        raise NotImplementedError()
-
-    def test_refresh(self):
-        """Object refreshing test."""
-        obj = self.get()
-        obj.refresh()
-        self.assertIsInstance(obj, self._cls)
-        self.check_object(obj)
-
     def check_list(self, obj):
         """Perform verification whether listing is valid."""
         raise NotImplementedError()
@@ -271,6 +260,17 @@ class ObjectTest(APITest):
         """Item listing test."""
         obj = self.get()
         self.check_list(obj.list())
+
+
+class ObjectTest(ObjectTestBaseClass, APITest):
+    """Additional tests for projects, components, and translations"""
+
+    def test_refresh(self):
+        """Object refreshing test."""
+        obj = self.get()
+        obj.refresh()
+        self.assertIsInstance(obj, self._cls)
+        self.check_object(obj)
 
     def test_changes(self):
         """Item listing test."""
@@ -504,7 +504,43 @@ class TranslationTest(ObjectTest):
 
         obj.upload(file, method="translate")
 
+    def test_units(self):
+        obj = self.get()
+        units = list(obj.units())
+        self.assertEqual(1, len(units))
+        self.assertIsInstance(units[0], Unit)
+        self.assertEqual(units[0].id, 35664)
 
-# Delete the reference, so that the abstract class is not discovered
-# when running tests
+    def test_units_search(self):
+        obj = self.get()
+        units = list(obj.units(q='source:="mr"'))
+        self.assertEqual(1, len(units))
+        self.assertIsInstance(units[0], Unit)
+        self.assertEqual(units[0].id, 117)
+
+
+class UnitTest(ObjectTestBaseClass, APITest):
+    _name = "123"
+    _cls = Unit
+
+    def check_object(self, obj):
+        """Perform verification whether object is valid."""
+        self.assertEqual(obj.id, 123)
+
+    def check_list(self, obj):
+        """Perform verification whether listing is valid."""
+        self.assertIsInstance(obj, Unit)
+
+    # TODO: Responses isn't playing nicely with "PATCH" method
+    # def test_units_patch(self):
+    #     obj = self.get()
+    #     patch_data = {
+    #         "target": ["foo",],
+    #         "state": 30
+    #     }
+    #     resp = obj.patch(**patch_data)
+    #     self.assertEqual(resp, patch_data)
+
+
 del ObjectTest
+del ObjectTestBaseClass

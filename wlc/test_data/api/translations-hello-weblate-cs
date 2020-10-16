@@ -72,5 +72,6 @@
     "translated_percent": 100.0,
     "translated_words": 15,
     "url": "http://127.0.0.1:8000/api/translations/hello/weblate/cs/",
-    "web_url": "http://127.0.0.1:8000/projects/hello/weblate/cs/"
+    "web_url": "http://127.0.0.1:8000/projects/hello/weblate/cs/",
+    "units_list_url": "http://127.0.0.1:8000/api/translations/hello/weblate/cs/units/"
 }

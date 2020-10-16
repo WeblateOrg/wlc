@@ -144,6 +144,12 @@ def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
             callback=ResponseHandler(handle.read(), filename, auth),
             content_type="application/json",
         )
+        responses.add_callback(
+            responses.PATCH,
+            url,
+            callback=ResponseHandler(handle.read(), filename, auth),
+            content_type="application/json",
+        )
 
 
 def raise_error(request):
@@ -191,7 +197,10 @@ def register_uris():
         "translations/hello/weblate/cs/file",
         "translations/hello/weblate/cs/repository",
         "translations/hello/weblate/cs/statistics",
+        "translations/hello/weblate/cs/units",
         "translations/hello/android/en/units",
+        "units",
+        "units/123",
     )
     for path in paths:
         register_uri(path)

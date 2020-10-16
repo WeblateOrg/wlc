@@ -25,6 +25,7 @@ import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
+import json
 
 __version__ = "1.9.1b0"
 
@@ -92,6 +93,7 @@ class Weblate:
                     "HEAD",
                     "GET",
                     "PUT",
+                    "PATCH",
                     "DELETE",
                     "OPTIONS",
                     "TRACE",
@@ -132,22 +134,22 @@ class Weblate:
                 "HTTP error {0}: {1} {2}".format(status_code, reason, error_string)
             )
 
-    def raw_request(self, method, path, params=None, files=None):
+    def raw_request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns raw content."""
-        response = self.invoke_request(method, path, params, files)
+        response = self.invoke_request(method, path, data, files, params=params)
 
         return response.content
 
-    def request(self, method, path, params=None, files=None):
+    def request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns json response."""
-        response = self.invoke_request(method, path, params, files)
+        response = self.invoke_request(method, path, data, files, params=params)
 
         try:
             return response.json()
         except ValueError:
             raise WeblateException("Server returned invalid JSON")
 
-    def invoke_request(self, method, path, params=None, files=None):
+    def invoke_request(self, method, path, data=None, files=None, params=None):
         """Construct request object."""
         if not path.startswith("http"):
             path = "{0}{1}".format(self.url, path)
@@ -155,13 +157,19 @@ class Weblate:
         if self.key:
             headers["Authorization"] = "Token {}".format(self.key)
         verify_ssl = self._should_verify_ssl(path)
-        data = json = None
+        kwargs = {
+            "headers": headers,
+            "verify": verify_ssl,
+            "files": files,
+        }
+        if params:
+            kwargs["params"] = params
         if files:
             # mulitpart/form upload
-            data = params
+            kwargs["data"] = data
         else:
             # JSON params to handle complex structures
-            json = params
+            kwargs["json"] = data
         try:
             req = requests.Session()
             retries = Retry(
@@ -173,15 +181,9 @@ class Weblate:
             )
             for protocol in ["http", "https"]:
                 req.mount(f"{protocol}://", HTTPAdapter(max_retries=retries))
-            response = requests.request(
-                method,
-                path,
-                headers=headers,
-                verify=verify_ssl,
-                files=files,
-                data=data,
-                json=json,
-            )
+            kwargs["timeout"] = None
+            print(json.dumps([method, path, kwargs], indent=True))
+            response = requests.request(method, path, **kwargs)
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
             self.process_error(error)
@@ -196,14 +198,14 @@ class Weblate:
         """Wrapper for posting objects."""
         return self.post("/".join((prefix, path, "")), **kwargs)
 
-    def get(self, path):
+    def get(self, path, params=None):
         """Perform GET request on the API."""
-        return self.request("get", path)
+        return self.request("get", path, params=params)
 
-    def list_factory(self, path, parser):
+    def list_factory(self, path, parser, params=None):
         """Listing object wrapper."""
         while path is not None:
-            data = self.get(path)
+            data = self.get(path, params=params)
             for item in data["results"]:
                 yield parser(weblate=self, **item)
 
@@ -220,6 +222,11 @@ class Weblate:
         Operates on (project, component or translation objects.
         """
         parts = path.strip("/").split("/")
+        try:
+            int(path)
+            return self.get_unit(path)
+        except ValueError:
+            pass
         if len(parts) == 3:
             return self.get_translation(path)
         if len(parts) == 2:
@@ -240,6 +247,10 @@ class Weblate:
         """Return translation of given path."""
         return self._get_factory("translations", path, Translation)
 
+    def get_unit(self, path):
+        """Return unit of given path."""
+        return self._get_factory("units", path, Unit)
+
     def list_projects(self, path="projects/"):
         """List projects in the instance."""
         return self.list_factory(path, Project)
@@ -249,8 +260,12 @@ class Weblate:
         return self.list_factory(path, Component)
 
     def list_changes(self, path="changes/"):
-        """List components in the instance."""
+        """List changes in the instance."""
         return self.list_factory(path, Change)
+
+    def list_units(self, path, params=None):
+        """List units in the instance."""
+        return self.list_factory(path, Unit, params=params)
 
     def list_translations(self, path="translations/"):
         """List translations in the instance."""
@@ -675,7 +690,7 @@ class Translation(LazyObject, RepoObjectMixin):
         return TranslationStatistics(weblate=self.weblate, **data)
 
     def changes(self):
-        """List changes in the project."""
+        """List changes in the translation."""
         self.ensure_loaded("changes_list_url")
         return self.weblate.list_changes(self._attribs["changes_list_url"])
 
@@ -696,10 +711,15 @@ class Translation(LazyObject, RepoObjectMixin):
         if overwrite:
             kwargs["overwrite"] = "yes"
 
-        return self.weblate.request("post", url, files=files, params=kwargs)
+        return self.weblate.request("post", url, files=files, data=kwargs)
 
     def delete(self):
         self.weblate.raw_request("delete", self._url)
+
+    def units(self, **kwargs):
+        """List units in the translation."""
+        self.ensure_loaded("units_list_url")
+        return self.weblate.list_units(self._attribs["units_list_url"], params=kwargs)
 
 
 class Statistics(LazyObject):
@@ -740,3 +760,52 @@ class Change(LazyObject):
     )
     ID = "id"
     MAPPINGS = {"translation": Translation, "component": Component}
+
+
+class Unit(LazyObject):
+    """Unit object."""
+
+    PARAMS = (
+        "approved",
+        "content_hash",
+        "context",
+        "explanation",
+        "extra_flags",
+        "flags",
+        "fuzzy",
+        "has_comment",
+        "has_failing_check",
+        "has_suggestion",
+        "id",
+        "id_hash",
+        "location",
+        "note",
+        "num_words",
+        "position",
+        "previous_source",
+        "priority",
+        "source",
+        "source_unit",
+        "state",
+        "target",
+        "translated",
+        "translation",
+        "url",
+        "web_url",
+    )
+    ID = "id"
+    MAPPINGS = {"translation": Translation}
+
+    def list(self):
+        """API compatibility method, returns self."""
+        self.ensure_loaded("id")
+        return self
+
+    def patch(self, **kwargs):
+        return self.weblate.raw_request("patch", self._url, params=kwargs)
+
+    def put(self, **kwargs):
+        return self.weblate.raw_request("put", self._url, params=kwargs)
+
+    def delete(self):
+        return self.weblate.raw_request("delete", self._url)
