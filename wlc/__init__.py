@@ -19,13 +19,16 @@
 """Weblate API client library."""
 
 from copy import copy
-from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import json
+import logging
+from six.moves.urllib.parse import urlparse, urlencode
+
+log = logging.getLogger("wlc")
 
 __version__ = "1.9.1b0"
 
@@ -74,6 +77,7 @@ class Weblate:
         method_whitelist=None,
         backoff_factor=0,
     ):
+        self.session = requests.Session()
         """Create the object, storing key, API url and requests retry args."""
         if config is not None:
             self.url, self.key = config.get_url_key()
@@ -101,6 +105,15 @@ class Weblate:
             else:
                 self.method_whitelist = method_whitelist
             self.backoff_factor = backoff_factor
+
+        self.retries = Retry(
+            total=self.retries,
+            backoff_factor=self.backoff_factor,
+            status_forcelist=self.status_forcelist,
+            method_whitelist=self.method_whitelist,
+            raise_on_status=False,
+        )
+        self.adapter = HTTPAdapter(pool_connections=1, max_retries=retries)
 
         if not self.url.endswith("/"):
             self.url += "/"
@@ -171,19 +184,10 @@ class Weblate:
             # JSON params to handle complex structures
             kwargs["json"] = data
         try:
-            req = requests.Session()
-            retries = Retry(
-                total=self.retries,
-                backoff_factor=self.backoff_factor,
-                status_forcelist=self.status_forcelist,
-                method_whitelist=self.method_whitelist,
-                raise_on_status=False,
-            )
-            for protocol in ["http", "https"]:
-                req.mount(f"{protocol}://", HTTPAdapter(max_retries=retries))
+            self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
             kwargs["timeout"] = None
-            print(json.dumps([method, path, kwargs], indent=True))
-            response = requests.request(method, path, **kwargs)
+            log.debug(json.dumps([method, path, kwargs], indent=True))
+            response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
             self.process_error(error)
