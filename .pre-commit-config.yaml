@@ -55,6 +55,6 @@ repos:
       - id: check-hooks-apply
       - id: check-useless-excludes
   - repo: https://github.com/prettier/pre-commit
-    rev: v2.1.2
+    rev: 83c5da9dc412f5a2294d6c67ab349e9d30caca31
     hooks:
       - id: prettier
