@@ -44,7 +44,8 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "key", "")
         self.set(self.section, "url", wlc.API_URL)
 
-    def find_configs(self):
+    @staticmethod
+    def find_configs():
         # Handle Windows specifically
         if "APPDATA" in os.environ:
             win_path = os.path.join(os.environ["APPDATA"], "weblate.ini")

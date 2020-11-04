@@ -57,7 +57,8 @@ class ResponseHandler:
 
         return self.body
 
-    def format_body(self, body):
+    @staticmethod
+    def format_body(body):
         if not body:
             return ""
         body = body.decode()
