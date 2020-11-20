@@ -93,7 +93,7 @@ class ResponseHandler:
         multipart_dict = {}
         filename_array = [self.filename, request.method]
         for part in multipart_data.parts:
-            content_disposition = part.headers.get("Content-Disposition".encode(), None)
+            content_disposition = part.headers.get(b"Content-Disposition", None)
 
             decoded_cd = content_disposition.decode("utf-8")
             multipart_name = self.get_multipart_name(decoded_cd)

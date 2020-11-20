@@ -29,7 +29,7 @@ __version__ = "1.9"
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
 API_URL = "http://127.0.0.1:8000/api/"
-USER_AGENT = "wlc/{0}".format(__version__)
+USER_AGENT = f"wlc/{__version__}"
 LOCALHOST_NETLOC = "127.0.0.1"
 TIMESTAMPS = {"last_change"}
 
@@ -86,7 +86,7 @@ class Weblate:
                 raise WeblateDeniedError()
 
             reason = error.response.reason
-            raise WeblateException("HTTP error {0}: {1}".format(status_code, reason))
+            raise WeblateException(f"HTTP error {status_code}: {reason}")
 
     def raw_request(self, method, path, params=None, files=None):
         """Construct request object and returns raw content."""
@@ -106,10 +106,10 @@ class Weblate:
     def invoke_request(self, method, path, params=None, files=None):
         """Construct request object."""
         if not path.startswith("http"):
-            path = "{0}{1}".format(self.url, path)
+            path = f"{self.url}{path}"
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
-            headers["Authorization"] = "Token {}".format(self.key)
+            headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self._should_verify_ssl(path)
         data = json = None
         if files:
@@ -168,7 +168,7 @@ class Weblate:
             return self.get_component(path)
         if len(parts) == 1:
             return self.get_project(path)
-        raise ValueError("Not supported path: {0}".format(path))
+        raise ValueError(f"Not supported path: {path}")
 
     def get_project(self, path):
         """Return project of given path."""
@@ -549,7 +549,7 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         if convert is not None:
-            url = "{0}?{1}".format(url, urlencode({"format": convert}))
+            url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
     def upload(self, file, overwrite=None, **kwargs):

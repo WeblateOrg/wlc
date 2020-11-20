@@ -5,6 +5,13 @@ repos:
     rev: v5.6.4
     hooks:
       - id: isort
+  - repo: local
+    hooks:
+      - id: pyupgrade
+        name: pyupgrade
+        entry: pyupgrade --py36-plus
+        language: system
+        types: [python]
   - repo: https://github.com/ambv/black
     rev: 20.8b1
     hooks:
