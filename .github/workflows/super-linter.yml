@@ -17,3 +17,4 @@ jobs:
         env:
           DEFAULT_BRANCH: master
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHON_ISORT_CONFIG_FILE: .isort.cfg
