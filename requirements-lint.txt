@@ -1,2 +1,2 @@
-pre-commit==2.8.2
+pre-commit==2.9.0
 pyupgrade==2.7.4
