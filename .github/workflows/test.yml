@@ -7,7 +7,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-20.04, windows-latest, macos-latest]
         python-version: [3.6, 3.7, 3.8, 3.9]
         exclude:
           - os: windows-latest
@@ -51,7 +51,7 @@ jobs:
           flags: unittests
           name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
       - name: DeepSource
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         continue-on-error: true
         env:
           DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io
