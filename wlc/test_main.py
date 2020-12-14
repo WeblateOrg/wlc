@@ -132,6 +132,7 @@ class TestSettings(APITest):
         config = WeblateConfig()
         self.assertEqual(config.get("weblate", "key"), "")
         self.assertEqual(config.get("weblate", "retries"), 0)
+        self.assertEqual(config.get("weblate", "timeout"), 30)
         self.assertEqual(
             config.get("weblate", "method_whitelist"),
             "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
@@ -153,8 +154,8 @@ class TestSettings(APITest):
             config.get("weblate", "status_forcelist"), "429,500,502,503,504"
         )
 
-    def test_get_retry_options(self):
-        """Test the get_retry_options method when all options are in config."""
+    def test_get_request_options(self):
+        """Test the get_request_options method when all options are in config."""
         config = WeblateConfig()
         config.load()
         config.load(TEST_CONFIG)
@@ -163,7 +164,8 @@ class TestSettings(APITest):
             status_forcelist,
             method_whitelist,
             backoff_factor,
-        ) = config.get_retry_options()
+            timeout,
+        ) = config.get_request_options()
         self.assertEqual(retries, 999)
         self.assertEqual(status_forcelist, [429, 500, 502, 503, 504])
         self.assertEqual(method_whitelist, ["PUT", "POST"])
