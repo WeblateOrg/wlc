@@ -189,7 +189,9 @@ class Weblate:
         try:
             self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
             kwargs["timeout"] = self.timeout
-            log.debug(json.dumps([method, path, kwargs], indent=True))
+            log_kwargs = copy(kwargs)
+            del log_kwargs["files"]
+            log.debug(json.dumps([method, path, log_kwargs], indent=True))
             response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
