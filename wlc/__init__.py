@@ -30,7 +30,7 @@ from six.moves.urllib.parse import urlparse, urlencode
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.9.1b0"
+__version__ = "1.9.2b2"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
