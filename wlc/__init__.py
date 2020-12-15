@@ -30,7 +30,7 @@ from six.moves.urllib.parse import urlparse, urlencode
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.9.1b0"
+__version__ = "1.9.2b2"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
@@ -76,9 +76,10 @@ class Weblate:
         status_forcelist=None,
         method_whitelist=None,
         backoff_factor=0,
+        timeout=30,
     ):
-        self.session = requests.Session()
         """Create the object, storing key, API url and requests retry args."""
+        self.session = requests.Session()
         if config is not None:
             self.url, self.key = config.get_url_key()
             (
@@ -86,12 +87,14 @@ class Weblate:
                 self.status_forcelist,
                 self.method_whitelist,
                 self.backoff_factor,
-            ) = config.get_retry_options()
+                self.timeout,
+            ) = config.get_request_options()
         else:
             self.key = key
             self.url = url
             self.retries = retries
             self.status_forcelist = status_forcelist
+            self.timeout = timeout
             if method_whitelist is None:
                 self.method_whitelist = [
                     "HEAD",
@@ -185,8 +188,10 @@ class Weblate:
             kwargs["json"] = data
         try:
             self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
-            kwargs["timeout"] = None
-            log.debug(json.dumps([method, path, kwargs], indent=True))
+            kwargs["timeout"] = self.timeout
+            log_kwargs = copy(kwargs)
+            del log_kwargs["files"]
+            log.debug(json.dumps([method, path, log_kwargs], indent=True))
             response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
