@@ -30,7 +30,7 @@ from six.moves.urllib.parse import urlparse, urlencode
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.9.2b2"
+__version__ = "1.9.2b3"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
@@ -811,10 +811,10 @@ class Unit(LazyObject):
         return self
 
     def patch(self, **kwargs):
-        return self.weblate.raw_request("patch", self._url, params=kwargs)
+        return self.weblate.raw_request("patch", self._url, data=kwargs)
 
     def put(self, **kwargs):
-        return self.weblate.raw_request("put", self._url, params=kwargs)
+        return self.weblate.raw_request("put", self._url, data=kwargs)
 
     def delete(self):
         return self.weblate.raw_request("delete", self._url)
