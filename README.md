@@ -47,7 +47,7 @@ Command line usage:
 
 Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
 `timeout`, `method_whitelist`, `backoff_factor`, `status_forcelist`) are closely
-coupled with the `urllib3 parameters`_ and allows the user to configure request
+coupled with the `urllib3 parameters`\_ and allows the user to configure request
 parameters.
 
     [weblate]
