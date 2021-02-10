@@ -177,7 +177,7 @@ class TestSettings(APITest):
         try:
             sys.argv = ["wlc", "version"]
             output = execute(None)
-            self.assertIn("version: {0}".format(wlc.__version__), output)
+            self.assertIn(f"version: {wlc.__version__}", output)
         finally:
             sys.argv = backup
 
@@ -188,7 +188,7 @@ class TestOutput(APITest):
     def test_version_text(self):
         """Test version printing."""
         output = execute(["--format", "text", "version"])
-        self.assertIn("version: {0}".format(wlc.__version__), output)
+        self.assertIn(f"version: {wlc.__version__}", output)
 
     def test_version_json(self):
         """Test version printing."""
@@ -199,7 +199,7 @@ class TestOutput(APITest):
     def test_version_csv(self):
         """Test version printing."""
         output = execute(["--format", "csv", "version"])
-        self.assertIn("version,{0}".format(wlc.__version__), output)
+        self.assertIn(f"version,{wlc.__version__}", output)
 
     def test_version_html(self):
         """Test version printing."""
@@ -209,7 +209,7 @@ class TestOutput(APITest):
     def test_projects_text(self):
         """Test projects printing."""
         output = execute(["--format", "text", "list-projects"])
-        self.assertIn("name: {0}".format("Hello"), output)
+        self.assertIn("name: {}".format("Hello"), output)
 
     def test_projects_json(self):
         """Test projects printing."""
@@ -241,7 +241,7 @@ class TestCommands(APITest):
     def test_version_bare(self):
         """Test version printing."""
         output = execute(["version", "--bare"])
-        self.assertEqual("{0}\n".format(wlc.__version__), output)
+        self.assertEqual(f"{wlc.__version__}\n", output)
 
     def test_ls(self):
         """Project listing."""
@@ -451,7 +451,7 @@ class TestCommands(APITest):
             self.assertEqual(msg, output)
 
         with NamedTemporaryFile(delete=False) as handle:
-            handle.write("test upload overwrite".encode())
+            handle.write(b"test upload overwrite")
             handle.close()
             output = execute(
                 ["upload", "hello/weblate/cs", "-i", handle.name, "--overwrite"]

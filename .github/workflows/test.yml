@@ -7,17 +7,21 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: [3.6, 3.7, 3.8]
+        os: [ubuntu-20.04, windows-latest, macos-latest]
+        python-version: [3.6, 3.7, 3.8, 3.9]
         exclude:
           - os: windows-latest
             python-version: 3.6
           - os: windows-latest
             python-version: 3.7
+          - os: windows-latest
+            python-version: 3.9
           - os: macos-latest
             python-version: 3.6
           - os: macos-latest
             python-version: 3.7
+          - os: macos-latest
+            python-version: 3.9
     name: ${{ matrix.os }}, Python ${{ matrix.python-version }}
 
     steps:
@@ -28,7 +32,7 @@ jobs:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2.1.2
+        uses: actions/setup-python@v2.2.1
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install pip dependencies
@@ -47,7 +51,7 @@ jobs:
           flags: unittests
           name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
       - name: DeepSource
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-20.04'
         continue-on-error: true
         env:
           DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io

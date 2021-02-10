@@ -46,8 +46,8 @@ def register_command(command):
 def get_parser():
     """Create argument parser."""
     parser = ArgumentParser(
-        description="Weblate <{0}> command line utility.".format(wlc.URL),
-        epilog="This utility is developed at <{0}>.".format(wlc.DEVEL_URL),
+        description=f"Weblate <{wlc.URL}> command line utility.",
+        epilog=f"This utility is developed at <{wlc.DEVEL_URL}>.",
     )
     parser.add_argument(
         "--format",
@@ -57,7 +57,7 @@ def get_parser():
         help="Output format to use",
     )
     parser.add_argument(
-        "--version", "-v", action="version", version="wlc {0}".format(wlc.__version__)
+        "--version", "-v", action="version", version=f"wlc {wlc.__version__}"
     )
     parser.add_argument(
         "--debug", "-D", action="store_true", help="Print verbosely http communication"
@@ -107,7 +107,7 @@ class DateTimeEncoder(json.JSONEncoder):
 def sort_key(value):
     """Key getter for sorting."""
     try:
-        return "{0:02d}".format(SORT_ORDER.index(value))
+        return "{:02d}".format(SORT_ORDER.index(value))
     except ValueError:
         return value
 
@@ -157,9 +157,9 @@ class Command:
     def format_value(value):
         """Format value for rendering."""
         if isinstance(value, float):
-            return "{0:.1f}".format(value)
+            return f"{value:.1f}"
         if isinstance(value, int):
-            return "{0}".format(value)
+            return f"{value}"
         if value is None:
             return ""
         if hasattr(value, "to_value"):
@@ -185,7 +185,7 @@ class Command:
             self.println("  <thead>")
             self.println("    <tr>")
             for key in header:
-                self.println("      <th>{0}</th>".format(key))
+                self.println(f"      <th>{key}</th>")
             self.println("    </tr>")
             self.println("  </thead>")
             self.println("  <tbody>")
@@ -194,7 +194,7 @@ class Command:
                 self.println("    <tr>")
                 for key in header:
                     self.println(
-                        "      <td>{0}</td>".format(
+                        "      <td>{}</td>".format(
                             self.format_value(getattr(item, key))
                         )
                     )
@@ -206,7 +206,7 @@ class Command:
             for key, data in sorted_items(value):
                 self.println("  <tr>")
                 self.println(
-                    "    <th>{0}</th><td>{1}</td>".format(key, self.format_value(data))
+                    "    <th>{}</th><td>{}</td>".format(key, self.format_value(data))
                 )
                 self.println("  </tr>")
             self.println("</table>")
@@ -217,12 +217,12 @@ class Command:
             for item in value:
                 for key in header:
                     self.println(
-                        "{0}: {1}".format(key, self.format_value(getattr(item, key)))
+                        "{}: {}".format(key, self.format_value(getattr(item, key)))
                     )
                 self.println("")
         else:
             for key, data in sorted_items(value):
-                self.println("{0}: {1}".format(key, self.format_value(data)))
+                self.println("{}: {}".format(key, self.format_value(data)))
 
     def print(self, value):
         """Print value."""
@@ -782,7 +782,7 @@ def main(settings=None, stdout=None, stdin=None, args=None):
         print(f"Request failed: {error}", file=sys.stderr)
         return 10
     except (CommandError, wlc.WeblateException) as error:
-        print("Error: {0}".format(error), file=sys.stderr)
+        print(f"Error: {error}", file=sys.stderr)
         return 1
     finally:
         if args.debug:

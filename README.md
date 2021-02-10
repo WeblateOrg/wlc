@@ -1,11 +1,7 @@
-<!-- markdownlint-disable -->
-
 <a href="https://weblate.org/"><img alt="Weblate" src="https://s.weblate.org/cdn/Logo-Darktext-borders.png" height="80px" /></a>
 
 **Weblate is a copylefted libre software web-based continuous localization system,
 used by over 1150 libre projects and companies in more than 115 countries.**
-
-<!-- markdownlint-restore -->
 
 # wlc
 
@@ -49,10 +45,7 @@ Command line usage:
     wlc download
     wlc upload
 
-Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
-`timeout`, `method_whitelist`, `backoff_factor`, `status_forcelist`) are closely
-coupled with the `urllib3 parameters`_ and allows the user to configure request
-parameters.
+Configuration is stored in `~/.config/weblate`:
 
     [weblate]
     url = https://hosted.weblate.org/api/
@@ -64,6 +57,10 @@ parameters.
 
     [keys]
     https://hosted.weblate.org/api/ = APIKEY
+
+The key/values (`retries`, `timeout`, `method_whitelist`, `backoff_factor`,
+`status_forcelist`) are closely coupled with the [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html#module-urllib3.util.retry)
+and allows the user to configure request parameters.
 
 ## Docker image
 

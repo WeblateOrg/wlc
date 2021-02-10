@@ -57,7 +57,8 @@ class ResponseHandler:
 
         return self.body
 
-    def format_body(self, body):
+    @staticmethod
+    def format_body(body):
         if not body:
             return ""
         body = body.decode()
@@ -66,10 +67,13 @@ class ResponseHandler:
             .replace("{", "")
             .replace("}", "")
             .replace('"', "")
-            .replace("://", "-::")
-            .replace("/", ":")
+            .replace(":", "-")
+            .replace("/", "-")
             .replace(", ", "--")
             .replace(" ", "-")
+            .replace("[", "-")
+            .replace("]", "-")
+            .replace("*", "-")
         )
         return body
 
@@ -98,7 +102,7 @@ class ResponseHandler:
         multipart_dict = {}
         filename_array = [self.filename, request.method]
         for part in multipart_data.parts:
-            content_disposition = part.headers.get("Content-Disposition".encode(), None)
+            content_disposition = part.headers.get(b"Content-Disposition", None)
 
             decoded_cd = content_disposition.decode("utf-8")
             multipart_name = self.get_multipart_name(decoded_cd)

@@ -1,4 +1,4 @@
-FROM python:3.8.6-alpine
+FROM python:3.9.1-alpine
 
 COPY LICENSE setup.cfg setup.py requirements.txt /app/
 COPY ./wlc/ /app/wlc
@@ -7,7 +7,7 @@ COPY ./wlc/ /app/wlc
 # See: https://github.com/Docker-Hub-frolvlad/docker-alpine-python3/pull/13
 ENV PYTHONUNBUFFERED=1
 
-RUN pip install -e /app
+RUN pip install --no-cache-dir -e /app
 
 RUN adduser -S weblate
 WORKDIR /home/weblate

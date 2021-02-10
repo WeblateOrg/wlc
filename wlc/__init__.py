@@ -18,24 +18,24 @@
 #
 """Weblate API client library."""
 
+import json
+import logging
 from copy import copy
 
 import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-import json
-import logging
-from six.moves.urllib.parse import urlparse, urlencode
+from six.moves.urllib.parse import urlencode, urlparse
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.9.2b3"
+__version__ = "1.11.0b1"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
 API_URL = "http://127.0.0.1:8000/api/"
-USER_AGENT = "wlc/{0}".format(__version__)
+USER_AGENT = f"wlc/{__version__}"
 LOCALHOST_NETLOC = "127.0.0.1"
 TIMESTAMPS = {"last_change"}
 
@@ -146,9 +146,7 @@ class Weblate:
                 error_string = str(error.response.json())
             except Exception:
                 pass
-            raise WeblateException(
-                "HTTP error {0}: {1} {2}".format(status_code, reason, error_string)
-            )
+            raise WeblateException(f"HTTP error {status_code}: {reason} {error_string}")
 
     def raw_request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns raw content."""
@@ -168,10 +166,10 @@ class Weblate:
     def invoke_request(self, method, path, data=None, files=None, params=None):
         """Construct request object."""
         if not path.startswith("http"):
-            path = "{0}{1}".format(self.url, path)
+            path = f"{self.url}{path}"
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
-            headers["Authorization"] = "Token {}".format(self.key)
+            headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self._should_verify_ssl(path)
         kwargs = {
             "headers": headers,
@@ -242,7 +240,7 @@ class Weblate:
             return self.get_component(path)
         if len(parts) == 1:
             return self.get_project(path)
-        raise ValueError("Not supported path: {0}".format(path))
+        raise ValueError(f"Not supported path: {path}")
 
     def get_project(self, path):
         """Return project of given path."""
@@ -330,9 +328,9 @@ class Weblate:
         required_keys = ["name", "slug", "file_format", "filemask", "repo"]
         for key in required_keys:
             if key not in kwargs:
-                raise WeblateException("{} is required.".format(key))
+                raise WeblateException(f"{key} is required.")
 
-        return self.post("projects/{}/components/".format(project), **kwargs)
+        return self.post(f"projects/{project}/components/", **kwargs)
 
     def create_language(self, code, name, direction="ltr", plural=None):
         """Create a new language."""
@@ -708,11 +706,11 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         if convert is not None:
-            url = "{0}?{1}".format(url, urlencode({"format": convert}))
+            url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
     def upload(self, file, overwrite=None, **kwargs):
-        """Download translation file from server."""
+        """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         files = {"file": file}
