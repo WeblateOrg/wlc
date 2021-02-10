@@ -3,66 +3,66 @@
 # Default GitHub labels
 - color: d73a4a
   name: bug
-  description: Something is broken.
-- color: ffffff
+  description: Something isn't working
+- color: cfd3d7
   name: duplicate
-  description: Similar issue or pull request already exists.
+  description: This issue or pull request already exists
 - color: a2eeef
   name: enhancement
-  description: Adding or requesting a new feature.
+  description: New feature or request
 - color: 7057ff
   name: good first issue
-  description: Opportunity for newcoming contributors.
-- color: 7057ff
+  description: Good for newcomers
+- color: 008672
   name: help wanted
-  description: Extra attention is needed.
-- color: ffffff
+  description: Extra attention is needed
+- color: e4e669
   name: invalid
-  description: This doesn’t seem right.
+  description: This doesn't seem right
 - color: d876e3
   name: question
-  description: This is more a question for the support than an issue.
+  description: Support question
 - color: ffffff
   name: wontfix
-  description: Nobody will work on this.
+  description: This will not be worked on
 # Bountysource
 - color: 129e5e
   name: bounty
-  description: Get a bounty by fixing this issue.
+  description: There is a bounty on the issue
 # Dependabot
-- color: e3f49c
+- color: 0025ff
   name: dependencies
-  description: Pull requests that update a dependency file.
+  description: Pull requests that update a dependency file
 # Kodiaq
 - color: 000000
   name: automerge
-  description: Automatically merge pull request once tests pass.
+  description: Automatically merge pull request once tests pass
 # Hacktoberfest
-- color: 7057ff
+- color: 129e5e
   name: hacktoberfest
-  description: This is suitable for Hacktoberfest. Don’t try to spam.
+  description: This is good for Hacktoberfest
 # Weblate specific
 - color: 87a2f2
   name: backlog
-  description: This is not on the Weblate roadmap for now. Can be prioritized by sponsorship.
+  description: This is currently not on the roadmap
 - color: 0075ca
   name: documentation
-  description: Improvements or additions to the documentation.
-- color: e3f49c
+  description: Improvements or additions to documentation
+- color: d4c5f9
   name: hosted
-  description: Issues affecting Hosted Weblate service.
+  description: Issues affecting Hosted Weblate service
 - color: e3f49c
   name: naming
-  description: Discussions about naming Weblate features.
+  description: Discussions about naming certain features
 - color: fef2c0
   name: translate-toolkit
   description: Issues which need to be fixed in the translate-toolkit
 - color: 02d7e1
   name: undecided
-  description: These features might not be implemented. Can be prioritized by sponsorship.
+  description: These features might not be implemented at all
 - color: e3f49c
   name: ux
-  description: Issues related to user experience.
+  description: User experience issues
 - color: b38ddd
   name: needinfo
-  description: This needs more information from the reporter to be implemented.
+  description: This needs additional information from the reporter

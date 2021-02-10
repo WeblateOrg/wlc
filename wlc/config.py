@@ -51,8 +51,7 @@ class WeblateConfig(RawConfigParser):
         )
         self.set(self.section, "backoff_factor", 0)
 
-    @staticmethod
-    def find_configs():
+    def find_configs(self):
         # Handle Windows specifically
         if "APPDATA" in os.environ:
             win_path = os.path.join(os.environ["APPDATA"], "weblate.ini")

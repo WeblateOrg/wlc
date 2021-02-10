@@ -5,7 +5,7 @@ on:
       - master
 jobs:
   sync-readme:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
