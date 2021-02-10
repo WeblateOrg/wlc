@@ -1,5 +1,5 @@
 #
-# Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2021 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
@@ -51,7 +51,8 @@ class WeblateConfig(RawConfigParser):
         )
         self.set(self.section, "backoff_factor", 0)
 
-    def find_configs(self):
+    @staticmethod
+    def find_configs():
         # Handle Windows specifically
         if "APPDATA" in os.environ:
             win_path = os.path.join(os.environ["APPDATA"], "weblate.ini")

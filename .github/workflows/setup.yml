@@ -4,16 +4,16 @@ on: [push, pull_request]
 
 jobs:
   setup:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
-      - uses: actions/cache@v2.1.1
+      - uses: actions/cache@v2.1.4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-setup-${{ hashFiles('**/requirements*.txt') }}
       - name: Setup Python
-        uses: actions/setup-python@v2.1.2
+        uses: actions/setup-python@v2.2.1
         with:
           python-version: 3.8
       - name: Install dependencies

@@ -1,7 +1,12 @@
+1.10
+----
+
+* Not yet released.
+
 1.9
 ---
 
-* Not yet released.
+* Released on 21st December 2020.
 * Added Docker image published as weblate/wlc on Docker Hub.
 
 1.8

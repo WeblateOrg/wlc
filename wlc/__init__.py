@@ -1,5 +1,5 @@
 #
-# Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2021 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
@@ -35,7 +35,7 @@ __version__ = "1.9.2b3"
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
 API_URL = "http://127.0.0.1:8000/api/"
-USER_AGENT = "wlc/{0}".format(__version__)
+USER_AGENT = f"wlc/{__version__}"
 LOCALHOST_NETLOC = "127.0.0.1"
 TIMESTAMPS = {"last_change"}
 
@@ -168,10 +168,10 @@ class Weblate:
     def invoke_request(self, method, path, data=None, files=None, params=None):
         """Construct request object."""
         if not path.startswith("http"):
-            path = "{0}{1}".format(self.url, path)
+            path = f"{self.url}{path}"
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
-            headers["Authorization"] = "Token {}".format(self.key)
+            headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self._should_verify_ssl(path)
         kwargs = {
             "headers": headers,
@@ -242,7 +242,7 @@ class Weblate:
             return self.get_component(path)
         if len(parts) == 1:
             return self.get_project(path)
-        raise ValueError("Not supported path: {0}".format(path))
+        raise ValueError(f"Not supported path: {path}")
 
     def get_project(self, path):
         """Return project of given path."""
@@ -708,11 +708,11 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         if convert is not None:
-            url = "{0}?{1}".format(url, urlencode({"format": convert}))
+            url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
     def upload(self, file, overwrite=None, **kwargs):
-        """Download translation file from server."""
+        """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         files = {"file": file}

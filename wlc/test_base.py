@@ -1,5 +1,5 @@
 #
-# Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2021 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
@@ -57,7 +57,8 @@ class ResponseHandler:
 
         return self.body
 
-    def format_body(self, body):
+    @staticmethod
+    def format_body(body):
         if not body:
             return ""
         body = body.decode()
@@ -98,7 +99,7 @@ class ResponseHandler:
         multipart_dict = {}
         filename_array = [self.filename, request.method]
         for part in multipart_data.parts:
-            content_disposition = part.headers.get("Content-Disposition".encode(), None)
+            content_disposition = part.headers.get(b"Content-Disposition", None)
 
             decoded_cd = content_disposition.decode("utf-8")
             multipart_name = self.get_multipart_name(decoded_cd)
