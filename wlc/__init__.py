@@ -254,8 +254,8 @@ class LazyObject(dict):
                 else:
                     self._data[param] = value
                 del kwargs[param]
-        for key in kwargs:
-            self._attribs[key] = kwargs[key]
+        for key, value in kwargs.items():
+            self._attribs[key] = value
 
     def ensure_loaded(self, attrib):
         """Ensure attribute is loaded from remote."""
