@@ -1,6 +1,13 @@
 # This file is generated in https://github.com/WeblateOrg/meta/
 version: 2
 updates:
+  - package-ecosystem: docker
+    directory: /
+    schedule:
+      interval: daily
+    labels:
+      - dependencies
+      - automerge
   - package-ecosystem: github-actions
     directory: /
     schedule:

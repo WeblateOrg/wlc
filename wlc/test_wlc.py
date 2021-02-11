@@ -1,5 +1,5 @@
 #
-# Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2021 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
@@ -541,6 +541,7 @@ class UnitTest(ObjectTestBaseClass, APITest):
     #     resp = obj.patch(**patch_data)
     #     self.assertEqual(resp, patch_data)
 
-
+# Delete the reference, so that the abstract class is not discovered
+# when running tests
 del ObjectTest
 del ObjectTestBaseClass

@@ -1,11 +1,7 @@
-<!-- markdownlint-disable -->
-
 <a href="https://weblate.org/"><img alt="Weblate" src="https://s.weblate.org/cdn/Logo-Darktext-borders.png" height="80px" /></a>
 
 **Weblate is a copylefted libre software web-based continuous localization system,
 used by over 1150 libre projects and companies in more than 115 countries.**
-
-<!-- markdownlint-restore -->
 
 # wlc
 
@@ -51,7 +47,7 @@ Command line usage:
 
 Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
 `timeout`, `method_whitelist`, `backoff_factor`, `status_forcelist`) are closely
-coupled with the `urllib3 parameters`_ and allows the user to configure request
+coupled with the `urllib3 parameters` and allows the user to configure request
 parameters.
 
     [weblate]

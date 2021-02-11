@@ -1,5 +1,5 @@
 #
-# Copyright © 2012 - 2020 Michal Čihař <michal@cihar.com>
+# Copyright © 2012 - 2021 Michal Čihař <michal@cihar.com>
 #
 # This file is part of Weblate Client <https://github.com/WeblateOrg/wlc>
 #
@@ -19,6 +19,7 @@
 """Weblate API client library."""
 
 from copy import copy
+from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
 import requests
@@ -26,16 +27,15 @@ from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 import json
 import logging
-from six.moves.urllib.parse import urlparse, urlencode
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.9.2b3"
+__version__ = "1.11"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
 API_URL = "http://127.0.0.1:8000/api/"
-USER_AGENT = "wlc/{0}".format(__version__)
+USER_AGENT = f"wlc/{__version__}"
 LOCALHOST_NETLOC = "127.0.0.1"
 TIMESTAMPS = {"last_change"}
 
@@ -57,11 +57,6 @@ class WeblatePermissionError(WeblateException):
 class WeblateDeniedError(WeblateException):
     def __init__(self):
         super().__init__("Access denied, API key is wrong or missing")
-
-
-class IsNotMonolingual(WeblateException):
-    def __init__(self):
-        super().__init__("Source strings can only be added to monolingual components")
 
 
 class Weblate:
@@ -141,11 +136,10 @@ class Weblate:
                 raise WeblateDeniedError()
 
             reason = error.response.reason
-            error_string = ""
             try:
                 error_string = str(error.response.json())
             except Exception:
-                pass
+                error_string = ""
             raise WeblateException(
                 "HTTP error {0}: {1} {2}".format(status_code, reason, error_string)
             )
@@ -168,10 +162,10 @@ class Weblate:
     def invoke_request(self, method, path, data=None, files=None, params=None):
         """Construct request object."""
         if not path.startswith("http"):
-            path = "{0}{1}".format(self.url, path)
+            path = f"{self.url}{path}"
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
-            headers["Authorization"] = "Token {}".format(self.key)
+            headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self._should_verify_ssl(path)
         kwargs = {
             "headers": headers,
@@ -242,7 +236,7 @@ class Weblate:
             return self.get_component(path)
         if len(parts) == 1:
             return self.get_project(path)
-        raise ValueError("Not supported path: {0}".format(path))
+        raise ValueError(f"Not supported path: {path}")
 
     def get_project(self, path):
         """Return project of given path."""
@@ -298,9 +292,6 @@ class Weblate:
         if not source_language:
             component_obj = self.get_component(f"{project}/{component}")
             source_language = component_obj["source_language"]["code"]
-        is_monolingual = self._is_component_monolingual(f"{project}/{component}")
-        if not is_monolingual:
-            raise IsNotMonolingual()
         if not isinstance(msgstr, list):
             msgstr = [msgstr]
         path = f"{project}/{component}/{source_language}/units"
@@ -392,8 +383,8 @@ class LazyObject(dict):
                 else:
                     self._data[param] = value
                 del kwargs[param]
-        for key in kwargs:
-            self._attribs[key] = kwargs[key]
+        for key, value in kwargs.items():
+            self._attribs[key] = value
 
     def ensure_loaded(self, attrib):
         """Ensure attribute is loaded from remote."""
@@ -708,11 +699,11 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         if convert is not None:
-            url = "{0}?{1}".format(url, urlencode({"format": convert}))
+            url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
     def upload(self, file, overwrite=None, **kwargs):
-        """Download translation file from server."""
+        """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         files = {"file": file}
