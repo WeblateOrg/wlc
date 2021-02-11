@@ -26,7 +26,6 @@ from wlc import (
     API_URL,
     Change,
     Component,
-    IsNotMonolingual,
     Project,
     Translation,
     Unit,
@@ -137,15 +136,6 @@ class WeblateTest(APITest):
         obj = Weblate().get_object("hello")
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
-
-    def test_add_source_string_to_bilingual_component(self):
-        with self.assertRaises(IsNotMonolingual):
-            Weblate().add_source_string(
-                project="hello",
-                component="weblate",
-                msgid="test-bilingual",
-                msgstr="test it good",
-            )
 
     def test_add_source_string_to_monolingual_component(self):
         resp = Weblate().add_source_string(
