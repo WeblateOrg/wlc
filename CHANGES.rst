@@ -2,6 +2,15 @@
 ----
 
 * Not yet released.
+* Added ability to create new projects, components, and translations
+* Added ability to add new source strings to a component
+* Added Retry mechanism to handle failed requests
+* Added ability to create a new language
+* Added the source_lang attribute to Components
+* Added Unit class which provides access to the units api endpoints.
+* Added the PATCH HTTP method to the white list in order to enable access to new api endpoints.
+* Using requests.session to keep a single http request open instead of reinitializing them.
+* Added timeout config variable
 
 1.9
 ---
