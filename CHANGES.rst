@@ -1,7 +1,7 @@
 1.10
 ----
 
-* Not yet released.
+* Released on 11th February 2021.
 * Added ability to create new projects, components, and translations
 * Added ability to add new source strings to a component
 * Added Retry mechanism to handle failed requests
