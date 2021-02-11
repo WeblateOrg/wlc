@@ -127,6 +127,19 @@ class TestSettings(APITest):
         finally:
             os.chdir(current)
 
+    def test_default_config_values(self):
+        """Test default parser values."""
+        config = WeblateConfig()
+        self.assertEqual(config.get("weblate", "key"), "")
+        self.assertEqual(config.get("weblate", "retries"), 0)
+        self.assertEqual(config.get("weblate", "timeout"), 30)
+        self.assertEqual(
+            config.get("weblate", "method_whitelist"),
+            "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
+        )
+        self.assertEqual(config.get("weblate", "backoff_factor"), 0)
+        self.assertEqual(config.get("weblate", "status_forcelist"), None)
+
     def test_parsing(self):
         """Test config file parsing."""
         config = WeblateConfig()
@@ -134,6 +147,29 @@ class TestSettings(APITest):
         config.load()
         config.load(TEST_CONFIG)
         self.assertEqual(config.get("weblate", "url"), "https://example.net/")
+        self.assertEqual(config.get("weblate", "retries"), "999")
+        self.assertEqual(config.get("weblate", "method_whitelist"), "PUT,POST")
+        self.assertEqual(config.get("weblate", "backoff_factor"), "0.2")
+        self.assertEqual(
+            config.get("weblate", "status_forcelist"), "429,500,502,503,504"
+        )
+
+    def test_get_request_options(self):
+        """Test the get_request_options method when all options are in config."""
+        config = WeblateConfig()
+        config.load()
+        config.load(TEST_CONFIG)
+        (
+            retries,
+            status_forcelist,
+            method_whitelist,
+            backoff_factor,
+            timeout,
+        ) = config.get_request_options()
+        self.assertEqual(retries, 999)
+        self.assertEqual(status_forcelist, [429, 500, 502, 503, 504])
+        self.assertEqual(method_whitelist, ["PUT", "POST"])
+        self.assertEqual(backoff_factor, 0.2)
 
     def test_argv(self):
         """Test sys.argv processing."""

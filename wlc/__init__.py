@@ -18,11 +18,17 @@
 #
 """Weblate API client library."""
 
+import json
+import logging
 from copy import copy
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
 import requests
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util.retry import Retry
+
+log = logging.getLogger("wlc")
 
 __version__ = "1.10"
 
@@ -56,13 +62,57 @@ class WeblateDeniedError(WeblateException):
 class Weblate:
     """Weblate API wrapper object."""
 
-    def __init__(self, key="", url=API_URL, config=None):
-        """Create the object, storing key and API url."""
+    def __init__(
+        self,
+        key="",
+        url=API_URL,
+        config=None,
+        retries=0,
+        status_forcelist=None,
+        method_whitelist=None,
+        backoff_factor=0,
+        timeout=30,
+    ):
+        """Create the object, storing key, API url and requests retry args."""
+        self.session = requests.Session()
         if config is not None:
             self.url, self.key = config.get_url_key()
+            (
+                self.retries,
+                self.status_forcelist,
+                self.method_whitelist,
+                self.backoff_factor,
+                self.timeout,
+            ) = config.get_request_options()
         else:
             self.key = key
             self.url = url
+            self.retries = retries
+            self.status_forcelist = status_forcelist
+            self.timeout = timeout
+            if method_whitelist is None:
+                self.method_whitelist = [
+                    "HEAD",
+                    "GET",
+                    "PUT",
+                    "PATCH",
+                    "DELETE",
+                    "OPTIONS",
+                    "TRACE",
+                ]
+            else:
+                self.method_whitelist = method_whitelist
+            self.backoff_factor = backoff_factor
+
+        self.retries = Retry(
+            total=self.retries,
+            backoff_factor=self.backoff_factor,
+            status_forcelist=self.status_forcelist,
+            method_whitelist=self.method_whitelist,
+            raise_on_status=False,
+        )
+        self.adapter = HTTPAdapter(pool_connections=1, max_retries=retries)
+
         if not self.url.endswith("/"):
             self.url += "/"
 
@@ -86,24 +136,28 @@ class Weblate:
                 raise WeblateDeniedError()
 
             reason = error.response.reason
-            raise WeblateException(f"HTTP error {status_code}: {reason}")
+            try:
+                error_string = str(error.response.json())
+            except Exception:
+                error_string = ""
+            raise WeblateException(f"HTTP error {status_code}: {reason} {error_string}")
 
-    def raw_request(self, method, path, params=None, files=None):
+    def raw_request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns raw content."""
-        response = self.invoke_request(method, path, params, files)
+        response = self.invoke_request(method, path, data, files, params=params)
 
         return response.content
 
-    def request(self, method, path, params=None, files=None):
+    def request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns json response."""
-        response = self.invoke_request(method, path, params, files)
+        response = self.invoke_request(method, path, data, files, params=params)
 
         try:
             return response.json()
         except ValueError:
             raise WeblateException("Server returned invalid JSON")
 
-    def invoke_request(self, method, path, params=None, files=None):
+    def invoke_request(self, method, path, data=None, files=None, params=None):
         """Construct request object."""
         if not path.startswith("http"):
             path = f"{self.url}{path}"
@@ -111,23 +165,26 @@ class Weblate:
         if self.key:
             headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self._should_verify_ssl(path)
-        data = json = None
+        kwargs = {
+            "headers": headers,
+            "verify": verify_ssl,
+            "files": files,
+        }
+        if params:
+            kwargs["params"] = params
         if files:
             # mulitpart/form upload
-            data = params
+            kwargs["data"] = data
         else:
             # JSON params to handle complex structures
-            json = params
+            kwargs["json"] = data
         try:
-            response = requests.request(
-                method,
-                path,
-                headers=headers,
-                verify=verify_ssl,
-                files=files,
-                data=data,
-                json=json,
-            )
+            self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
+            kwargs["timeout"] = self.timeout
+            log_kwargs = copy(kwargs)
+            del log_kwargs["files"]
+            log.debug(json.dumps([method, path, log_kwargs], indent=True))
+            response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
         except requests.exceptions.RequestException as error:
             self.process_error(error)
@@ -138,14 +195,18 @@ class Weblate:
         """Perform POST request on the API."""
         return self.request("post", path, kwargs)
 
-    def get(self, path):
-        """Perform GET request on the API."""
-        return self.request("get", path)
+    def _post_factory(self, prefix, path, kwargs):
+        """Wrapper for posting objects."""
+        return self.post("/".join((prefix, path, "")), **kwargs)
 
-    def list_factory(self, path, parser):
+    def get(self, path, params=None):
+        """Perform GET request on the API."""
+        return self.request("get", path, params=params)
+
+    def list_factory(self, path, parser, params=None):
         """Listing object wrapper."""
         while path is not None:
-            data = self.get(path)
+            data = self.get(path, params=params)
             for item in data["results"]:
                 yield parser(weblate=self, **item)
 
@@ -162,6 +223,11 @@ class Weblate:
         Operates on (project, component or translation objects.
         """
         parts = path.strip("/").split("/")
+        try:
+            int(path)
+            return self.get_unit(path)
+        except ValueError:
+            pass
         if len(parts) == 3:
             return self.get_translation(path)
         if len(parts) == 2:
@@ -182,6 +248,10 @@ class Weblate:
         """Return translation of given path."""
         return self._get_factory("translations", path, Translation)
 
+    def get_unit(self, path):
+        """Return unit of given path."""
+        return self._get_factory("units", path, Unit)
+
     def list_projects(self, path="projects/"):
         """List projects in the instance."""
         return self.list_factory(path, Project)
@@ -191,8 +261,12 @@ class Weblate:
         return self.list_factory(path, Component)
 
     def list_changes(self, path="changes/"):
-        """List components in the instance."""
+        """List changes in the instance."""
         return self.list_factory(path, Change)
+
+    def list_units(self, path, params=None):
+        """List units in the instance."""
+        return self.list_factory(path, Unit, params=params)
 
     def list_translations(self, path="translations/"):
         """List translations in the instance."""
@@ -201,6 +275,59 @@ class Weblate:
     def list_languages(self):
         """List languages in the instance."""
         return self.list_factory("languages/", Language)
+
+    def _is_component_monolingual(self, path):
+        """Determines if a component is configured monolinugally."""
+        comp = self.get_component(path)
+        if comp["template"]:
+            return True
+        return False
+
+    def add_source_string(
+        self, project, component, msgid, msgstr, source_language=None
+    ):
+        """Adds a source string to a monolingual base file."""
+        if not source_language:
+            component_obj = self.get_component(f"{project}/{component}")
+            source_language = component_obj["source_language"]["code"]
+        if not isinstance(msgstr, list):
+            msgstr = [msgstr]
+        path = f"{project}/{component}/{source_language}/units"
+        payload = {"key": msgid, "value": msgstr}
+        return self._post_factory("translations", path, payload)
+
+    def create_project(
+        self, name, slug, website, source_language_name=None, source_language_code=None
+    ):
+        """Create a new project in the instance."""
+        data = {
+            "name": name,
+            "slug": slug,
+            "web": website,
+        }
+        if source_language_name and source_language_code:
+            data["source_language"] = {
+                "name": source_language_name,
+                "code": source_language_code,
+            }
+
+        return self.post("projects/", **data)
+
+    def create_component(self, project, **kwargs):
+        """Create a new component for project in the instance."""
+
+        required_keys = ["name", "slug", "file_format", "filemask", "repo"]
+        for key in required_keys:
+            if key not in kwargs:
+                raise WeblateException(f"{key} is required.")
+
+        return self.post(f"projects/{project}/components/", **kwargs)
+
+    def create_language(self, code, name, direction="ltr", plural=None):
+        """Create a new language."""
+        plural = plural if plural else {"number": 2, "formula": "n != 1"}
+        data = {"code": code, "name": name, "direction": direction, "plural": plural}
+        return self.post("languages/", **data)
 
     @staticmethod
     def _should_verify_ssl(path):
@@ -430,6 +557,9 @@ class Project(LazyObject, RepoObjectMixin):
     def delete(self):
         self.weblate.raw_request("delete", self._url)
 
+    def create_component(self, **kwargs):
+        return self.weblate.create_component(self.slug, **kwargs)
+
 
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
@@ -451,6 +581,7 @@ class Component(LazyObject, RepoObjectMixin):
         "file_format",
         "license",
         "license_url",
+        "source_language",
     )
     OPTIONALS = {"source_language"}
     ID = "slug"
@@ -461,6 +592,13 @@ class Component(LazyObject, RepoObjectMixin):
         """List translations in the component."""
         self.ensure_loaded("translations_url")
         return self.weblate.list_translations(self._attribs["translations_url"])
+
+    def add_translation(self, language):
+        """Creates a new translation in the component."""
+        self.ensure_loaded("translations_url")
+        return self.weblate.post(
+            path=self._attribs["translations_url"], language_code=language
+        )
 
     def statistics(self):
         """Return statistics for component."""
@@ -492,6 +630,16 @@ class Component(LazyObject, RepoObjectMixin):
 
     def delete(self):
         self.weblate.raw_request("delete", self._url)
+
+    def add_source_string(self, msgid, msgstr):
+        """Adds a source string to a monolingual base file."""
+        return self.weblate.add_source_string(
+            project=self.project.slug,
+            component=self.slug,
+            msgid=msgid,
+            msgstr=msgstr,
+            source_language=self.source_language["code"],
+        )
 
 
 class Translation(LazyObject, RepoObjectMixin):
@@ -540,7 +688,7 @@ class Translation(LazyObject, RepoObjectMixin):
         return TranslationStatistics(weblate=self.weblate, **data)
 
     def changes(self):
-        """List changes in the project."""
+        """List changes in the translation."""
         self.ensure_loaded("changes_list_url")
         return self.weblate.list_changes(self._attribs["changes_list_url"])
 
@@ -561,10 +709,15 @@ class Translation(LazyObject, RepoObjectMixin):
         if overwrite:
             kwargs["overwrite"] = "yes"
 
-        return self.weblate.request("post", url, files=files, params=kwargs)
+        return self.weblate.request("post", url, files=files, data=kwargs)
 
     def delete(self):
         self.weblate.raw_request("delete", self._url)
+
+    def units(self, **kwargs):
+        """List units in the translation."""
+        self.ensure_loaded("units_list_url")
+        return self.weblate.list_units(self._attribs["units_list_url"], params=kwargs)
 
 
 class Statistics(LazyObject):
@@ -605,3 +758,52 @@ class Change(LazyObject):
     )
     ID = "id"
     MAPPINGS = {"translation": Translation, "component": Component}
+
+
+class Unit(LazyObject):
+    """Unit object."""
+
+    PARAMS = (
+        "approved",
+        "content_hash",
+        "context",
+        "explanation",
+        "extra_flags",
+        "flags",
+        "fuzzy",
+        "has_comment",
+        "has_failing_check",
+        "has_suggestion",
+        "id",
+        "id_hash",
+        "location",
+        "note",
+        "num_words",
+        "position",
+        "previous_source",
+        "priority",
+        "source",
+        "source_unit",
+        "state",
+        "target",
+        "translated",
+        "translation",
+        "url",
+        "web_url",
+    )
+    ID = "id"
+    MAPPINGS = {"translation": Translation}
+
+    def list(self):
+        """API compatibility method, returns self."""
+        self.ensure_loaded("id")
+        return self
+
+    def patch(self, **kwargs):
+        return self.weblate.raw_request("patch", self._url, data=kwargs)
+
+    def put(self, **kwargs):
+        return self.weblate.raw_request("put", self._url, data=kwargs)
+
+    def delete(self):
+        return self.weblate.raw_request("delete", self._url)

@@ -1,0 +1,30 @@
+{
+    "count": 1,
+    "next": "http://127.0.0.1:8000/api/translations/hello/android/en/units/",
+    "previous": null,
+    "results": [
+        {
+            "translation": "http://127.0.0.1:8000/api/translations/hello/android/en/",
+            "source": "mr",
+            "previous_source": "",
+            "target": "mr",
+            "id_hash": 3515632860997702012,
+            "content_hash": 3515632860997702012,
+            "location": "",
+            "context": "",
+            "note": "",
+            "flags": "",
+            "fuzzy": false,
+            "translated": true,
+            "approved": false,
+            "position": 987,
+            "has_suggestion": false,
+            "has_comment": false,
+            "has_failing_check": false,
+            "num_words": 1,
+            "priority": 100,
+            "id": 35664,
+            "web_url": "http://127.0.0.1:8000/projects/hello/android/en/",
+            "url": "http://127.0.0.1:8000/api/units/35664/"
+        }
+}

@@ -1,0 +1,32 @@
+{
+    "translation": "http://127.0.0.1:8000/api/translations/hello/weblate/cs/",
+    "source": [
+        "String 'B'"
+    ],
+    "previous_source": "",
+    "target": [
+        "B"
+    ],
+    "id_hash": 94239120442185084,
+    "content_hash": 5871207942681564553,
+    "location": "string_b",
+    "context": "B",
+    "note": "",
+    "flags": "",
+    "state": 0,
+    "fuzzy": false,
+    "translated": false,
+    "approved": false,
+    "position": 2,
+    "has_suggestion": false,
+    "has_comment": false,
+    "has_failing_check": false,
+    "num_words": 2,
+    "source_unit": "http://127.0.0.1:8000/api/units/1/",
+    "priority": 100,
+    "id": 123,
+    "web_url": "http://127.0.0.1:8000/translate/hello/weblate/cs/?checksum=814ecdfb11e6d57c",
+    "url": "http://127.0.0.1:8000/api/units/123/",
+    "explanation": "",
+    "extra_flags": ""
+}

@@ -45,10 +45,18 @@ Command line usage:
     wlc download
     wlc upload
 
-Configuration is stored in `~/.config/weblate`:
+Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
+`timeout`, `method_whitelist`, `backoff_factor`, `status_forcelist`) are closely
+coupled with the [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html) and allows the user to configure request
+parameters.
 
     [weblate]
     url = https://hosted.weblate.org/api/
+    retries = 3
+    method_whitelist = PUT,POST,GET
+    backoff_factor = 0.2
+    status_forcelist = 429,500,502,503,504
+    timeout = 30
 
     [keys]
     https://hosted.weblate.org/api/ = APIKEY

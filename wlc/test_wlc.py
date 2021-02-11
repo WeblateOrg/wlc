@@ -17,6 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test the module."""
+import ast
 import io
 
 from requests.exceptions import RequestException
@@ -27,6 +28,7 @@ from wlc import (
     Component,
     Project,
     Translation,
+    Unit,
     Weblate,
     WeblateException,
 )
@@ -135,17 +137,101 @@ class WeblateTest(APITest):
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
 
+    def test_add_source_string_to_monolingual_component(self):
+        resp = Weblate().add_source_string(
+            project="hello",
+            component="android",
+            msgid="test-monolingual",
+            msgstr="test-me",
+        )
+        # ensure it is definitely monolingual
+        self.assertEqual(resp["component"]["template"], "android/values/strings.xml")
+        self.assertEqual(resp["component"]["slug"], "android")
+        self.assertEqual(resp["id"], 1646)
 
-class ObjectTest(APITest):
-    """
-    Base class for objects testing.
+    def test_create_project(self):
+        resp = Weblate().create_project(
+            "Hello", "hello", "http://example.com/", "Malayalam", "ml"
+        )
+        self.assertEqual("Hello", resp["name"])
+        self.assertEqual("hello", resp["slug"])
+        self.assertEqual("http://example.com/", resp["web"])
+        self.assertEqual("Malayalam", resp["source_language"]["name"])
+        self.assertEqual("ml", resp["source_language"]["code"])
 
-    The reference to it is deleted in the end of this module to avoid discovering
-    it while running tests.
-    """
+    def test_create_language(self):
+        resp = Weblate().create_language(
+            name="Test Language",
+            code="tst",
+            direction="rtl",
+            plural={"number": 2, "formula": "n != 1"},
+        )
+        self.assertEqual("Test Language", resp["name"])
+        self.assertEqual("tst", resp["code"])
+        self.assertEqual("rtl", resp["direction"])
+        self.assertEqual(2, resp["plural"]["number"])
+        self.assertEqual("n != 1", resp["plural"]["formula"])
+
+    def test_create_component(self):
+        resp = Weblate().create_component(
+            project="hello",
+            branch="master",
+            file_format="po",
+            filemask="po/*.po",
+            git_export="",
+            license="",
+            license_url="",
+            name="Weblate",
+            slug="weblate",
+            repo="file:///home/nijel/work/weblate-hello",
+            template="",
+            new_base="",
+            vcs="git",
+        )
+        self.assertEqual("Hello", resp["project"]["name"])
+        self.assertEqual("hello", resp["project"]["slug"])
+        self.assertEqual("Weblate", resp["name"])
+        self.assertEqual("weblate", resp["slug"])
+        self.assertEqual("file:///home/nijel/work/weblate-hello", resp["repo"])
+        self.assertEqual("http://example.com/git/hello/weblate/", resp["git_export"])
+        self.assertEqual("master", resp["branch"])
+        self.assertEqual("po/*.po", resp["filemask"])
+        self.assertEqual("git", resp["vcs"])
+        self.assertEqual("po", resp["file_format"])
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(project="hello")
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(project="hello", name="Weblate")
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(project="hello", name="Weblate", slug="weblate")
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(
+                project="hello", name="Weblate", slug="weblate", file_format="po"
+            )
+
+        with self.assertRaisesRegex(WeblateException, "required"):
+            Weblate().create_component(
+                project="hello",
+                name="Weblate",
+                slug="weblate",
+                file_format="po",
+                filemask="po/*.po",
+            )
+
+
+class ObjectTestBaseClass(APITest):
+    """Base class for objects testing."""
 
     _name = None
     _cls = None
+
+    def check_object(self, obj):
+        """Perform verification whether object is valid."""
+        raise NotImplementedError()
 
     def get(self):
         """Return remote object."""
@@ -157,17 +243,6 @@ class ObjectTest(APITest):
         self.assertIsInstance(obj, self._cls)
         self.check_object(obj)
 
-    def check_object(self, obj):
-        """Perform verification whether object is valid."""
-        raise NotImplementedError()
-
-    def test_refresh(self):
-        """Object refreshing test."""
-        obj = self.get()
-        obj.refresh()
-        self.assertIsInstance(obj, self._cls)
-        self.check_object(obj)
-
     def check_list(self, obj):
         """Perform verification whether listing is valid."""
         raise NotImplementedError()
@@ -176,6 +251,17 @@ class ObjectTest(APITest):
         """Item listing test."""
         obj = self.get()
         self.check_list(obj.list())
+
+
+class ObjectTest(ObjectTestBaseClass):
+    """Additional tests for projects, components, and translations."""
+
+    def test_refresh(self):
+        """Object refreshing test."""
+        obj = self.get()
+        obj.refresh()
+        self.assertIsInstance(obj, self._cls)
+        self.check_object(obj)
 
     def test_changes(self):
         """Item listing test."""
@@ -260,6 +346,34 @@ class ProjectTest(ObjectTest):
         stats = obj.statistics()
         self.assertEqual(stats["name"], "Hello")
 
+    def test_create_component(self):
+        """Component creation test."""
+        obj = self.get()
+        resp = obj.create_component(
+            branch="master",
+            file_format="po",
+            filemask="po/*.po",
+            git_export="",
+            license="",
+            license_url="",
+            name="Weblate",
+            slug="weblate",
+            repo="file:///home/nijel/work/weblate-hello",
+            template="",
+            new_base="",
+            vcs="git",
+        )
+        self.assertEqual("Hello", resp["project"]["name"])
+        self.assertEqual("hello", resp["project"]["slug"])
+        self.assertEqual("Weblate", resp["name"])
+        self.assertEqual("weblate", resp["slug"])
+        self.assertEqual("file:///home/nijel/work/weblate-hello", resp["repo"])
+        self.assertEqual("http://example.com/git/hello/weblate/", resp["git_export"])
+        self.assertEqual("master", resp["branch"])
+        self.assertEqual("po/*.po", resp["filemask"])
+        self.assertEqual("git", resp["vcs"])
+        self.assertEqual("po", resp["file_format"])
+
 
 class ComponentTest(ObjectTest):
     """Component object tests."""
@@ -276,6 +390,15 @@ class ComponentTest(ObjectTest):
         lst = list(obj)
         self.assertEqual(len(lst), 33)
         self.assertIsInstance(lst[0], Translation)
+
+    def test_add_translation(self):
+        """Perform verification that the correct endpoint is accessed."""
+        obj = self.get()
+        resp = obj.add_translation("nl_BE")
+        self.assertEqual(resp["data"]["id"], 827)
+        self.assertEqual(
+            resp["data"]["revision"], "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a"
+        )
 
     def test_statistics(self):
         """Component statistics test."""
@@ -301,24 +424,28 @@ class ComponentTest(ObjectTest):
         """Test keys lazy loading."""
         obj = Component(Weblate(), f"components/{self._name}/")
         self.assertEqual(
-            list(obj.keys()),
-            [
-                "url",
-                "web_url",
-                "name",
-                "slug",
-                "project",
-                "vcs",
-                "repo",
-                "git_export",
-                "branch",
-                "filemask",
-                "template",
-                "new_base",
-                "file_format",
-                "license",
-                "license_url",
-            ],
+            sorted(obj.keys()),
+            sorted(
+                [
+                    "branch",
+                    "file_format",
+                    "filemask",
+                    "git_export",
+                    "license",
+                    "license_url",
+                    "name",
+                    "new_base",
+                    "project",
+                    "repo",
+                    "slug",
+                    "source_language",
+                    "source_language",
+                    "template",
+                    "url",
+                    "vcs",
+                    "web_url",
+                ]
+            ),
         )
 
 
@@ -368,7 +495,44 @@ class TranslationTest(ObjectTest):
 
         obj.upload(file, method="translate")
 
+    def test_units(self):
+        obj = self.get()
+        units = list(obj.units())
+        self.assertEqual(1, len(units))
+        self.assertIsInstance(units[0], Unit)
+        self.assertEqual(units[0].id, 35664)
+
+    def test_units_search(self):
+        obj = self.get()
+        units = list(obj.units(q='source:="mr"'))
+        self.assertEqual(1, len(units))
+        self.assertIsInstance(units[0], Unit)
+        self.assertEqual(units[0].id, 117)
+
+
+class UnitTest(ObjectTestBaseClass):
+    _name = "123"
+    _cls = Unit
+
+    def check_object(self, obj):
+        """Perform verification whether object is valid."""
+        self.assertEqual(obj.id, 123)
+
+    def check_list(self, obj):
+        """Perform verification whether listing is valid."""
+        self.assertIsInstance(obj, Unit)
+
+    def test_units_patch(self):
+        obj = self.get()
+        patch_data = {
+            "target": ["foo"],
+            "state": 30,
+        }
+        resp = obj.patch(**patch_data)
+        self.assertEqual(ast.literal_eval(resp.decode()), patch_data)
+
 
 # Delete the reference, so that the abstract class is not discovered
 # when running tests
 del ObjectTest
+del ObjectTestBaseClass
