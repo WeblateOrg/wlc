@@ -18,6 +18,8 @@
 #
 """Weblate API client library."""
 
+import json
+import logging
 from copy import copy
 from urllib.parse import urlencode, urlparse
 
@@ -25,8 +27,6 @@ import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
-import json
-import logging
 
 log = logging.getLogger("wlc")
 
@@ -140,9 +140,7 @@ class Weblate:
                 error_string = str(error.response.json())
             except Exception:
                 error_string = ""
-            raise WeblateException(
-                "HTTP error {0}: {1} {2}".format(status_code, reason, error_string)
-            )
+            raise WeblateException(f"HTTP error {status_code}: {reason} {error_string}")
 
     def raw_request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns raw content."""
@@ -321,9 +319,9 @@ class Weblate:
         required_keys = ["name", "slug", "file_format", "filemask", "repo"]
         for key in required_keys:
             if key not in kwargs:
-                raise WeblateException("{} is required.".format(key))
+                raise WeblateException(f"{key} is required.")
 
-        return self.post("projects/{}/components/".format(project), **kwargs)
+        return self.post(f"projects/{project}/components/", **kwargs)
 
     def create_language(self, code, name, direction="ltr", plural=None):
         """Create a new language."""
