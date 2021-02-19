@@ -704,7 +704,7 @@ class Translation(LazyObject, RepoObjectMixin):
         """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
-        files = {"file": (f"file.{kwargs['format']}", file)}
+        files = {"file": (f"file.{kwargs.get('format','po')}", file)}
 
         if overwrite:
             kwargs["overwrite"] = "yes"
