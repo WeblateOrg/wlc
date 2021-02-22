@@ -30,7 +30,7 @@ from requests.packages.urllib3.util.retry import Retry
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.10.1b1"
+__version__ = "1.11"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
