@@ -17,14 +17,14 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test helpers."""
-import collections
+import cgi
 import os
-import re
+from hashlib import blake2b
+from io import BytesIO
 from unittest import TestCase
 
 import responses
 from requests.exceptions import RequestException
-from requests_toolbelt.multipart import decoder
 
 DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
 
@@ -79,50 +79,39 @@ class ResponseHandler:
 
     def get_filename(self, request):
         """Return filename for given request."""
+        filename_parts = [self.filename, request.method]
         if request.method != "GET":
             content_type = request.headers.get("content-type", None)
 
             if content_type is not None and content_type.startswith(
                 "multipart/form-data"
             ):
-                return self.get_multipart_filename(content_type, request)
-            return "--".join(
-                (self.filename, request.method, self.format_body(request.body))
-            )
+                filename_parts.append(
+                    self.format_multipart_body(request.body, content_type)
+                )
+            else:
+                filename_parts.append(self.format_body(request.body))
+            return "--".join(filename_parts)
         if "?" in request.path_url:
-            return "--".join(
-                (self.filename, request.method, request.path_url.split("?", 1)[-1])
-            )
+            filename_parts.append(request.path_url.split("?", 1)[-1])
+            return "--".join(filename_parts)
         return None
 
-    def get_multipart_filename(self, content_type, request):
-        """Return filename for given multipart request."""
-        body = request.body
-        multipart_data = decoder.MultipartDecoder(body, content_type)
-        multipart_dict = {}
-        filename_array = [self.filename, request.method]
-        for part in multipart_data.parts:
-            content_disposition = part.headers.get(b"Content-Disposition", None)
-
-            decoded_cd = content_disposition.decode("utf-8")
-            multipart_name = self.get_multipart_name(decoded_cd)
-
-            multipart_dict[multipart_name] = part.text.replace(" ", "-")
-
-        ordered_dict = collections.OrderedDict(sorted(multipart_dict.items()))
-
-        for key, value in ordered_dict.items():
-            filename_array.append(key + "=" + value)
-        return "--".join(filename_array)
-
-    # simple implementation instead of one based on the rfc6266 parser,
-    # as rfc6266 fails on python 3.7
     @staticmethod
-    def get_multipart_name(content_disposition):
-        """Return multipart name from content disposition."""
-        return re.search(
-            r'name\s*=\s*"(?P<name>[A-Za-z]+)"', content_disposition
-        ).group("name")
+    def format_multipart_body(body, content_type):
+        content_type, pdict = cgi.parse_header(content_type)
+        if "boundary" in pdict:
+            pdict["boundary"] = pdict["boundary"].encode()
+        fileio = BytesIO(body)
+        payload = []
+        for name, values in cgi.parse_multipart(fileio, pdict).items():
+            value = values[0]
+            if isinstance(value, bytes):
+                value = value.decode()
+            payload.append((name, value))
+        digest = blake2b(digest_size=4)
+        digest.update(repr(sorted(payload)).encode())
+        return digest.hexdigest()
 
 
 def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
