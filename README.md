@@ -20,10 +20,6 @@ Install using pip:
 
     pip3 install wlc
 
-Please use Power Shell or another modern equivalent when you install wlc under
-Windows. Since wlc uses some very long file paths/names during installation,
-cmd may fail due to the windows path length limit.
-
 Sources are available at <https://github.com/WeblateOrg/wlc>.
 
 ## Usage
