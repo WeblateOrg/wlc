@@ -700,12 +700,12 @@ class Translation(LazyObject, RepoObjectMixin):
             url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
-    def upload(self, file, overwrite=None, **kwargs):
+    def upload(self, file, overwrite=None, format=None, **kwargs):
         """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
-        if "format" in kwargs:
-            files = {"file": (f"file.{kwargs['format']}", file)}
+        if format:
+            files = {"file": (f"file.{format}", file)}
         else:
             files = {"file": file}
         if overwrite:
