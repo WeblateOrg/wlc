@@ -495,6 +495,13 @@ class TranslationTest(ObjectTest):
 
         obj.upload(file, method="translate")
 
+    def test_upload_format(self):
+        """Test file upload."""
+        obj = self.get()
+        file = io.StringIO("test upload data")
+
+        obj.upload(file, format="po")
+
     def test_units(self):
         obj = self.get()
         units = list(obj.units())
