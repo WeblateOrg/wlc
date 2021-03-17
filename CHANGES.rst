@@ -1,7 +1,10 @@
 1.11
 ----
 
-* Not yet released.
+* Released on 17th March 2021.
+* Fixed long filenames in test fixtures.
+* Updated base docker image.
+* Add support for specifying format when uploading files.
 
 1.10
 ----
