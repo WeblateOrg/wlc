@@ -173,7 +173,7 @@ jobs:
     runs-on: ubuntu-20.04
     name: Publish
     needs: [test, anchore, buildx]
-    if: startsWith(github.ref, 'refs/tags/') || (github.ref == 'refs/heads/master')
+    if: startsWith(github.ref, 'refs/tags/') || (github.ref == 'refs/heads/main')
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -41,7 +41,7 @@ else
                 echo --tag "weblate/wlc:${GITHUB_REF#refs/tags/}"
                 echo --tag weblate/wlc:latest
                 ;;
-            refs/heads/master)
+            refs/heads/main)
                 echo --tag weblate/wlc:edge
                 ;;
         esac
