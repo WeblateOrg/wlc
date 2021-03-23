@@ -1,5 +1,5 @@
 {"changes_list_url": "http://127.0.0.1:8000/api/translations/hello/android/en/units/en/changes/",
- "component": {"branch": "master",
+ "component": {"branch": "main",
                "changes_list_url": "http://127.0.0.1:8000/api/components/hello/android/changes/",
                "check_flags": "",
                "edit_template": true,

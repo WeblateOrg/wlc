@@ -1,6 +1,6 @@
 {
     "component": {
-        "branch": "master",
+        "branch": "main",
         "file_format": "po",
         "filemask": "po/*.po",
         "git_export": "",

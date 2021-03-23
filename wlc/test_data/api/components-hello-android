@@ -1,5 +1,5 @@
 {
-    "branch": "master",
+    "branch": "main",
     "file_format": "aresource",
     "filemask": "android/values-*/strings.xml",
     "git_export": "",

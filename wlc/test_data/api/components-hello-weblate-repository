@@ -17,6 +17,6 @@
         "shortrevision": "8ba2d7e",
         "summary": "Add Arabic"
     },
-    "status": "On branch master\nYour branch is ahead of 'origin/master' by 1 commit.\n  (use \"git push\" to publish your local commits)\nnothing to commit, working directory clean\n",
+    "status": "On branch main\nYour branch is ahead of 'origin/main' by 1 commit.\n  (use \"git push\" to publish your local commits)\nnothing to commit, working directory clean\n",
     "url": "http://127.0.0.1:8000/api/components/hello/weblate/repository/"
 }

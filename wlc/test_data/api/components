@@ -4,7 +4,7 @@
     "previous": null,
     "results": [
         {
-            "branch": "master",
+            "branch": "main",
             "file_format": "aresource",
             "filemask": "android/values-*/strings.xml",
             "git_export": "",
@@ -55,7 +55,7 @@
             "web_url": "http://127.0.0.1:8000/projects/hello/android/"
         },
         {
-            "branch": "master",
+            "branch": "main",
             "file_format": "po",
             "filemask": "po/*.po",
             "git_export": "",

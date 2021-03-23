@@ -18,7 +18,7 @@
     "vcs":"git",
     "repo":"file:///home/nijel/work/weblate-hello",
     "git_export":"http://example.com/git/hello/weblate/",
-    "branch":"master",
+    "branch":"main",
     "push_branch":"",
     "filemask":"po/*.po",
     "template":"",

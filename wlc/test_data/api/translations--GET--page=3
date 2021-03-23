@@ -5,7 +5,7 @@
     "results": [
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -78,7 +78,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -151,7 +151,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -224,7 +224,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -297,7 +297,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -370,7 +370,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -443,7 +443,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -516,7 +516,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "aresource",
                 "filemask": "android/values-*/strings.xml",
                 "git_export": "",
@@ -589,7 +589,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
@@ -662,7 +662,7 @@
         },
         {
             "component": {
-                "branch": "master",
+                "branch": "main",
                 "file_format": "po",
                 "filemask": "po/*.po",
                 "git_export": "",
