@@ -149,7 +149,7 @@ def raise_error(request):
     """Raise IOError."""
     if "/io" in request.path_url:
         raise RequestException("Some error")
-    raise Exception("Bug")
+    raise FileNotFoundError("Bug")
 
 
 def register_error(path, code, domain="http://127.0.0.1:8000/api", **kwargs):

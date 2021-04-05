@@ -300,7 +300,7 @@ class TestCommands(APITest):
 
     def test_show_error(self):
         execute(["show", "io"], expected=10)
-        with self.assertRaises(Exception):
+        with self.assertRaises(FileNotFoundError):
             execute(["show", "bug"])
 
     def test_delete(self):

@@ -66,7 +66,7 @@ class WeblateErrorTest(APITest):
 
     def test_bug(self):
         """Test listing projects."""
-        with self.assertRaises(Exception):
+        with self.assertRaises(FileNotFoundError):
             Weblate().get_object("bug")
 
     def test_invalid(self):
