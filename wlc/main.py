@@ -107,7 +107,7 @@ class DateTimeEncoder(json.JSONEncoder):
 def sort_key(value):
     """Key getter for sorting."""
     try:
-        return "{:02d}".format(SORT_ORDER.index(value))
+        return f"{SORT_ORDER.index(value):02d}"
     except ValueError:
         return value
 
@@ -205,9 +205,7 @@ class Command:
             self.println("<table>")
             for key, data in sorted_items(value):
                 self.println("  <tr>")
-                self.println(
-                    "    <th>{}</th><td>{}</td>".format(key, self.format_value(data))
-                )
+                self.println(f"    <th>{key}</th><td>{self.format_value(data)}</td>")
                 self.println("  </tr>")
             self.println("</table>")
 
@@ -216,13 +214,11 @@ class Command:
         if header is not None:
             for item in value:
                 for key in header:
-                    self.println(
-                        "{}: {}".format(key, self.format_value(getattr(item, key)))
-                    )
+                    self.println(f"{key}: {self.format_value(getattr(item, key))}")
                 self.println("")
         else:
             for key, data in sorted_items(value):
-                self.println("{}: {}".format(key, self.format_value(data)))
+                self.println(f"{key}: {self.format_value(data)}")
 
     def print(self, value):
         """Print value."""
