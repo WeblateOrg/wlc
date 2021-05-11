@@ -50,8 +50,10 @@ class WeblateThrottlingError(WeblateException):
 
 
 class WeblatePermissionError(WeblateException):
-    def __init__(self):
-        super().__init__("You don't have permission to access this object")
+    def __init__(self, message=None):
+        if not message:
+            message = "You don't have permission to access this object"
+        super().__init__(message)
 
 
 class WeblateDeniedError(WeblateException):
@@ -117,7 +119,14 @@ class Weblate:
             self.url += "/"
 
     @staticmethod
-    def process_error(error):
+    def permission_error_message(error):
+        """Get detail from serialized DRF PermissionDenied exception."""
+        try:
+            return error.response.json()["detail"]
+        except (json.JSONDecodeError, KeyError):
+            return None
+
+    def process_error(self, error):
         """Raise WeblateException for known HTTP errors."""
         if isinstance(error, requests.HTTPError):
             status_code = error.response.status_code
@@ -130,7 +139,7 @@ class Weblate:
                     "(maybe operation is not supported on the server)"
                 )
             if status_code == 403:
-                raise WeblatePermissionError()
+                raise WeblatePermissionError(self.permission_error_message(error))
 
             if status_code == 401:
                 raise WeblateDeniedError()

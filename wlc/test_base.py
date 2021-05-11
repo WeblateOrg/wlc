@@ -152,13 +152,15 @@ def raise_error(request):
     raise FileNotFoundError("Bug")
 
 
-def register_error(path, code, domain="http://127.0.0.1:8000/api", **kwargs):
+def register_error(
+    path, code, domain="http://127.0.0.1:8000/api", method=responses.GET, **kwargs
+):
     """Simplified URL error registration."""
     url = "/".join((domain, path, ""))
     if "callback" in kwargs:
-        responses.add_callback(responses.GET, url, **kwargs)
+        responses.add_callback(method, url, **kwargs)
     else:
-        responses.add(responses.GET, url, status=code, **kwargs)
+        responses.add(method, url, status=code, **kwargs)
 
 
 def register_uris():
@@ -203,6 +205,12 @@ def register_uris():
     register_uri("projects", domain="https://example.net")
     register_error("projects/nonexisting", 404)
     register_error("projects/denied", 403)
+    register_error(
+        "projects/denied_json/components",
+        403,
+        method=responses.POST,
+        json={"detail": "Can not create components"},
+    )
     register_error("projects/throttled", 429)
     register_error("projects/error", 500)
     register_error("projects/io", 500, callback=raise_error)
