@@ -25,6 +25,7 @@ import logging
 import sys
 from argparse import ArgumentParser
 from datetime import datetime
+from typing import Callable, Dict, List
 
 import argcomplete
 from requests.exceptions import RequestException
@@ -32,9 +33,9 @@ from requests.exceptions import RequestException
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
 
-COMMANDS = {}
+COMMANDS: Dict[str, Callable] = {}
 
-SORT_ORDER = []
+SORT_ORDER: List[str] = []
 
 
 def register_command(command):

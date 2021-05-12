@@ -21,6 +21,7 @@
 import json
 import logging
 from copy import copy
+from typing import Any, Dict, Set, Tuple
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
@@ -340,9 +341,9 @@ class Weblate:
 class LazyObject(dict):
     """Object which supports deferred loading."""
 
-    PARAMS = ()
-    OPTIONALS = set()
-    MAPPINGS = {}
+    PARAMS: Tuple[str, ...] = ()
+    OPTIONALS: Set[str] = set()
+    MAPPINGS: Dict[str, Any] = {}
     ID = "url"
 
     def __init__(self, weblate, url, **kwargs):
