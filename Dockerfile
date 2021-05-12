@@ -7,9 +7,10 @@ COPY ./wlc/ /app/wlc
 # See: https://github.com/Docker-Hub-frolvlad/docker-alpine-python3/pull/13
 ENV PYTHONUNBUFFERED=1
 
-RUN pip install --no-cache-dir -e /app
+SHELL ["/bin/bash", "-o", "pipefail", "-x", "-c"]
 
-RUN adduser -S weblate
+RUN pip install --no-cache-dir -e /app && adduser -S weblate
+
 WORKDIR /home/weblate
 USER weblate
 
