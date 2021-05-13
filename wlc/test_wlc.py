@@ -19,6 +19,7 @@
 """Test the module."""
 import ast
 import io
+from typing import Any, Optional
 
 from requests.exceptions import RequestException
 
@@ -238,8 +239,8 @@ class WeblateTest(APITest):
 class ObjectTestBaseClass(APITest):
     """Base class for objects testing."""
 
-    _name = None
-    _cls = None
+    _name: Optional[str] = None
+    _cls: Any = None
 
     def check_object(self, obj):
         """Perform verification whether object is valid."""

@@ -510,7 +510,7 @@ class ProjectRepository(LazyObject, RepoMixin):
 class Repository(ProjectRepository):
     """Repository object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "url",
         "needs_commit",
         "needs_merge",
@@ -735,7 +735,7 @@ class Translation(LazyObject, RepoObjectMixin):
 class Statistics(LazyObject):
     """Statistics object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "failing_percent",
         "translated_percent",
         "total_words",
