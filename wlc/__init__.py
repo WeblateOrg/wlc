@@ -449,14 +449,14 @@ class LazyObject(dict):
 class Language(LazyObject):
     """Language object."""
 
-    PARAMS = ("url", "web_url", "code", "name", "direction")
+    PARAMS: Tuple[str, ...] = ("url", "web_url", "code", "name", "direction")
     ID = "code"
 
 
 class LanguageStats(LazyObject):
     """Language object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "total",
         "code",
         "translated_words",
@@ -500,7 +500,7 @@ class RepoMixin:
 class ProjectRepository(LazyObject, RepoMixin):
     """Repository object."""
 
-    PARAMS = ("url", "needs_commit", "needs_merge", "needs_push")
+    PARAMS: Tuple[str, ...] = ("url", "needs_commit", "needs_merge", "needs_push")
 
     def _get_repo_url(self):
         """Return repository url."""
@@ -535,7 +535,14 @@ class RepoObjectMixin(RepoMixin):
 class Project(LazyObject, RepoObjectMixin):
     """Project object."""
 
-    PARAMS = ("url", "web_url", "name", "slug", "web", "source_language")
+    PARAMS: Tuple[str, ...] = (
+        "url",
+        "web_url",
+        "name",
+        "slug",
+        "web",
+        "source_language",
+    )
     OPTIONALS = {"source_language"}
     ID = "slug"
     MAPPINGS = {"source_language": Language}
@@ -574,7 +581,7 @@ class Project(LazyObject, RepoObjectMixin):
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "url",
         "web_url",
         "name",
@@ -655,7 +662,7 @@ class Component(LazyObject, RepoObjectMixin):
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "url",
         "web_url",
         "language",
@@ -753,13 +760,13 @@ class Statistics(LazyObject):
 
 
 class TranslationStatistics(Statistics):
-    PARAMS = Statistics.PARAMS + ("code", "last_author")
+    PARAMS: Tuple[str, ...] = Statistics.PARAMS + ("code", "last_author")
 
 
 class Change(LazyObject):
     """Change object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "url",
         "unit",
         "translation",
@@ -775,7 +782,7 @@ class Change(LazyObject):
 class Unit(LazyObject):
     """Unit object."""
 
-    PARAMS = (
+    PARAMS: Tuple[str, ...] = (
         "approved",
         "content_hash",
         "context",
