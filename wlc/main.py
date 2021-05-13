@@ -446,7 +446,7 @@ class Delete(ObjectCommand):
 
 
 @register_command
-class List(ObjectCommand):
+class ListObjects(ObjectCommand):
     """List object."""
 
     name = "ls"
