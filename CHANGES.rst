@@ -2,6 +2,8 @@
 ----
 
 * Not yet released.
+* Improved error messages when permission was denied.
+* Added type hints to the codebase.
 
 1.11
 ----
