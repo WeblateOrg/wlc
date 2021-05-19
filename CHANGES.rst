@@ -1,7 +1,7 @@
 1.12
 ----
 
-* Not yet released.
+* Released on 19th May 2021.
 * Improved error messages when permission was denied.
 * Added type hints to the codebase.
 
