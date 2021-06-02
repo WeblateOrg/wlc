@@ -180,6 +180,9 @@ class Weblate:
             "verify": verify_ssl,
             "files": files,
         }
+        # Disable insecure warnings for localhost
+        if not verify_ssl:
+            logging.captureWarnings(True)
         if params:
             kwargs["params"] = params
         if files:
