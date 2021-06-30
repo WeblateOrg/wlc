@@ -1,4 +1,4 @@
-FROM python:3.9.5-alpine
+FROM python:3.9.6-alpine
 
 COPY LICENSE setup.cfg setup.py requirements.txt /app/
 COPY ./wlc/ /app/wlc
