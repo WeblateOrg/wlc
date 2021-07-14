@@ -23,4 +23,5 @@ jobs:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VALIDATE_PYTHON_ISORT: "false"
+          PYTHON_MYPY_CONFIG_FILE: ".mypy.ini"
           VALIDATE_JSCPD: "false"
