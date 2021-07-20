@@ -24,7 +24,7 @@ from copy import copy
 from typing import Any, Dict, Set, Tuple
 from urllib.parse import urlencode, urlparse
 
-import dateutil.parser
+import dateutil.parser  # type: ignore
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
