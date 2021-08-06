@@ -6,7 +6,7 @@ on:
 jobs:
   sync-readme:
     runs-on: ubuntu-20.04
-    if: github.repository == 'WeblateOrg/wlc'
+    if: ${{ github.repository == 'WeblateOrg/wlc' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
