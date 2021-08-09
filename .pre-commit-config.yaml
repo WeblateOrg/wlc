@@ -15,7 +15,7 @@ repos:
       - id: mixed-line-ending
         args: [--fix=lf]
   - repo: https://github.com/adrienverge/yamllint
-    rev: v1.26.1
+    rev: v1.26.2
     hooks:
       - id: yamllint
   - repo: https://github.com/pycqa/isort
@@ -23,7 +23,7 @@ repos:
     hooks:
       - id: isort
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.23.1
+    rev: v2.23.3
     hooks:
       - id: pyupgrade
         args: [--py36-plus]
