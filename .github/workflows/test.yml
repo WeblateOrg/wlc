@@ -51,7 +51,7 @@ jobs:
           flags: unittests
           name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
       - name: DeepSource
-        if: matrix.os == 'ubuntu-20.04'
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         continue-on-error: true
         env:
           DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io
