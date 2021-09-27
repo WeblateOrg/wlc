@@ -33,7 +33,7 @@ class WeblateConfig(RawConfigParser):
 
     def __init__(self, section="weblate"):
         """Construct WeblateConfig object."""
-        RawConfigParser.__init__(self, delimiters=("=",))
+        super().__init__(delimiters=("=",))
         self.section = section
         self.set_defaults()
 
