@@ -17,7 +17,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-"""Command line interface for Weblate."""
+"""Command-line interface for Weblate."""
 import csv
 import http.client
 import json
@@ -39,7 +39,7 @@ SORT_ORDER: List[str] = []
 
 
 def register_command(command):
-    """Register command decorator in the command line interface."""
+    """Register command decorator in the command-line interface."""
     COMMANDS[command.name] = command
     return command
 
@@ -47,7 +47,7 @@ def register_command(command):
 def get_parser():
     """Create argument parser."""
     parser = ArgumentParser(
-        description=f"Weblate <{wlc.URL}> command line utility.",
+        description=f"Weblate <{wlc.URL}> command-line utility.",
         epilog=f"This utility is developed at <{wlc.DEVEL_URL}>.",
     )
     parser.add_argument(
@@ -88,7 +88,7 @@ Invoke with --help to get more detailed help.
 
 
 class CommandError(Exception):
-    """Generic error from command line."""
+    """Generic error from command-line."""
 
     def __init__(self, message, detail=None):
         """Create CommandError exception."""
@@ -143,7 +143,7 @@ class Command:
 
     @classmethod
     def add_parser(cls, subparser):
-        """Create parser for command line."""
+        """Create parser for command-line."""
         return subparser.add_parser(cls.name, description=cls.description)
 
     def println(self, line):
@@ -248,7 +248,7 @@ class ObjectCommand(Command):
 
     @classmethod
     def add_parser(cls, subparser):
-        """Create parser for command line."""
+        """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
             "object",
@@ -273,7 +273,7 @@ class ObjectCommand(Command):
         if not path:
             if blank:
                 return None
-            raise CommandError("No object passed on command line!")
+            raise CommandError("No object passed on command-line!")
 
         return self.wlc.get_object(path)
 
@@ -342,7 +342,7 @@ class Version(Command):
 
     @classmethod
     def add_parser(cls, subparser):
-        """Create parser for command line."""
+        """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument("--bare", action="store_true", help="Print only version")
         return parser
@@ -639,7 +639,7 @@ class Download(TranslationCommand):
 
     @classmethod
     def add_parser(cls, subparser):
-        """Create parser for command line."""
+        """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
             "-c", "--convert", help="Convert file format on server (defaults to none)"
@@ -669,7 +669,7 @@ class Upload(TranslationCommand):
 
     @classmethod
     def add_parser(cls, subparser):
-        """Create parser for command line."""
+        """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument("-i", "--input", help="File to upload (defaults to stdin)")
         parser.add_argument(
@@ -724,7 +724,7 @@ class Upload(TranslationCommand):
 
 
 def parse_settings(args, settings):
-    """Read settings based on command line params."""
+    """Read settings based on command-line params."""
 
     config = WeblateConfig(args.config_section)
     if settings is None:

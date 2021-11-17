@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-"""Test command line interface."""
+"""Test command-line interface."""
 
 import json
 import os
@@ -65,7 +65,7 @@ class TestSettings(APITest):
     """Test settings handling."""
 
     def test_commandline(self):
-        """Configuration using commandline."""
+        """Configuration using command-line."""
         output = execute(["--url", "https://example.net/", "list-projects"])
         self.assertIn("Hello", output)
 
@@ -466,14 +466,14 @@ class TestCommands(APITest):
 
 class TestErrors(APITest):
     def test_commandline_missing_key(self):
-        """Configuration using commandline."""
+        """Configuration using command-line."""
         output = execute(
             ["--url", "http://denied.example.com", "list-projects"], expected=1
         )
         self.assertIn("Missing API key", output)
 
     def test_commandline_wrong_key(self):
-        """Configuration using commandline."""
+        """Configuration using command-line."""
         output = execute(
             ["--key", "x", "--url", "http://denied.example.com", "list-projects"],
             expected=1,

@@ -48,7 +48,7 @@
 ---
 
 * Released on 3rd September 2020.
-* Fixed installation of wlc command line.
+* Fixed installation of wlc command-line.
 
 1.6
 ---

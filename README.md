@@ -5,7 +5,7 @@ used by over 2500 libre projects and companies in more than 165 countries.**
 
 # wlc
 
-wlc is a [Weblate](https://weblate.org/) commandline client using [Weblate's REST API](https://docs.weblate.org/en/latest/api.html).
+wlc is a [Weblate](https://weblate.org/) command-line client using [Weblate's REST API](https://docs.weblate.org/en/latest/api.html).
 
 [![Website](https://img.shields.io/badge/website-weblate.org-blue.svg)](https://weblate.org/)
 [![Translation status](https://hosted.weblate.org/widgets/weblate/-/svg-badge.svg)](https://hosted.weblate.org/engage/weblate/?utm_source=widget)
@@ -26,7 +26,7 @@ Sources are available at <https://github.com/WeblateOrg/wlc>.
 
 Please see [Weblate documentation](https://docs.weblate.org/en/latest/wlc.html) for more complete documentation.
 
-Command line usage:
+Command-line usage:
 
     wlc list-projects
     wlc list-components
