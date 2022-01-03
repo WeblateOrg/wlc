@@ -683,7 +683,7 @@ class Upload(TranslationCommand):
         )
         parser.add_argument(
             "--author-email",
-            help="Author email, to override currently authenticated user",
+            help="Author e-mail, to override currently authenticated user",
         )
         parser.add_argument(
             "--method",
