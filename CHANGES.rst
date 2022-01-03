@@ -2,6 +2,7 @@
 ----
 
 * Not yet released.
+* Support all wlc upload methods.
 
 1.12
 ----
