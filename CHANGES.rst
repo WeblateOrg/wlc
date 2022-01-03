@@ -3,6 +3,7 @@
 
 * Not yet released.
 * Support all wlc upload methods.
+* Tested against Python 3.10.
 
 1.12
 ----
