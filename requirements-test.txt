@@ -2,5 +2,5 @@
 pre-commit
 pytest
 pytest-cov
-responses>=0.10.1,<0.17.0
+responses>=0.10.1,<0.18.0
 twine
