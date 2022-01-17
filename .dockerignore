@@ -3,8 +3,6 @@
 .gitmodules
 .dockerignore
 .venv
-LICENSE
-README.md
 SECURITY.md
 Dockerfile
 docker-compose
