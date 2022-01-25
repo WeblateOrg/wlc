@@ -9,61 +9,61 @@ jobs:
       matrix:
         os: [ubuntu-20.04, windows-latest, macos-latest]
         python-version:
-          - "3.6"
-          - "3.7"
-          - "3.8"
-          - "3.9"
-          - "3.10"
+        - '3.6'
+        - '3.7'
+        - '3.8'
+        - '3.9'
+        - '3.10'
         exclude:
-          - os: windows-latest
-            python-version: 3.6
-          - os: windows-latest
-            python-version: 3.7
-          - os: windows-latest
-            python-version: 3.8
-          - os: windows-latest
-            python-version: 3.9
-          - os: macos-latest
-            python-version: 3.6
-          - os: macos-latest
-            python-version: 3.7
-          - os: macos-latest
-            python-version: 3.8
-          - os: macos-latest
-            python-version: 3.9
+        - os: windows-latest
+          python-version: 3.6
+        - os: windows-latest
+          python-version: 3.7
+        - os: windows-latest
+          python-version: 3.8
+        - os: windows-latest
+          python-version: 3.9
+        - os: macos-latest
+          python-version: 3.6
+        - os: macos-latest
+          python-version: 3.7
+        - os: macos-latest
+          python-version: 3.8
+        - os: macos-latest
+          python-version: 3.9
     name: ${{ matrix.os }}, Python ${{ matrix.python-version }}
 
     steps:
-      - uses: actions/checkout@v2.4.0
-      - name: Cache pip
-        uses: actions/cache@v2.1.7
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2.3.1
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install pip dependencies
-        run: |
-          python -m pip install --upgrade pip wheel
-          pip install -r requirements.txt -r requirements-test.txt
-      - name: Test
-        run: |
-          py.test --cov=wlc wlc
-      - name: Coverage
-        run: |
-          coverage xml
-      - uses: codecov/codecov-action@v2.1.0
-        with:
-          token: ${{secrets.CODECOV_TOKEN}}
-          flags: unittests
-          name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
-      - name: DeepSource
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
-        continue-on-error: true
-        env:
-          DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io
-        run: |
-          curl https://deepsource.io/cli | sh
-          ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml
+    - uses: actions/checkout@v2.4.0
+    - name: Cache pip
+      uses: actions/cache@v2.1.7
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements*.txt') }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2.3.1
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install pip dependencies
+      run: |
+        python -m pip install --upgrade pip wheel
+        pip install -r requirements.txt -r requirements-test.txt
+    - name: Test
+      run: |
+        py.test --cov=wlc wlc
+    - name: Coverage
+      run: |
+        coverage xml
+    - uses: codecov/codecov-action@v2.1.0
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        flags: unittests
+        name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
+    - name: DeepSource
+      if: ${{ matrix.os == 'ubuntu-20.04' }}
+      continue-on-error: true
+      env:
+        DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io
+      run: |
+        curl https://deepsource.io/cli | sh
+        ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml

@@ -17,7 +17,9 @@ wlc is a [Weblate](https://weblate.org/) command-line client using [Weblate's RE
 
 Install using pip:
 
-    pip3 install wlc
+```
+pip3 install wlc
+```
 
 Sources are available at <https://github.com/WeblateOrg/wlc>.
 
@@ -27,38 +29,42 @@ Please see [Weblate documentation](https://docs.weblate.org/en/latest/wlc.html) 
 
 Command-line usage:
 
-    wlc list-projects
-    wlc list-components
-    wlc list-translations
-    wlc list-languages
-    wlc show
-    wlc ls
-    wlc commit
-    wlc push
-    wlc pull
-    wlc repo
-    wlc stats
-    wlc lock
-    wlc unlock
-    wlc lock-status
-    wlc download
-    wlc upload
+```
+wlc list-projects
+wlc list-components
+wlc list-translations
+wlc list-languages
+wlc show
+wlc ls
+wlc commit
+wlc push
+wlc pull
+wlc repo
+wlc stats
+wlc lock
+wlc unlock
+wlc lock-status
+wlc download
+wlc upload
+```
 
 Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
 `timeout`, `method_whitelist`, `backoff_factor`, `status_forcelist`) are closely
 coupled with the [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html) and allows the user to configure request
 parameters.
 
-    [weblate]
-    url = https://hosted.weblate.org/api/
-    retries = 3
-    method_whitelist = PUT,POST,GET
-    backoff_factor = 0.2
-    status_forcelist = 429,500,502,503,504
-    timeout = 30
+```
+[weblate]
+url = https://hosted.weblate.org/api/
+retries = 3
+method_whitelist = PUT,POST,GET
+backoff_factor = 0.2
+status_forcelist = 429,500,502,503,504
+timeout = 30
 
-    [keys]
-    https://hosted.weblate.org/api/ = APIKEY
+[keys]
+https://hosted.weblate.org/api/ = APIKEY
+```
 
 ## Docker image
 
@@ -66,7 +72,9 @@ The image is published on [Docker Hub](https://hub.docker.com/r/weblate/wlc).
 
 Building locally:
 
-    docker build -t weblate/wlc .
+```
+docker build -t weblate/wlc .
+```
 
 Detailed documentation is available in [Weblate documentation](https://docs.weblate.org/en/latest/wlc.html#docker-wlc).
 
