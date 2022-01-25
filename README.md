@@ -17,7 +17,7 @@ wlc is a [Weblate](https://weblate.org/) command-line client using [Weblate's RE
 
 Install using pip:
 
-```
+```console
 pip3 install wlc
 ```
 
@@ -29,7 +29,7 @@ Please see [Weblate documentation](https://docs.weblate.org/en/latest/wlc.html) 
 
 Command-line usage:
 
-```
+```console
 wlc list-projects
 wlc list-components
 wlc list-translations
@@ -53,7 +53,7 @@ Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
 coupled with the [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html) and allows the user to configure request
 parameters.
 
-```
+```ini
 [weblate]
 url = https://hosted.weblate.org/api/
 retries = 3
@@ -72,7 +72,7 @@ The image is published on [Docker Hub](https://hub.docker.com/r/weblate/wlc).
 
 Building locally:
 
-```
+```console
 docker build -t weblate/wlc .
 ```
 
