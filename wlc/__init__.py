@@ -421,7 +421,10 @@ class LazyObject(dict):
             raise AttributeError(name)
         if name not in self._data:
             self.refresh()
-        return self._data[name]
+        try:
+            return self._data[name]
+        except KeyError:
+            raise AttributeError(name)
 
     def setattrvalue(self, name, value):
         if name not in self.PARAMS:
@@ -608,6 +611,7 @@ class Component(LazyObject, RepoObjectMixin):
         "license",
         "license_url",
         "source_language",
+        "is_glossary",
     )
     OPTIONALS = {"source_language", "is_glossary"}
     ID = "slug"
@@ -666,6 +670,15 @@ class Component(LazyObject, RepoObjectMixin):
             msgstr=msgstr,
             source_language=self.source_language["code"],
         )
+
+    def download(self, convert=None):
+        """Download translation file from server."""
+
+        self.ensure_loaded("repository_url")
+        url = self._get_repo_url().replace("repository", "file")
+        if convert is not None:
+            url = "{}?{}".format(url, urlencode({"format": convert}))
+        return self.weblate.raw_request("get", url)
 
 
 class Translation(LazyObject, RepoObjectMixin):

@@ -22,7 +22,7 @@ import json
 import os
 import sys
 from io import BytesIO, StringIO, TextIOWrapper
-from tempfile import NamedTemporaryFile
+from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import wlc
 from wlc.config import WeblateConfig
@@ -421,6 +421,10 @@ class TestCommands(APITest):
     def test_download(self):
         """Translation file downloads."""
         output = execute(["download"], expected=1)
+        self.assertIn("Output is needed", output)
+
+        with TemporaryDirectory() as tmpdirname:
+            execute(["download", "--output", tmpdirname])
 
         output = execute(["download", "hello/weblate/cs"])
         self.assertIn(b"Plural-Forms:", output)
@@ -436,7 +440,31 @@ class TestCommands(APITest):
             self.assertIn(b"Plural-Forms:", output)
 
         output = execute(["download", "hello/weblate"], expected=1)
-        self.assertIn("This command is supported only at translation level", output)
+        self.assertIn("Output is needed", output)
+
+        with TemporaryDirectory() as tmpdirname:
+            execute(["download", "hello/weblate", "--output", tmpdirname])
+
+        output = execute(["download", "hello"], expected=1)
+        self.assertIn("Output is needed", output)
+
+        with TemporaryDirectory() as tmpdirname:
+            execute(["download", "hello", "--no-glossary", "--output", tmpdirname])
+            # The hello-android should not be present as it is flagged as a glossary
+            self.assertEqual(os.listdir(tmpdirname), ["hello-weblate.zip"])
+
+        with TemporaryDirectory() as tmpdirname:
+            execute(
+                [
+                    "download",
+                    "hello",
+                    "--convert",
+                    "zip",
+                    "--output",
+                    os.path.join(tmpdirname, "output"),
+                ]
+            )
+            self.assertEqual(os.listdir(tmpdirname), ["output"])
 
     def test_upload(self):
         """Translation file uploads."""

@@ -5,6 +5,7 @@
 * Support all wlc upload methods.
 * Tested against Python 3.10.
 * Allow uploading files when creating a component.
+* Allow downloading at component, project, and site level.
 
 1.12
 ----
