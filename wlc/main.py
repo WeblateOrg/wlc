@@ -25,6 +25,7 @@ import logging
 import sys
 from argparse import ArgumentParser
 from datetime import datetime
+from pathlib import Path
 from typing import Callable, Dict, List
 
 import argcomplete
@@ -631,33 +632,111 @@ class Unlock(ComponentCommand):
 
 
 @register_command
-class Download(TranslationCommand):
+class Download(Command):
     """Downloads translation file."""
 
     name = "download"
-    description = "Downloads translation file"
+    description = """
+    Downloads translation file for a project, a component or a file
+    For a project or a component we will download a zip to --output
+    """
 
     @classmethod
     def add_parser(cls, subparser):
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
+            "object",
+            nargs="*",
+            default=None,
+            help=(
+                "Object on which we should operate "
+                "(project, component or translation or None for all projects)"
+            ),
+        )
+        parser.add_argument(
             "-c", "--convert", help="Convert file format on server (defaults to none)"
         )
         parser.add_argument(
-            "-o", "--output", help="File where to store output (defaults to stdout)"
+            "-o",
+            "--output",
+            help="File|Directory where to store output (defaults to stdout)",
+        )
+        parser.add_argument(
+            "-g",
+            "--no-glossary",
+            action="store_true",
+            default=False,
+            help="Disable download glossary (defaults to False)",
         )
         return parser
 
+    def download_component(self, component):
+        """
+        Download a single component as file (if not a translation).
+        """
+
+        content = component.download(self.args.convert)
+        directory = Path(self.args.output)
+        file_path = directory.joinpath(f"{component.project.slug}-{component.slug}.zip")
+
+        if not directory.exists():
+            directory.mkdir(exist_ok=True, parents=True)
+
+        with open(file_path, "wb") as file:
+            file.write(content)
+
     def run(self):
         """Executor."""
-        obj = self.get_object()
-        content = obj.download(self.args.convert)
-        if self.args.output and self.args.output != "-":
-            with open(self.args.output, "wb") as handle:
-                handle.write(content)
-        else:
-            self.stdout.buffer.write(content)
+        if not self.args.object:
+            # All translations for all our projects
+            for component in self.wlc.list_components():
+                # Ignore glossary via --no-glossary
+                if component.slug == "glossary" and self.args.no_glossary:
+                    continue
+                self.download_component(component)
+                item = f"{component.project.slug}/{component.slug}"
+                self.println(f"downloaded translations for component: {item}")
+            return None
+
+        obj = self.wlc.get_object(self.args.object[0])
+
+        # Translation locale for a component
+        if isinstance(obj, wlc.Translation):
+            content = obj.download(self.args.convert)
+            if self.args.output and self.args.output != "-":
+                with open(self.args.output, "wb") as handle:
+                    handle.write(content)
+            else:
+                self.stdout.buffer.write(content)
+            return None
+
+        # All translations for a component
+        if isinstance(obj, wlc.Component):
+            for component in self.wlc.list_components():
+                # Only download for the component we scoped
+                if obj.slug == component.slug:
+                    self.download_component(component)
+                    self.println(
+                        f"downloaded translations for component: {self.args.object[0]}"
+                    )
+
+            return None
+
+        # All translations for a project
+        if isinstance(obj, wlc.Project):
+            for component in obj.list():
+                # Ignore glossary via --no-glossary
+                if component.slug == "glossary" and self.args.no_glossary:
+                    continue
+
+                self.download_component(component)
+
+            return self.println(
+                f"downloaded translations for project: {self.args.object[0]}"
+            )
+
+        return None
 
 
 @register_command

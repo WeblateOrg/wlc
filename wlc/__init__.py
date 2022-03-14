@@ -661,6 +661,15 @@ class Component(LazyObject, RepoObjectMixin):
             source_language=self.source_language["code"],
         )
 
+    def download(self, convert=None):
+        """Download translation file from server."""
+
+        self.ensure_loaded("repository_url")
+        url = self._get_repo_url().replace("repository", "file")
+        if convert is not None:
+            url = "{}?{}".format(url, urlencode({"format": convert}))
+        return self.weblate.raw_request("get", url)
+
 
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object."""
