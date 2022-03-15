@@ -180,6 +180,7 @@ class Weblate:
             "verify": verify_ssl,
             "files": files,
         }
+
         # Disable insecure warnings for localhost
         if not verify_ssl:
             logging.captureWarnings(True)
@@ -204,9 +205,9 @@ class Weblate:
             raise
         return response
 
-    def post(self, path, **kwargs):
+    def post(self, path, files=None, params=None, **kwargs):
         """Perform POST request on the API."""
-        return self.request("post", path, kwargs)
+        return self.request("post", path, data=kwargs, files=files, params=params)
 
     def _post_factory(self, prefix, path, kwargs):
         """Wrapper for posting objects."""
@@ -329,12 +330,17 @@ class Weblate:
     def create_component(self, project, **kwargs):
         """Create a new component for project in the instance."""
 
+        files = {}
+        for fileattr in ("docfile", "zipfile"):
+            if fileattr in kwargs:
+                files[fileattr] = kwargs.pop(fileattr)
+
         required_keys = ["name", "slug", "file_format", "filemask", "repo"]
         for key in required_keys:
             if key not in kwargs:
                 raise WeblateException(f"{key} is required.")
 
-        return self.post(f"projects/{project}/components/", **kwargs)
+        return self.post(f"projects/{project}/components/", files=files, **kwargs)
 
     def create_language(self, code, name, direction="ltr", plural=None):
         """Create a new language."""

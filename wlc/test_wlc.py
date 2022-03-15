@@ -19,6 +19,7 @@
 """Test the module."""
 import ast
 import io
+import os
 from typing import Any, Optional
 
 from requests.exceptions import RequestException
@@ -234,6 +235,63 @@ class WeblateTest(APITest):
                 file_format="po",
                 filemask="po/*.po",
             )
+
+    def test_create_component_local_files(self):
+
+        test_file = os.path.join(
+            os.path.dirname(__file__), "test_data", "mock", "project-local-file.pot"
+        )
+        with open(test_file) as file:
+            resp = Weblate().create_component(
+                docfile=file.read(),
+                project="hello",
+                branch="main",
+                file_format="po",
+                filemask="po/*.po",
+                git_export="",
+                license="",
+                license_url="",
+                name="Weblate",
+                slug="weblate",
+                repo="local:",
+                template="",
+                new_base="",
+                vcs="local",
+            )
+            self.assertEqual("Hello", resp["project"]["name"])
+            self.assertEqual("hello", resp["project"]["slug"])
+            self.assertEqual("Weblate", resp["name"])
+            self.assertEqual("weblate", resp["slug"])
+            self.assertEqual("local:", resp["repo"])
+            self.assertEqual("main", resp["branch"])
+            self.assertEqual("po/*.po", resp["filemask"])
+            self.assertEqual("local", resp["vcs"])
+            self.assertEqual("po", resp["file_format"])
+
+            with self.assertRaisesRegex(WeblateException, "required"):
+                Weblate().create_component(project="hello")
+
+            with self.assertRaisesRegex(WeblateException, "required"):
+                Weblate().create_component(project="hello", name="Weblate")
+
+            with self.assertRaisesRegex(WeblateException, "required"):
+                Weblate().create_component(
+                    project="hello", name="Weblate", slug="weblate"
+                )
+
+            with self.assertRaisesRegex(WeblateException, "required"):
+                Weblate().create_component(
+                    project="hello", name="Weblate", slug="weblate", file_format="po"
+                )
+
+            with self.assertRaisesRegex(WeblateException, "required"):
+                Weblate().create_component(
+                    project="hello",
+                    name="Weblate",
+                    slug="weblate",
+                    file_format="po",
+                    filemask="po/*.po",
+                )
 
 
 class ObjectTestBaseClass(APITest):

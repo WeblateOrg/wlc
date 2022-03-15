@@ -1,0 +1,18 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=utf-8\n"
+"Plural-Forms: nplurals = 2; plural = (n != 1);\n"
+"Language: en\n"
+"mime-version: 1.0\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+
+#: src/pages/about/impact.tsx:22
+msgctxt "Title"
+msgid "How to make a better world"
+msgstr ""
+
+#: src/pages/about/impact.tsx:28
+msgctxt "Title"
+msgid "Community informations"
+msgstr ""
