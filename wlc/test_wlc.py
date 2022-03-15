@@ -237,9 +237,9 @@ class WeblateTest(APITest):
 
     def test_create_component_local_files(self):
 
-        with open('wlc/test_data/mock/project-local-file.pot', mode='r') as file:
+        with open("wlc/test_data/mock/project-local-file.pot") as file:
             resp = Weblate().create_component(
-                files={ "docfile": file.read() },
+                files={"docfile": file.read()},
                 project="hello",
                 branch="main",
                 file_format="po",
@@ -271,7 +271,9 @@ class WeblateTest(APITest):
                 Weblate().create_component(project="hello", name="Weblate")
 
             with self.assertRaisesRegex(WeblateException, "required"):
-                Weblate().create_component(project="hello", name="Weblate", slug="weblate")
+                Weblate().create_component(
+                    project="hello", name="Weblate", slug="weblate"
+                )
 
             with self.assertRaisesRegex(WeblateException, "required"):
                 Weblate().create_component(

@@ -16,4 +16,3 @@ msgstr ""
 msgctxt "Title"
 msgid "Community informations"
 msgstr ""
-
