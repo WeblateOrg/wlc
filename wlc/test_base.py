@@ -52,8 +52,12 @@ class ResponseHandler:
         filename = self.get_filename(request)
 
         if filename is not None:
-            with open(filename, "rb") as handle:
-                return handle.read()
+            try:
+                with open(filename, "rb") as handle:
+                    return handle.read()
+            except FileNotFoundError as error:
+                error.strerror = "Failed to find response mock"
+                raise error
 
         return self.body
 
