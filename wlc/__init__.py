@@ -603,7 +603,7 @@ class Component(LazyObject, RepoObjectMixin):
         "license_url",
         "source_language",
     )
-    OPTIONALS = {"source_language"}
+    OPTIONALS = {"source_language", "is_glossary"}
     ID = "slug"
     MAPPINGS = {"project": Project, "source_language": Language}
     REPOSITORY_CLASS = Repository
