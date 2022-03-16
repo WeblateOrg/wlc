@@ -111,7 +111,7 @@ class Weblate:
             total=self.retries,
             backoff_factor=self.backoff_factor,
             status_forcelist=self.status_forcelist,
-            method_whitelist=self.method_whitelist,
+            allowed_methods=self.method_whitelist,
             raise_on_status=False,
         )
         self.adapter = HTTPAdapter(pool_connections=1, max_retries=retries)
