@@ -89,3 +89,7 @@ You can use following tags on Docker hub:
 | version  | wlc stable release, see [weblate/wlc](https://hub.docker.com/r/weblate/wlc/tags/) | Well defined deploy in a production environment |
 
 Every image is tested by our CI before it gets published, so even the `bleeding` version should be quite safe to use.
+
+## Contributing
+
+Contributions are welcome! See [documentation](https://docs.weblate.org/en/latest/contributing/modules.html) for more information.
