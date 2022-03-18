@@ -697,7 +697,7 @@ class Download(Command):
                 self.download_component(component)
                 item = f"{component.project.slug}/{component.slug}"
                 self.println(f"downloaded translations for component: {item}")
-            return None
+            return
 
         obj = self.wlc.get_object(self.args.object[0])
 
@@ -709,7 +709,7 @@ class Download(Command):
                     handle.write(content)
             else:
                 self.stdout.buffer.write(content)
-            return None
+            return
 
         # All translations for a component
         if isinstance(obj, wlc.Component):
@@ -721,22 +721,20 @@ class Download(Command):
                         f"downloaded translations for component: {self.args.object[0]}"
                     )
 
-            return None
+            return
 
         # All translations for a project
         if isinstance(obj, wlc.Project):
             for component in obj.list():
                 # Ignore glossary via --no-glossary
-                if component.slug == "glossary" and self.args.no_glossary:
+                if component.is_glossary and self.args.no_glossary:
                     continue
 
                 self.download_component(component)
 
-            return self.println(
+            self.println(
                 f"downloaded translations for project: {self.args.object[0]}"
             )
-
-        return None
 
 
 @register_command
