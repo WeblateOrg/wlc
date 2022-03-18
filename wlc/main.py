@@ -732,9 +732,7 @@ class Download(Command):
 
                 self.download_component(component)
 
-            self.println(
-                f"downloaded translations for project: {self.args.object[0]}"
-            )
+            self.println(f"downloaded translations for project: {self.args.object[0]}")
 
 
 @register_command
