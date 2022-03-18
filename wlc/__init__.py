@@ -327,7 +327,13 @@ class Weblate:
 
         return self.post("projects/", **data)
 
-    def create_component(self, project, files=None, **kwargs):
+    def create_component(self, project, docfile=None, zipfile=None, **kwargs):
+        files = {}
+        if docfile:
+            files["docfile"] = docfile
+        if zipfile:
+            files["zipfile"] = zipfile
+
         """Create a new component for project in the instance."""
 
         required_keys = ["name", "slug", "file_format", "filemask", "repo"]
@@ -335,7 +341,7 @@ class Weblate:
             if key not in kwargs:
                 raise WeblateException(f"{key} is required.")
 
-        return self.post(f"projects/{project}/components/", files, **kwargs)
+        return self.post(f"projects/{project}/components/", files=files, **kwargs)
 
     def create_language(self, code, name, direction="ltr", plural=None):
         """Create a new language."""
