@@ -1,7 +1,7 @@
 1.13
 ----
 
-* Not yet released.
+* Released on 24th March 2022.
 * Support all wlc upload methods.
 * Tested against Python 3.10.
 * Allow uploading files when creating a component.
