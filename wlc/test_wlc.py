@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 """Test the module."""
-import ast
 import io
 import os
 from typing import Any, Optional
@@ -591,6 +590,10 @@ class TranslationTest(ObjectTest):
 class UnitTest(ObjectTestBaseClass):
     _name = "123"
     _cls = Unit
+    patch_data = {
+        "target": ["foo"],
+        "state": 30,
+    }
 
     def check_object(self, obj):
         """Perform verification whether object is valid."""
@@ -602,12 +605,18 @@ class UnitTest(ObjectTestBaseClass):
 
     def test_units_patch(self):
         obj = self.get()
-        patch_data = {
-            "target": ["foo"],
-            "state": 30,
-        }
-        resp = obj.patch(**patch_data)
-        self.assertEqual(ast.literal_eval(resp.decode()), patch_data)
+        resp = obj.patch(**self.patch_data)
+        self.assertEqual(resp.decode(), "--patched--\n")
+
+    def test_units_put(self):
+        obj = self.get()
+        resp = obj.put(**self.patch_data)
+        self.assertEqual(resp.decode(), "--put--\n")
+
+    def test_units_delete(self):
+        obj = self.get()
+        resp = obj.delete()
+        self.assertEqual(resp.decode(), "--deleted--\n")
 
 
 # Delete the reference, so that the abstract class is not discovered
