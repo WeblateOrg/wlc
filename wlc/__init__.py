@@ -91,18 +91,15 @@ class Weblate:
             self.retries = retries
             self.status_forcelist = status_forcelist
             self.timeout = timeout
-            if method_whitelist is None:
-                self.method_whitelist = [
-                    "HEAD",
-                    "GET",
-                    "PUT",
-                    "PATCH",
-                    "DELETE",
-                    "OPTIONS",
-                    "TRACE",
-                ]
-            else:
-                self.method_whitelist = method_whitelist
+            self.method_whitelist = method_whitelist or [
+                "HEAD",
+                "GET",
+                "PUT",
+                "PATCH",
+                "DELETE",
+                "OPTIONS",
+                "TRACE",
+            ]
             self.backoff_factor = backoff_factor
 
         self.retries = Retry(
