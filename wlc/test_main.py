@@ -164,7 +164,7 @@ class TestSettings(APITest):
             status_forcelist,
             method_whitelist,
             backoff_factor,
-            timeout,
+            _timeout,
         ) = config.get_request_options()
         self.assertEqual(retries, 999)
         self.assertEqual(status_forcelist, [429, 500, 502, 503, 504])
