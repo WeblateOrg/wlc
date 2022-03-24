@@ -663,10 +663,7 @@ class Download(ObjectCommand):
         return parser
 
     def download_component(self, component):
-        """
-        Download a single component as file (if not a translation).
-        """
-
+        """Download a single component as file (if not a translation)."""
         content = component.download(self.args.convert)
         if self.args.output is None:
             raise CommandError("Output is needed for download!")
