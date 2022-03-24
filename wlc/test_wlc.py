@@ -606,17 +606,17 @@ class UnitTest(ObjectTestBaseClass):
     def test_units_patch(self):
         obj = self.get()
         resp = obj.patch(**self.patch_data)
-        self.assertEqual(resp.decode(), "--patched--\n")
+        self.assertIn("--patched--", resp.decode())
 
     def test_units_put(self):
         obj = self.get()
         resp = obj.put(**self.patch_data)
-        self.assertEqual(resp.decode(), "--put--\n")
+        self.assertIn("--put--", resp.decode())
 
     def test_units_delete(self):
         obj = self.get()
         resp = obj.delete()
-        self.assertEqual(resp.decode(), "--deleted--\n")
+        self.assertIn("--deleted--", resp.decode())
 
 
 # Delete the reference, so that the abstract class is not discovered
