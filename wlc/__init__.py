@@ -21,7 +21,7 @@
 import json
 import logging
 from copy import copy
-from typing import Any, Dict, Set, Tuple
+from typing import Any, Dict, Optional, Set, Tuple
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser  # type: ignore
@@ -44,22 +44,20 @@ TIMESTAMPS = {"last_change"}
 class WeblateException(Exception):
     """Generic error."""
 
+    def __init__(self, message: Optional[str] = None):
+        super().__init__(message or self.__doc__)
+
 
 class WeblateThrottlingError(WeblateException):
-    def __init__(self):
-        super().__init__("Throttling on the server")
+    """Throttling on the server."""
 
 
 class WeblatePermissionError(WeblateException):
-    def __init__(self, message=None):
-        if not message:
-            message = "You don't have permission to access this object"
-        super().__init__(message)
+    """You don't have permission to access this object."""
 
 
 class WeblateDeniedError(WeblateException):
-    def __init__(self):
-        super().__init__("Access denied, API key is wrong or missing")
+    """Access denied, API key is wrong or missing."""
 
 
 class Weblate:
@@ -329,7 +327,6 @@ class Weblate:
 
     def create_component(self, project, **kwargs):
         """Create a new component for project in the instance."""
-
         files = {}
         for fileattr in ("docfile", "zipfile"):
             if fileattr in kwargs:
@@ -673,7 +670,6 @@ class Component(LazyObject, RepoObjectMixin):
 
     def download(self, convert=None):
         """Download translation file from server."""
-
         self.ensure_loaded("repository_url")
         url = self._get_repo_url().replace("repository", "file")
         if convert is not None:
