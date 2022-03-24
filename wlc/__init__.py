@@ -288,13 +288,6 @@ class Weblate:
         """List languages in the instance."""
         return self.list_factory("languages/", Language)
 
-    def _is_component_monolingual(self, path):
-        """Determines if a component is configured monolinugally."""
-        comp = self.get_component(path)
-        if comp["template"]:
-            return True
-        return False
-
     def add_source_string(
         self, project, component, msgid, msgstr, source_language=None
     ):
@@ -778,6 +771,8 @@ class Statistics(LazyObject):
 
 
 class TranslationStatistics(Statistics):
+    """Translation statistics."""
+
     PARAMS: Tuple[str, ...] = Statistics.PARAMS + ("code", "last_author")
 
 

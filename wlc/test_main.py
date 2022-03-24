@@ -493,6 +493,8 @@ class TestCommands(APITest):
 
 
 class TestErrors(APITest):
+    """Error handling tests."""
+
     def test_commandline_missing_key(self):
         """Configuration using command-line."""
         output = execute(
