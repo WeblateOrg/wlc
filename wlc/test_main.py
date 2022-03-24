@@ -470,6 +470,11 @@ class TestCommands(APITest):
         """Translation file uploads."""
         msg = "Error: Failed to upload translations!\nNot found.\n"
 
+        output = execute(["upload", "hello/weblate"], expected=1)
+        self.assertEqual(
+            "Error: This command is supported only at translation level\n", output
+        )
+
         with self.get_text_io_wrapper("test upload data") as stdin:
             output = execute(["upload", "hello/weblate/cs"], stdin=stdin)
             self.assertEqual("", output)
