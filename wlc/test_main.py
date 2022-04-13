@@ -132,7 +132,7 @@ class TestSettings(APITest):
         config = WeblateConfig()
         self.assertEqual(config.get("weblate", "key"), "")
         self.assertEqual(config.get("weblate", "retries"), 0)
-        self.assertEqual(config.get("weblate", "timeout"), 30)
+        self.assertEqual(config.get("weblate", "timeout"), 300)
         self.assertEqual(
             config.get("weblate", "method_whitelist"),
             "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
