@@ -21,7 +21,7 @@
 import json
 import logging
 from copy import copy
-from typing import Any, Dict, Optional, Set, Tuple
+from typing import Any, Collection, Dict, Optional, Set, Tuple
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser  # type: ignore
@@ -65,14 +65,14 @@ class Weblate:
 
     def __init__(
         self,
-        key="",
-        url=API_URL,
+        key: str = "",
+        url: str = API_URL,
         config=None,
-        retries=0,
-        status_forcelist=None,
-        method_whitelist=None,
-        backoff_factor=0,
-        timeout=30,
+        retries: int = 0,
+        status_forcelist: Optional[Collection[int]] = None,
+        method_whitelist: Optional[Collection[str]] = None,
+        backoff_factor: int = 0,
+        timeout: int = 300,
     ):
         """Create the object, storing key, API url and requests retry args."""
         self.session = requests.Session()
