@@ -1,4 +1,4 @@
 argcomplete
 python-dateutil
 pyxdg
-requests
+requests>=2.25.0
