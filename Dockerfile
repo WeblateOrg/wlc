@@ -1,4 +1,4 @@
-FROM python:3.10.6-alpine
+FROM python:3.10.7-alpine
 
 LABEL name="wlc"
 LABEL maintainer="Michal Čihař <michal@cihar.com>"
