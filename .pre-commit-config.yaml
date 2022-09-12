@@ -17,7 +17,7 @@ repos:
   - id: pretty-format-json
     args: [--no-sort-keys, --autofix]
 - repo: https://github.com/adrienverge/yamllint
-  rev: v1.27.1
+  rev: v1.28.0
   hooks:
   - id: yamllint
 - repo: https://github.com/pycqa/isort
