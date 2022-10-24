@@ -24,7 +24,7 @@ jobs:
         path: |
           ~/.cache/pip
           ~/.cache/pre-commit
-        key: ${{ runner.os }}-pip-lint-${{ hashFiles('**/requirements*.txt') }}-${{ hashFiles('.pre-commit-config.yaml') }}
+        key: ${{ runner.os }}-pre-commit-${{ hashFiles('**/requirements*.txt') }}-${{ hashFiles('.pre-commit-config.yaml') }}
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
