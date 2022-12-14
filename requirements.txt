@@ -2,3 +2,4 @@ argcomplete
 python-dateutil
 pyxdg
 requests>=2.25.0
+urllib3>=1.26
