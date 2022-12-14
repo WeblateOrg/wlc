@@ -140,6 +140,12 @@ class Weblate:
             if status_code == 401:
                 raise WeblateDeniedError()
 
+            if 300 <= status_code < 400:
+                raise WeblateException(
+                    "Server responded with an unexpectedHTTP redirect. "
+                    "Please check your configuration."
+                )
+
             reason = error.response.reason
             try:
                 error_string = str(error.response.json())
@@ -174,6 +180,7 @@ class Weblate:
             "headers": headers,
             "verify": verify_ssl,
             "files": files,
+            "allow_redirects": False,
         }
 
         # Disable insecure warnings for localhost
@@ -195,6 +202,8 @@ class Weblate:
             log.debug(json.dumps([method, path, log_kwargs], indent=True))
             response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
+            if 300 <= response.status_code < 400:
+                raise requests.HTTPError("Server redirected", response=reponse)
         except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
