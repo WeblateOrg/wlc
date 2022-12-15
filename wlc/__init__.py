@@ -203,7 +203,7 @@ class Weblate:
             response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
             if 300 <= response.status_code < 400:
-                raise requests.HTTPError("Server redirected", response=reponse)
+                raise requests.HTTPError("Server redirected", response=response)
         except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
@@ -555,7 +555,7 @@ class Project(LazyObject, RepoObjectMixin):
     ID = "slug"
     MAPPINGS = {"source_language": Language}
 
-    def list(self):
+    def list(self):  # noqa: A003
         """List components in the project."""
         self.ensure_loaded("components_list_url")
         return self.weblate.list_components(self._attribs["components_list_url"])
@@ -614,7 +614,7 @@ class Component(LazyObject, RepoObjectMixin):
     MAPPINGS = {"project": Project, "source_language": Language}
     REPOSITORY_CLASS = Repository
 
-    def list(self):
+    def list(self):  # noqa: A003
         """List translations in the component."""
         self.ensure_loaded("translations_url")
         return self.weblate.list_translations(self._attribs["translations_url"])
@@ -710,7 +710,7 @@ class Translation(LazyObject, RepoObjectMixin):
     MAPPINGS = {"language": Language, "component": Component}
     REPOSITORY_CLASS = Repository
 
-    def list(self):
+    def list(self):  # noqa: A003
         """API compatibility method, returns self."""
         self.ensure_loaded("last_author")
         return self
@@ -734,7 +734,7 @@ class Translation(LazyObject, RepoObjectMixin):
             url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
-    def upload(self, file, overwrite=None, format=None, **kwargs):
+    def upload(self, file, overwrite=None, format=None, **kwargs):  # noqa: A002
         """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
@@ -832,7 +832,7 @@ class Unit(LazyObject):
     ID = "id"
     MAPPINGS = {"translation": Translation}
 
-    def list(self):
+    def list(self):  # noqa: A003
         """API compatibility method, returns self."""
         self.ensure_loaded("id")
         return self

@@ -138,7 +138,7 @@ class TestSettings(APITest):
             "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
         )
         self.assertEqual(config.get("weblate", "backoff_factor"), 0)
-        self.assertEqual(config.get("weblate", "status_forcelist"), None)
+        self.assertIsNone(config.get("weblate", "status_forcelist"))
 
     def test_parsing(self):
         """Test config file parsing."""

@@ -222,7 +222,7 @@ class Command:
             for key, data in sorted_items(value):
                 self.println(f"{key}: {self.format_value(data)}")
 
-    def print(self, value):
+    def print(self, value):  # noqa: T202,A003
         """Print value."""
         header = None
         if isinstance(value, list):
