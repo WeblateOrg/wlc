@@ -74,3 +74,11 @@ repos:
     - mdformat-gfm
     - mdformat-black
     - mdformat-shfmt
+- repo: https://github.com/igorshubovych/markdownlint-cli
+  rev: v0.33.0
+  hooks:
+  - id: markdownlint
+- repo: https://github.com/fsfe/reuse-tool
+  rev: v1.0.0
+  hooks:
+  - id: reuse

@@ -6,3 +6,11 @@ Source: https://weblate.org/
 Files: wlc/test_data/*
 Copyright: Michal Čihař <michal@weblate.org>
 License: GPL-3.0-or-later
+
+Files: .coveragerc .deepsource.toml .dockerignore .gitignore .isort.cfg .pre-commit-config.yaml MANIFEST.in codecov.yml requirements*.txt setup.cfg
+Copyright: Michal Čihař <michal@weblate.org>
+License: GPL-3.0-or-later
+
+Files: CHANGES.rst README.md
+Copyright: Michal Čihař <michal@weblate.org>
+License: GPL-3.0-or-later
