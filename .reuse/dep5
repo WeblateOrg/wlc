@@ -1,0 +1,8 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: wlc
+Upstream-Contact: Michal Čihař <michal@weblate.org>
+Source: https://weblate.org/
+
+Files: wlc/test_data/*
+Copyright: Michal Čihař <michal@weblate.org>
+License: GPL-3.0-or-later
