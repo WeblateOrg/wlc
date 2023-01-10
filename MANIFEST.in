@@ -1,9 +1,11 @@
-include README.rst
+include README.md
 include LICENSE
+recursive-include LICENSES *
 include CHANGES.rst
 include MANIFEST.in
 include completion/wlc
 include requirements.txt
 include requirements-test.txt
+recursive-include .reuse *
 include wlc/*.py
 recursive-include wlc/test_data *
