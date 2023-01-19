@@ -2,6 +2,8 @@
 ----
 
 * Not yet released.
+* Dropped support for Python 3.6.
+* Tested against Python 3.11.
 
 1.13
 ----
