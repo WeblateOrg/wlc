@@ -222,7 +222,6 @@ class WeblateTest(APITest):
             )
 
     def test_create_component_local_files(self):
-
         test_file = os.path.join(
             os.path.dirname(__file__), "test_data", "mock", "project-local-file.pot"
         )
