@@ -71,9 +71,9 @@ repos:
   hooks:
   - id: mdformat
     additional_dependencies:
-    - mdformat-gfm
-    - mdformat-black
-    - mdformat-shfmt
+    - mdformat-gfm==0.3.5
+    - mdformat-black==0.1.1
+    - mdformat-shfmt==0.1.0
 - repo: https://github.com/igorshubovych/markdownlint-cli
   rev: v0.33.0
   hooks:
@@ -82,3 +82,5 @@ repos:
   rev: v1.1.1
   hooks:
   - id: reuse
+ci:
+  autoupdate_schedule: quarterly
