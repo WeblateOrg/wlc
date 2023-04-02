@@ -3,10 +3,9 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test helpers."""
-import cgi
 import os
+from email import message_from_string
 from hashlib import blake2b
-from io import BytesIO
 from unittest import TestCase
 
 import responses
@@ -89,13 +88,13 @@ class ResponseHandler:
 
     @staticmethod
     def format_multipart_body(body, content_type):
-        content_type, pdict = cgi.parse_header(content_type)
-        if "boundary" in pdict:
-            pdict["boundary"] = pdict["boundary"].encode()
-        fileio = BytesIO(body)
+        message = message_from_string(
+            f"Content-Type: {content_type}\n\n{body.decode()}"
+        )
         payload = []
-        for name, values in cgi.parse_multipart(fileio, pdict).items():
-            value = values[0]
+        for part in message.get_payload():
+            name = part.get_param("name", header="content-disposition")
+            value = part.get_payload()
             if isinstance(value, bytes):
                 value = value.decode()
             payload.append((name, value))
