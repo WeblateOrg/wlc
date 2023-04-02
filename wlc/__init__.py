@@ -729,7 +729,7 @@ class Translation(LazyObject, RepoObjectMixin):
         else:
             files = {"file": file}
         if overwrite:
-            kwargs["overwrite"] = "yes"
+            kwargs["conflicts"] = "replace-translated"
 
         return self.weblate.request("post", url, files=files, data=kwargs)
 
