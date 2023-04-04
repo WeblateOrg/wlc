@@ -10,7 +10,7 @@ from copy import copy
 from typing import Any, Collection, Dict, Optional, Set, Tuple
 from urllib.parse import urlencode, urlparse
 
-import dateutil.parser  # type: ignore
+import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
@@ -114,7 +114,7 @@ class Weblate:
             status_code = error.response.status_code
 
             if status_code == 429:
-                raise WeblateThrottlingError()
+                raise WeblateThrottlingError
             if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "
@@ -124,7 +124,7 @@ class Weblate:
                 raise WeblatePermissionError(self.permission_error_message(error))
 
             if status_code == 401:
-                raise WeblateDeniedError()
+                raise WeblateDeniedError
 
             if 300 <= status_code < 400:
                 raise WeblateException(
@@ -189,7 +189,9 @@ class Weblate:
             response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
             if 300 <= response.status_code < 400:
-                raise requests.HTTPError("Server redirected", response=response)
+                raise requests.HTTPError(  # noqa: TRY301
+                    "Server redirected", response=response
+                )
         except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
@@ -222,7 +224,8 @@ class Weblate:
         return parser(weblate=self, **data)
 
     def get_object(self, path):
-        """Return object based on path.
+        """
+        Return object based on path.
 
         Operates on (project, component or translation objects.
         """
@@ -431,7 +434,7 @@ class LazyObject(dict):
 
     def items(self):
         """Iterator over attributes."""
-        for key in self.keys():
+        for key in self:
             yield key, self.__getattr__(key)
 
     def to_value(self):
@@ -724,10 +727,7 @@ class Translation(LazyObject, RepoObjectMixin):
         """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
-        if format:
-            files = {"file": (f"file.{format}", file)}
-        else:
-            files = {"file": file}
+        files = {"file": (f"file.{format}", file)} if format else {"file": file}
         if overwrite:
             kwargs["conflicts"] = "replace-translated"
 
@@ -765,7 +765,7 @@ class Statistics(LazyObject):
 class TranslationStatistics(Statistics):
     """Translation statistics."""
 
-    PARAMS: Tuple[str, ...] = Statistics.PARAMS + ("code", "last_author")
+    PARAMS: Tuple[str, ...] = (*Statistics.PARAMS, "code", "last_author")
 
 
 class Change(LazyObject):

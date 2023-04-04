@@ -286,7 +286,7 @@ class ObjectTestBaseClass(APITest):
 
     def check_object(self, obj):
         """Perform verification whether object is valid."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def get(self):
         """Return remote object."""
@@ -300,7 +300,7 @@ class ObjectTestBaseClass(APITest):
 
     def check_list(self, obj):
         """Perform verification whether listing is valid."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     def test_list(self):
         """Item listing test."""

@@ -42,7 +42,7 @@ class ResponseHandler:
                     return handle.read()
             except FileNotFoundError as error:
                 error.strerror = "Failed to find response mock"
-                raise error
+                raise error  # noqa: TRY201
 
         return self.body
 

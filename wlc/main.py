@@ -207,7 +207,7 @@ class Command:
             for key, data in sorted_items(value):
                 self.println(f"{key}: {self.format_value(data)}")
 
-    def print(self, value):  # noqa: T202,A003
+    def print(self, value):  # noqa: A003
         """Print value."""
         header = None
         if isinstance(value, list):
@@ -226,7 +226,7 @@ class Command:
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class ObjectCommand(Command):
@@ -265,7 +265,7 @@ class ObjectCommand(Command):
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
     @staticmethod
     def check_result(result, message):
@@ -286,7 +286,7 @@ class ProjectCommand(ObjectCommand):
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class ComponentCommand(ObjectCommand):
@@ -301,7 +301,7 @@ class ComponentCommand(ObjectCommand):
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 class TranslationCommand(ObjectCommand):
@@ -316,7 +316,7 @@ class TranslationCommand(ObjectCommand):
 
     def run(self):
         """Main execution of the command."""
-        raise NotImplementedError()
+        raise NotImplementedError
 
 
 @register_command
@@ -537,7 +537,7 @@ class Repo(ObjectCommand):
 
     name = "repo"
     description = (
-        "Displays status of Weblate repository " "for translation, component or project"
+        "Displays status of Weblate repository for translation, component or project"
     )
 
     def run(self):
@@ -551,7 +551,7 @@ class Changes(ObjectCommand):
     """Display repository status for object."""
 
     name = "changes"
-    description = "Displays list of changes " "for translation, component or project"
+    description = "Displays list of changes for translation, component or project"
 
     def run(self):
         """Executor."""
@@ -564,7 +564,7 @@ class Stats(ObjectCommand):
     """Display repository statistics for object."""
 
     name = "stats"
-    description = "Displays statistics " "for translation, component or project"
+    description = "Displays statistics for translation, component or project"
 
     def run(self):
         """Executor."""
@@ -814,7 +814,6 @@ def main(settings=None, stdout=None, stdin=None, args=None):
     command = COMMANDS[args.command](args, config, stdout, stdin)
     try:
         command.run()
-        return 0
     except wlc.WeblateDeniedError:
         url, key = config.get_url_key()
         if key:
@@ -834,6 +833,8 @@ def main(settings=None, stdout=None, stdin=None, args=None):
     except (CommandError, wlc.WeblateException) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
+    else:
+        return 0
     finally:
         if args.debug:
             http.client.HTTPConnection.debuglevel = 0
