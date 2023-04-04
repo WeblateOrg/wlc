@@ -1,2 +1,45 @@
 [tool.isort]
 profile = "black"
+
+[tool.ruff]
+format = "github"
+ignore = [
+]
+select = [
+  "E",
+  "F",
+  "B",
+  "T10",
+  "A",
+  "C4",
+  "C90",
+  "YTT",
+  "DJ",
+  "UP",
+  "D",
+  "PD",
+  "PGH",
+  "PL",
+  "TRY",
+  "RUF",
+  "ERA",
+  "ICN",
+  "ISC",
+  "EXE",
+  "INP",
+  "PIE",
+  "G",
+  "PYI",
+  "Q",
+  "SIM",
+  "TID",
+  "RSE",
+  "T20",
+  "RET",
+  "SLF",
+  "N"
+]
+target-version = "py37"
+
+[tool.ruff.mccabe]
+max-complexity = 16
