@@ -67,7 +67,7 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-20.04' }}
       continue-on-error: true
       env:
-        DEEPSOURCE_DSN: https://bf0f63ba38be46a399ad6301593ae7d6@deepsource.io
+        DEEPSOURCE_DSN: ${{secrets.DEEPSOURCE_DSN}}
       run: |
         curl https://deepsource.io/cli | sh
         ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml
