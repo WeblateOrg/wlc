@@ -51,7 +51,7 @@ class ResponseHandler:
         if not body:
             return ""
         body = body.decode()
-        body = (
+        return (
             body.replace(": ", "=")
             .replace("{", "")
             .replace("}", "")
@@ -64,7 +64,6 @@ class ResponseHandler:
             .replace("]", "-")
             .replace("*", "-")
         )
-        return body
 
     def get_filename(self, request):
         """Return filename for given request."""
