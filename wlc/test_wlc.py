@@ -5,7 +5,7 @@
 """Test the module."""
 import io
 import os
-from typing import Any, Optional
+from typing import Any, ClassVar, Dict, Optional
 
 from requests.exceptions import RequestException
 
@@ -575,7 +575,7 @@ class TranslationTest(ObjectTest):
 class UnitTest(ObjectTestBaseClass):
     _name = "123"
     _cls = Unit
-    patch_data = {
+    patch_data: ClassVar[Dict[str, Any]] = {
         "target": ["foo"],
         "state": 30,
     }
