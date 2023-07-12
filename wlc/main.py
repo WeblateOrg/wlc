@@ -181,9 +181,7 @@ class Command:
                 self.println("    <tr>")
                 for key in header:
                     self.println(
-                        "      <td>{}</td>".format(
-                            self.format_value(getattr(item, key))
-                        )
+                        f"      <td>{self.format_value(getattr(item, key))}</td>"
                     )
                 self.println("    </tr>")
             self.println("  </tbody>")
