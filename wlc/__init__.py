@@ -189,9 +189,7 @@ class Weblate:
             response = self.session.request(method, path, **kwargs)
             response.raise_for_status()
             if 300 <= response.status_code < 400:
-                raise requests.HTTPError(
-                    "Server redirected", response=response
-                )
+                raise requests.HTTPError("Server redirected", response=response)
         except requests.exceptions.RequestException as error:
             self.process_error(error)
             raise
