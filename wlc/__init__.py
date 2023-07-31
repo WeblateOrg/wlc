@@ -432,7 +432,7 @@ class LazyObject(dict):
 
     def items(self):
         """Iterator over attributes."""
-        for key in self.keys():  # noqa: SIM118
+        for key in self.keys():
             yield key, self.__getattr__(key)
 
     def to_value(self):
