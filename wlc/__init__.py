@@ -671,6 +671,9 @@ class Component(LazyObject, RepoObjectMixin):
             url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
 
+    def patch(self, **kwargs):
+        return self.weblate.raw_request("patch", self._url, data=kwargs)
+
 
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object."""
