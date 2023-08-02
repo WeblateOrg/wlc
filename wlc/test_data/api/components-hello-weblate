@@ -8,6 +8,7 @@
     "lock_url": "http://127.0.0.1:8000/api/components/hello/weblate/lock/",
     "name": "Weblate",
     "new_base": "",
+    "priority": 100,
     "project": {
         "components_list_url": "http://127.0.0.1:8000/api/projects/hello/components/",
         "name": "Hello",
