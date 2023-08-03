@@ -503,6 +503,11 @@ class ComponentTest(ObjectTest):
             ],
         )
 
+    def test_components_patch(self):
+        obj = self.get()
+        resp = obj.patch(priority=80)
+        self.assertIn("--patched--", resp.decode())
+
 
 class TranslationTest(ObjectTest):
     """Translation object tests."""
