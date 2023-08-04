@@ -599,6 +599,7 @@ class Component(LazyObject, RepoObjectMixin):
         "license",
         "license_url",
         "source_language",
+        "priority",
         "is_glossary",
     )
     OPTIONALS: ClassVar[Set[str]] = {"source_language", "is_glossary"}
@@ -669,6 +670,9 @@ class Component(LazyObject, RepoObjectMixin):
         if convert is not None:
             url = "{}?{}".format(url, urlencode({"format": convert}))
         return self.weblate.raw_request("get", url)
+
+    def patch(self, **kwargs):
+        return self.weblate.raw_request("patch", self._url, data=kwargs)
 
 
 class Translation(LazyObject, RepoObjectMixin):

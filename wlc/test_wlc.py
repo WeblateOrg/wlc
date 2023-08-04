@@ -439,6 +439,7 @@ class ComponentTest(ObjectTest):
     def check_object(self, obj):
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
+        self.assertEqual(obj.priority, 100)
 
     def check_list(self, obj):
         """Perform verification whether listing is valid."""
@@ -478,30 +479,34 @@ class ComponentTest(ObjectTest):
     def test_keys(self):
         """Test keys lazy loading."""
         obj = Component(Weblate(), f"components/{self._name}/")
-        self.assertEqual(
-            sorted(obj.keys()),
-            sorted(
-                [
-                    "branch",
-                    "file_format",
-                    "filemask",
-                    "git_export",
-                    "license",
-                    "license_url",
-                    "name",
-                    "new_base",
-                    "project",
-                    "repo",
-                    "slug",
-                    "source_language",
-                    "source_language",
-                    "template",
-                    "url",
-                    "vcs",
-                    "web_url",
-                ]
-            ),
+        self.assertCountEqual(
+            obj.keys(),
+            [
+                "branch",
+                "file_format",
+                "filemask",
+                "git_export",
+                "license",
+                "license_url",
+                "name",
+                "new_base",
+                "priority",
+                "project",
+                "repo",
+                "slug",
+                "source_language",
+                "source_language",
+                "template",
+                "url",
+                "vcs",
+                "web_url",
+            ],
         )
+
+    def test_components_patch(self):
+        obj = self.get()
+        resp = obj.patch(priority=80)
+        self.assertIn("--patched--", resp.decode())
 
 
 class TranslationTest(ObjectTest):
