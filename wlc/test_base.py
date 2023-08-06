@@ -207,7 +207,11 @@ def register_uris():
         method=responses.POST,
         json={"detail": "Can not create components"},
     )
-    register_error("projects/throttled", 429, headers={"X-RateLimit-Limit": "100", "Retry-After": "81818"})
+    register_error(
+        "projects/throttled",
+        429,
+        headers={"X-RateLimit-Limit": "100", "Retry-After": "81818"},
+    )
     register_error("projects/error", 500)
     register_error("projects/io", 500, callback=raise_error)
     register_error("projects/bug", 500, callback=raise_error)

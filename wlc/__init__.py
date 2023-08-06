@@ -125,7 +125,9 @@ class Weblate:
 
             if status_code == 429:
                 headers = error.response.headers
-                raise WeblateThrottlingError(headers.get("X-RateLimit-Limit"), headers.get("Retry-After"))
+                raise WeblateThrottlingError(
+                    headers.get("X-RateLimit-Limit"), headers.get("Retry-After")
+                )
             if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "

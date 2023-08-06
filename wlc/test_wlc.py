@@ -52,7 +52,7 @@ class WeblateErrorTest(APITest):
         """Test listing projects."""
         with self.assertRaisesRegex(
             WeblateException,
-            "Throttling.*Limit is 100 requests. Retry after 81818 seconds."
+            "Throttling.*Limit is 100 requests. Retry after 81818 seconds.",
         ):
             Weblate().get_object("throttled")
 
