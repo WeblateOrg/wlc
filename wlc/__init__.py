@@ -129,30 +129,34 @@ class Weblate:
                 headers = error.response.headers
                 raise WeblateThrottlingError(
                     headers.get("X-RateLimit-Limit"), headers.get("Retry-After")
-                )
+                ) from error
             if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "
                     "(maybe operation is not supported on the server)"
-                )
+                ) from error
             if status_code == 403:
-                raise WeblatePermissionError(self.permission_error_message(error))
+                raise WeblatePermissionError(
+                    self.permission_error_message(error)
+                ) from error
 
             if status_code == 401:
-                raise WeblateDeniedError
+                raise WeblateDeniedError from error
 
             if 300 <= status_code < 400:
                 raise WeblateException(
                     "Server responded with an unexpectedHTTP redirect. "
                     "Please check your configuration."
-                )
+                ) from error
 
             reason = error.response.reason
             try:
                 error_string = str(error.response.json())
             except Exception:
                 error_string = ""
-            raise WeblateException(f"HTTP error {status_code}: {reason} {error_string}")
+            raise WeblateException(
+                f"HTTP error {status_code}: {reason} {error_string}"
+            ) from error
 
     def raw_request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns raw content."""
@@ -166,8 +170,8 @@ class Weblate:
 
         try:
             return response.json()
-        except ValueError:
-            raise WeblateException("Server returned invalid JSON")
+        except ValueError as error:
+            raise WeblateException("Server returned invalid JSON") from error
 
     def invoke_request(self, method, path, data=None, files=None, params=None):
         """Construct request object."""
@@ -421,8 +425,8 @@ class LazyObject(dict):
             self.refresh()
         try:
             return self._data[name]
-        except KeyError:
-            raise AttributeError(name)
+        except KeyError as error:
+            raise AttributeError(name) from error
 
     def setattrvalue(self, name, value):
         if name not in self.PARAMS:
