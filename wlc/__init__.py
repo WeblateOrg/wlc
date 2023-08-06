@@ -37,6 +37,16 @@ class WeblateException(Exception):
 class WeblateThrottlingError(WeblateException):
     """Throttling on the server."""
 
+    def __init__(self, limit: str, retry_after: str):
+        self.limit = limit
+        self.retry_after = retry_after
+        message_segments = [self.__doc__]
+        if limit:
+            message_segments.append(f"Limit is {limit} requests.")
+        if retry_after:
+            message_segments.append(f"Retry after {retry_after} seconds.")
+        super().__init__(" ".join(message_segments))
+
 
 class WeblatePermissionError(WeblateException):
     """You don't have permission to access this object."""
@@ -114,7 +124,8 @@ class Weblate:
             status_code = error.response.status_code
 
             if status_code == 429:
-                raise WeblateThrottlingError
+                headers = error.response.headers
+                raise WeblateThrottlingError(headers.get("X-RateLimit-Limit"), headers.get("Retry-After"))
             if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "
