@@ -7,7 +7,7 @@
 import json
 import logging
 from copy import copy
-from typing import Any, ClassVar, Collection, Dict, Optional, Set, Tuple
+from typing import Any, ClassVar, Collection, Dict, Optional, Set, Tuple, cast
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
@@ -36,6 +36,18 @@ class WeblateException(Exception):
 
 class WeblateThrottlingError(WeblateException):
     """Throttling on the server."""
+
+    def __init__(self, limit: str, retry_after: str):
+        self.limit = limit
+        self.retry_after = retry_after
+        message_segments = [
+            cast(str, self.__doc__)
+        ]  # workaround for https://github.com/python/mypy/issues/15825
+        if limit:
+            message_segments.append(f"Limit is {limit} requests.")
+        if retry_after:
+            message_segments.append(f"Retry after {retry_after} seconds.")
+        super().__init__(" ".join(message_segments))
 
 
 class WeblatePermissionError(WeblateException):
@@ -114,7 +126,10 @@ class Weblate:
             status_code = error.response.status_code
 
             if status_code == 429:
-                raise WeblateThrottlingError
+                headers = error.response.headers
+                raise WeblateThrottlingError(
+                    headers.get("X-RateLimit-Limit"), headers.get("Retry-After")
+                )
             if status_code == 404:
                 raise WeblateException(
                     "Object not found on the server "
