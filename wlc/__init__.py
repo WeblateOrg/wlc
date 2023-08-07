@@ -40,7 +40,9 @@ class WeblateThrottlingError(WeblateException):
     def __init__(self, limit: str, retry_after: str):
         self.limit = limit
         self.retry_after = retry_after
-        message_segments = [cast(str, self.__doc__)]  # workaround for https://github.com/python/mypy/issues/15825
+        message_segments = [
+            cast(str, self.__doc__)
+        ]  # workaround for https://github.com/python/mypy/issues/15825
         if limit:
             message_segments.append(f"Limit is {limit} requests.")
         if retry_after:
