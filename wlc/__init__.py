@@ -620,6 +620,7 @@ class Component(LazyObject, RepoObjectMixin):
         "source_language",
         "priority",
         "is_glossary",
+        "category",
     )
     OPTIONALS: ClassVar[Set[str]] = {"source_language", "is_glossary"}
     ID: ClassVar[str] = "slug"

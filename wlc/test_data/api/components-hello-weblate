@@ -1,5 +1,6 @@
 {
     "branch": "main",
+    "category": "http://127.0.0.1:8000/api/categories/1/",
     "file_format": "po",
     "filemask": "po/*.po",
     "git_export": "",
