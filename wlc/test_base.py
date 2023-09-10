@@ -164,6 +164,7 @@ def register_uris():
         "components",
         "components/hello/android",
         "components/hello/android/file",
+        "components/hello/olderweblate",
         "components/hello/weblate",
         "components/hello/weblate/file",
         "components/hello/weblate/changes",

@@ -491,6 +491,7 @@ class ComponentTest(ObjectTest):
                 "file_format",
                 "filemask",
                 "git_export",
+                "is_glossary",
                 "license",
                 "license_url",
                 "name",
@@ -512,6 +513,49 @@ class ComponentTest(ObjectTest):
         obj = self.get()
         resp = obj.patch(priority=80)
         self.assertIn("--patched--", resp.decode())
+
+
+class ComponentCompatibilityTest(ObjectTest):
+    """Tests a component with lack of all optional fields in a response."""
+
+    _name = "hello/olderweblate"
+    _cls = Component
+
+    def check_object(self, obj):
+        """Perform verification whether object is valid."""
+        self.assertEqual(obj.name, "Weblate")
+        self.assertEqual(obj.priority, 100)
+
+    def check_list(self, obj):
+        """Perform verification whether listing is valid."""
+        lst = list(obj)
+        self.assertEqual(len(lst), 33)
+        self.assertIsInstance(lst[0], Translation)
+
+    def test_keys(self):
+        """Test keys lazy loading."""
+        obj = Component(Weblate(), f"components/{self._name}/")
+        self.assertCountEqual(
+            obj.keys(),
+            [
+                "branch",
+                "file_format",
+                "filemask",
+                "git_export",
+                "license",
+                "license_url",
+                "name",
+                "new_base",
+                "priority",
+                "project",
+                "repo",
+                "slug",
+                "template",
+                "url",
+                "vcs",
+                "web_url",
+            ],
+        )
 
 
 class TranslationTest(ObjectTest):
