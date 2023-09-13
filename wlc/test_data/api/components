@@ -4,6 +4,7 @@
     "previous": null,
     "results": [
         {
+            "agreement": "",
             "branch": "main",
             "category": "http://127.0.0.1:8000/api/categories/1/",
             "file_format": "aresource",
@@ -57,6 +58,7 @@
             "web_url": "http://127.0.0.1:8000/projects/hello/android/"
         },
         {
+            "agreement": "",
             "branch": "main",
             "category": null,
             "file_format": "po",
