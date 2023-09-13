@@ -617,6 +617,7 @@ class Component(LazyObject, RepoObjectMixin):
         "file_format",
         "license",
         "license_url",
+        "agreement",
         "source_language",
         "priority",
         "is_glossary",

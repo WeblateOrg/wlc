@@ -444,6 +444,7 @@ class ComponentTest(ObjectTest):
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
         self.assertEqual(obj.category, "http://127.0.0.1:8000/api/categories/1/")
+        self.assertEqual(obj.agreement, "")
 
     def check_list(self, obj):
         """Perform verification whether listing is valid."""
@@ -486,6 +487,7 @@ class ComponentTest(ObjectTest):
         self.assertCountEqual(
             obj.keys(),
             [
+                "agreement",
                 "branch",
                 "category",
                 "file_format",
@@ -525,6 +527,7 @@ class ComponentCompatibilityTest(ObjectTest):
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
+        self.assertEqual(obj.agreement, "")
 
     def check_list(self, obj):
         """Perform verification whether listing is valid."""
@@ -538,6 +541,7 @@ class ComponentCompatibilityTest(ObjectTest):
         self.assertCountEqual(
             obj.keys(),
             [
+                "agreement",
                 "branch",
                 "file_format",
                 "filemask",
