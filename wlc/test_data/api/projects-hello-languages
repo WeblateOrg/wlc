@@ -7,7 +7,7 @@
         "translated": 5,
         "translated_percent": 62.5,
         "total": 8,
-        "url": "http://127.0.0.1:8000/api/projects/hello/languages/cs/",
+        "url": "http://127.0.0.1:8000/projects/hello/-/cs/",
         "words_percent": 63.3
     },
     {
@@ -18,7 +18,7 @@
         "translated": 4,
         "translated_percent": 50.0,
         "total": 8,
-        "url": "http://127.0.0.1:8000/api/projects/hello/languages/en/",
+        "url": "http://127.0.0.1:8000/projects/hello/-/en/",
         "words_percent": 50.0
     }
   ]
