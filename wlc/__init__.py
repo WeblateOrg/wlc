@@ -582,7 +582,7 @@ class Project(LazyObject, RepoObjectMixin):
         self.ensure_loaded("languages_url")
         url = self._attribs["languages_url"]
         return [
-            LanguageStats(self.weblate, url, **item) for item in self.weblate.get(url)
+            LanguageStats(self.weblate, **item) for item in self.weblate.get(url)
         ]
 
     def changes(self):
