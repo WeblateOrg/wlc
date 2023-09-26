@@ -581,9 +581,7 @@ class Project(LazyObject, RepoObjectMixin):
         """Return language statistics for component."""
         self.ensure_loaded("languages_url")
         url = self._attribs["languages_url"]
-        return [
-            LanguageStats(self.weblate, url, **item) for item in self.weblate.get(url)
-        ]
+        return [LanguageStats(self.weblate, **item) for item in self.weblate.get(url)]
 
     def changes(self):
         """List changes in the project."""
