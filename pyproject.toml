@@ -2,7 +2,6 @@
 profile = "black"
 
 [tool.ruff]
-format = "github"
 ignore = [
   "D10",  # TODO: we are missing many docstrings
   "D203",  # CONFIG: incompatible with D211
@@ -14,6 +13,7 @@ ignore = [
   "PLR2004",  # TODO: Magic value used in comparison, consider replacing 201 with a constant variable
   "N818"  # TODO: exception naming
 ]
+output-format = "github"
 select = [
   "E",
   "F",
