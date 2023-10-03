@@ -48,7 +48,7 @@ select = [
   "SLF",
   "N"
 ]
-target-version = "py37"
+target-version = "py38"
 
 [tool.ruff.mccabe]
 max-complexity = 16
