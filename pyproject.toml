@@ -1,3 +1,78 @@
+[build-system]
+build-backend = "setuptools.build_meta"
+requires = ["setuptools>=61.2"]
+
+[project]
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Internationalization",
+  "Topic :: Software Development :: Localization",
+  "Topic :: Utilities"
+]
+dependencies = [
+  "argcomplete",
+  "python-dateutil",
+  "pyxdg",
+  "requests>=2.25.0",
+  "urllib3>=1.26"
+]
+description = "A command-line utility for Weblate, translation tool with tight version control integration"
+dynamic = ["version"]
+keywords = [
+  "i18n",
+  "l10n",
+  "gettext",
+  "git",
+  "mercurial",
+  "translate"
+]
+name = "wlc"
+requires-python = ">=3.8"
+
+[[project.authors]]
+email = "michal@cihar.com"
+name = "Michal Čihař"
+
+[project.license]
+text = "GPL-3.0-or-later"
+
+[project.optional-dependencies]
+lint = ["pre-commit==3.4.0"]
+test = [
+  "pytest",
+  "pytest-cov",
+  "responses>=0.10.1,<0.24.0",
+  "build==1.0.3",
+  "twine==4.0.2"
+]
+
+[project.readme]
+content-type = "text/markdown"
+file = "README.md"
+
+[project.scripts]
+wlc = "wlc.main:main"
+
+[project.urls]
+Documentation = "https://docs.weblate.org/"
+Download = "https://github.com/WeblateOrg/wlc"
+Funding = "https://weblate.org/donate/"
+Homepage = "https://weblate.org/"
+"Issue Tracker" = "https://github.com/WeblateOrg/wlc/issues"
+"Source Code" = "https://github.com/WeblateOrg/wlc"
+Twitter = "https://twitter.com/WeblateOrg"
+
 [tool.isort]
 profile = "black"
 
@@ -52,3 +127,18 @@ target-version = "py38"
 
 [tool.ruff.mccabe]
 max-complexity = 16
+
+[tool.setuptools]
+include-package-data = true
+license-files = ["LICENSE"]
+platforms = ["any"]
+
+[tool.setuptools.dynamic.version]
+attr = "wlc.__version__"
+
+[tool.setuptools.package-dir]
+wlc = "wlc"
+
+[tool.setuptools.packages.find]
+include = ["wlc*"]
+namespaces = true
