@@ -8,7 +8,4 @@
 
 from setuptools import setup
 
-with open("requirements.txt") as handle:
-    REQUIRES = handle.read().split()
-
-setup(install_requires=REQUIRES)
+setup()

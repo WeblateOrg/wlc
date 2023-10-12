@@ -13,7 +13,7 @@ LABEL org.opencontainers.image.title="wlc"
 LABEL org.opencontainers.image.description="Command-line client for Weblate"
 LABEL org.opencontainers.image.licenses="GPL-3.0-or-later"
 
-COPY README.md LICENSE setup.cfg setup.py requirements.txt /app/
+COPY README.md LICENSE pyproject.toml setup.py /app/
 COPY ./wlc/ /app/wlc
 
 # This hack is widely applied to avoid python printing issues in docker containers.
