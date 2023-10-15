@@ -300,6 +300,10 @@ class Weblate:
         """List languages in the instance."""
         return self.list_factory("languages/", Language)
 
+    def list_categories(self, path="categories/"):
+        """List categories in the instance."""
+        return self.list_factory(path, Category)
+
     def add_source_string(
         self, project, component, msgid, msgstr, source_language=None
     ):
@@ -588,11 +592,23 @@ class Project(LazyObject, RepoObjectMixin):
         self.ensure_loaded("changes_list_url")
         return self.weblate.list_changes(self._attribs["changes_list_url"])
 
+    def categories(self):
+        """List categories in the project."""
+        self.ensure_loaded("categories_url")
+        return self.weblate.list_categories(self._attribs["categories_url"])
+
     def delete(self):
         self.weblate.raw_request("delete", self._url)
 
     def create_component(self, **kwargs):
         return self.weblate.create_component(self.slug, **kwargs)
+
+
+class Category(LazyObject):
+    """Category object."""
+
+    PARAMS: ClassVar[Tuple[str, ...]] = ("category", "name", "project", "slug", "url")
+    MAPPINGS: ClassVar[Dict[str, Any]] = {"project": Project}
 
 
 class Component(LazyObject, RepoObjectMixin):
@@ -624,6 +640,7 @@ class Component(LazyObject, RepoObjectMixin):
     OPTIONALS: ClassVar[Set[str]] = {"source_language", "is_glossary", "category"}
     ID: ClassVar[str] = "slug"
     MAPPINGS: ClassVar[Dict[str, Any]] = {
+        "category": Category,
         "project": Project,
         "source_language": Language,
     }

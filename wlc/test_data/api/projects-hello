@@ -1,4 +1,5 @@
 {
+    "categories_url": "http://127.0.0.1:8000/api/projects/hello/categories/",
     "components_list_url": "http://127.0.0.1:8000/api/projects/hello/components/",
     "name": "Hello",
     "repository_url": "http://127.0.0.1:8000/api/projects/hello/repository/",

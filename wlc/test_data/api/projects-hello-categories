@@ -1,0 +1,21 @@
+{
+    "count": 2,
+    "next": null,
+    "previous": null,
+    "results": [
+        {
+            "category": null,
+            "name": "hi",
+            "project": "http://127.0.0.1:8000/api/projects/hello/",
+            "slug": "hi",
+            "url": "http://127.0.0.1:8000/api/categories/1/"
+        },
+        {
+            "category": null,
+            "name": "hiya",
+            "project": "http://127.0.0.1:8000/api/projects/hello/",
+            "slug": "hiya",
+            "url": "http://127.0.0.1:8000/api/categories/2/"
+        }
+    ]
+}

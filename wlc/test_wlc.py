@@ -11,6 +11,7 @@ from requests.exceptions import RequestException
 
 from wlc import (
     API_URL,
+    Category,
     Change,
     Component,
     Project,
@@ -111,6 +112,10 @@ class WeblateTest(APITest):
     def test_translations(self):
         """Test listing translations."""
         self.assertEqual(len(list(Weblate().list_translations())), 50)
+
+    def test_categories(self):
+        """Test listing translations."""
+        self.assertEqual(len(list(Weblate().list_categories())), 2)
 
     def test_authentication(self):
         """Test authentication against server."""
@@ -404,6 +409,10 @@ class ProjectTest(ObjectTest):
         stats = obj.statistics()
         self.assertEqual(stats["name"], "Hello")
 
+    def test_categories(self):
+        obj = self.get()
+        self.assertEqual(2, len(list(obj.categories())))
+
     def test_create_component(self):
         """Component creation test."""
         obj = self.get()
@@ -443,7 +452,6 @@ class ComponentTest(ObjectTest):
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
-        self.assertEqual(obj.category, "http://127.0.0.1:8000/api/categories/1/")
         self.assertEqual(obj.agreement, "")
 
     def check_list(self, obj):
@@ -660,6 +668,15 @@ class UnitTest(ObjectTestBaseClass):
         obj = self.get()
         resp = obj.delete()
         self.assertIn("--deleted--", resp.decode())
+
+
+class CategoryTest(APITest):
+    def test(self):
+        obj = Category(Weblate(), "http://127.0.0.1:8000/api/categories/1/")
+        self.assertIsInstance(obj, Category)
+        self.assertIsNone(obj.category)
+        self.assertEqual(obj.name, "Hi")
+        self.assertEqual(obj.slug, "hi")
 
 
 # Delete the reference, so that the abstract class is not discovered

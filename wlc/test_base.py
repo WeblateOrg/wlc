@@ -160,6 +160,8 @@ def register_error(
 def register_uris():
     """Register URIs for responses."""
     paths = (
+        "categories",
+        "categories/1",
         "changes",
         "components",
         "components/hello/android",
@@ -177,6 +179,7 @@ def register_uris():
         "projects/empty",
         "projects/empty/components",
         "projects/hello",
+        "projects/hello/categories",
         "projects/hello/changes",
         "projects/hello/components",
         "projects/hello/languages",
