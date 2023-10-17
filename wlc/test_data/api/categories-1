@@ -1,0 +1,7 @@
+{
+    "category": null,
+    "name": "Hi",
+    "project": "http://127.0.0.1:8000/api/projects/hello/",
+    "slug": "hi",
+    "url": "http://127.0.0.1:8000/api/categories/1/"
+}
