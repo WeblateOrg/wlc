@@ -7,7 +7,7 @@ on:
   push:
     branches:
     - main
-    files:
+    paths:
     - README.md
     - .github/workflows/readme-sync.yml
 jobs:
