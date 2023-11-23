@@ -7,16 +7,20 @@ on:
   push:
     branches:
     - main
+    files:
+    - README.md
+    - .github/workflows/readme-sync.yml
 jobs:
   sync-readme:
     runs-on: ubuntu-22.04
     if: ${{ github.repository == 'WeblateOrg/wlc' }}
     steps:
     - name: Checkout
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
+      uses: actions/checkout@v4
     - name: Docker Hub Description
       uses: peter-evans/dockerhub-description@v3
-      env:
-        DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-        DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
-        DOCKERHUB_REPOSITORY: weblate/wlc
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
+        repository: weblate/weblate
+        short-description: ${{ github.event.repository.description }}
