@@ -1,0 +1,7 @@
+#!/bin/sh
+
+# Copyright © Michal Čihař <michal@weblate.org>
+#
+# SPDX-License-Identifier: GPL-3.0-or-later
+
+eval "docker buildx build $(.github/bin/get-buildx-args "$@" | sed 's/$/ /' | tr -d \\n)"

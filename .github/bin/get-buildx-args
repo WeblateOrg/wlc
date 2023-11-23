@@ -15,6 +15,11 @@ else
     done
 fi
 
+# Expose annotations
+if [ "$1" != "load" ] ; then
+    sed -n "s/^LABEL \(org.opencontainers.image.*\)/--annotation index:\1/p" Dockerfile
+fi
+
 # Write to local cache unless publishing (not compatible with push)
 if [ "$1" != "publish" ] ; then
     echo --cache-to "type=local,dest=/tmp/.buildx-cache/$MATRIX_ARCHITECTURE,mode=max"
@@ -35,6 +40,7 @@ else
         # Publishing bleeding edge image
         echo --output "type=image,push=true"
         echo --tag "${DOCKER_IMAGE:-weblate/wlc}:bleeding"
+        echo --tag "${DOCKER_IMAGE:-weblate/wlc}:bleeding-$(date -I)-$(git rev-parse --short HEAD)"
     elif [ "$1" = "publish" ] ; then
         # Publishing normal image
         echo --output "type=image,push=true"
@@ -42,11 +48,16 @@ else
         # Generate tags
         case "$GITHUB_REF" in
             refs/tags/[0-9]*)
-                echo --tag "${DOCKER_IMAGE:-weblate/wlc}:${GITHUB_REF#refs/tags/}"
+                RELEASE="${GITHUB_REF#refs/tags/}"
+                MINOR="${RELEASE%.*.*}"
+                MAJOR="${MINOR%.*}"
+                echo --tag "${DOCKER_IMAGE:-weblate/wlc}:$RELEASE"
+                echo --tag "${DOCKER_IMAGE:-weblate/wlc}:$MAJOR"
                 echo --tag "${DOCKER_IMAGE:-weblate/wlc}:latest"
                 ;;
             refs/heads/main)
                 echo --tag "${DOCKER_IMAGE:-weblate/wlc}:edge"
+                echo --tag "${DOCKER_IMAGE:-weblate/wlc}:edge-$(date -I)-${GITHUB_SHA}"
                 ;;
         esac
     else
