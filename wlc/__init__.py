@@ -570,7 +570,7 @@ class Project(LazyObject, RepoObjectMixin):
     ID: ClassVar[str] = "slug"
     MAPPINGS: ClassVar[Dict[str, Any]] = {"source_language": Language}
 
-    def list(self):  # noqa: A003
+    def list(self):
         """List components in the project."""
         self.ensure_loaded("components_list_url")
         return self.weblate.list_components(self._attribs["components_list_url"])
@@ -646,7 +646,7 @@ class Component(LazyObject, RepoObjectMixin):
     }
     REPOSITORY_CLASS = Repository
 
-    def list(self):  # noqa: A003
+    def list(self):
         """List translations in the component."""
         self.ensure_loaded("translations_url")
         return self.weblate.list_translations(self._attribs["translations_url"])
@@ -745,7 +745,7 @@ class Translation(LazyObject, RepoObjectMixin):
     MAPPINGS: ClassVar[Dict[str, Any]] = {"language": Language, "component": Component}
     REPOSITORY_CLASS = Repository
 
-    def list(self):  # noqa: A003
+    def list(self):
         """API compatibility method, returns self."""
         self.ensure_loaded("last_author")
         return self
@@ -867,7 +867,7 @@ class Unit(LazyObject):
     ID: ClassVar[str] = "id"
     MAPPINGS: ClassVar[Dict[str, Any]] = {"translation": Translation}
 
-    def list(self):  # noqa: A003
+    def list(self):
         """API compatibility method, returns self."""
         self.ensure_loaded("id")
         return self
