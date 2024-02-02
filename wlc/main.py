@@ -269,7 +269,7 @@ class ObjectCommand(Command):
     def check_result(result, message):
         """Check result json data."""
         if not result["result"]:
-            raise CommandError(message, result["detail"] if "detail" in result else "")
+            raise CommandError(message, result.get("detail", ""))
 
 
 class ProjectCommand(ObjectCommand):
@@ -771,7 +771,7 @@ class Upload(TranslationCommand):
         ):
             raise CommandError(
                 "Failed to upload translations!",
-                result["detail"] if "detail" in result else "",
+                result.get("detail", ""),
             )
 
 
