@@ -54,7 +54,7 @@ test = [
   "pytest-cov",
   "responses>=0.10.1,<0.25.0",
   "build==1.0.3",
-  "twine==4.0.2"
+  "twine==5.0.0"
 ]
 
 [project.readme]
