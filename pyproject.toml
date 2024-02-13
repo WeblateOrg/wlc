@@ -52,7 +52,7 @@ lint = ["pre-commit==3.6.1"]
 test = [
   "pytest",
   "pytest-cov",
-  "responses>=0.10.1,<0.25.0",
+  "responses>=0.10.1,<0.26.0",
   "build==1.0.3",
   "twine==5.0.0"
 ]
