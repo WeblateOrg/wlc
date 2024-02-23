@@ -4,6 +4,7 @@
 * Not yet released.
 * Dropped support for Python 3.6.
 * Tested against Python 3.11.
+* Added support for the linked_component field.
 
 1.13
 ----

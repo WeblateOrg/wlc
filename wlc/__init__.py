@@ -636,8 +636,14 @@ class Component(LazyObject, RepoObjectMixin):
         "priority",
         "is_glossary",
         "category",
+        "linked_component",
     )
-    OPTIONALS: ClassVar[Set[str]] = {"source_language", "is_glossary", "category"}
+    OPTIONALS: ClassVar[Set[str]] = {
+        "source_language",
+        "is_glossary",
+        "category",
+        "linked_component",
+    }
     ID: ClassVar[str] = "slug"
     MAPPINGS: ClassVar[Dict[str, Any]] = {
         "category": Category,
