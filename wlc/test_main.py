@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test command-line interface."""
+from __future__ import annotations
 
 import json
 import os

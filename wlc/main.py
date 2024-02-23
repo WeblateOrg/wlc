@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Command-line interface for Weblate."""
+from __future__ import annotations
 import csv
 import http.client
 import json
@@ -11,7 +12,7 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Callable
 
 import argcomplete
 from requests.exceptions import RequestException
@@ -19,9 +20,9 @@ from requests.exceptions import RequestException
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
 
-COMMANDS: Dict[str, Callable] = {}
+COMMANDS: dict[str, Callable] = {}
 
-SORT_ORDER: List[str] = []
+SORT_ORDER: list[str] = []
 
 
 def register_command(command):

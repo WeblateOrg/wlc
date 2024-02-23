@@ -4,10 +4,11 @@
 
 """Weblate API client library."""
 
+from __future__ import annotations
 import json
 import logging
 from copy import copy
-from typing import Any, ClassVar, Collection, Dict, Optional, Set, Tuple, cast
+from typing import Any, ClassVar, Collection, cast
 from urllib.parse import urlencode, urlparse
 
 import dateutil.parser
@@ -30,7 +31,7 @@ TIMESTAMPS = {"last_change"}
 class WeblateException(Exception):
     """Generic error."""
 
-    def __init__(self, message: Optional[str] = None):
+    def __init__(self, message: str | None = None):
         super().__init__(message or self.__doc__)
 
 
@@ -67,8 +68,8 @@ class Weblate:
         url: str = API_URL,
         config=None,
         retries: int = 0,
-        status_forcelist: Optional[Collection[int]] = None,
-        method_whitelist: Optional[Collection[str]] = None,
+        status_forcelist: Collection[int] | None = None,
+        method_whitelist: Collection[str] | None = None,
         backoff_factor: int = 0,
         timeout: int = 300,
     ):
@@ -365,9 +366,9 @@ class Weblate:
 class LazyObject(dict):
     """Object which supports deferred loading."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = ()
-    OPTIONALS: ClassVar[Set[str]] = set()
-    MAPPINGS: ClassVar[Dict[str, Any]] = {}
+    PARAMS: ClassVar[tuple[str, ...]] = ()
+    OPTIONALS: ClassVar[set[str]] = set()
+    MAPPINGS: ClassVar[dict[str, Any]] = {}
     ID: ClassVar[str] = "url"
 
     def __init__(self, weblate, url, **kwargs):
@@ -467,14 +468,14 @@ class LazyObject(dict):
 class Language(LazyObject):
     """Language object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = ("url", "web_url", "code", "name", "direction")
+    PARAMS: ClassVar[tuple[str, ...]] = ("url", "web_url", "code", "name", "direction")
     ID: ClassVar[str] = "code"
 
 
 class LanguageStats(LazyObject):
     """Language object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "total",
         "code",
         "translated_words",
@@ -518,7 +519,7 @@ class RepoMixin:
 class ProjectRepository(LazyObject, RepoMixin):
     """Repository object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
         "needs_commit",
         "needs_merge",
@@ -533,7 +534,7 @@ class ProjectRepository(LazyObject, RepoMixin):
 class Repository(ProjectRepository):
     """Repository object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
         "needs_commit",
         "needs_merge",
@@ -558,7 +559,7 @@ class RepoObjectMixin(RepoMixin):
 class Project(LazyObject, RepoObjectMixin):
     """Project object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
         "web_url",
         "name",
@@ -566,9 +567,9 @@ class Project(LazyObject, RepoObjectMixin):
         "web",
         "source_language",
     )
-    OPTIONALS: ClassVar[Set[str]] = {"source_language"}
+    OPTIONALS: ClassVar[set[str]] = {"source_language"}
     ID: ClassVar[str] = "slug"
-    MAPPINGS: ClassVar[Dict[str, Any]] = {"source_language": Language}
+    MAPPINGS: ClassVar[dict[str, Any]] = {"source_language": Language}
 
     def list(self):
         """List components in the project."""
@@ -607,14 +608,14 @@ class Project(LazyObject, RepoObjectMixin):
 class Category(LazyObject):
     """Category object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = ("category", "name", "project", "slug", "url")
-    MAPPINGS: ClassVar[Dict[str, Any]] = {"project": Project}
+    PARAMS: ClassVar[tuple[str, ...]] = ("category", "name", "project", "slug", "url")
+    MAPPINGS: ClassVar[dict[str, Any]] = {"project": Project}
 
 
 class Component(LazyObject, RepoObjectMixin):
     """Component object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
         "web_url",
         "name",
@@ -638,14 +639,14 @@ class Component(LazyObject, RepoObjectMixin):
         "category",
         "linked_component",
     )
-    OPTIONALS: ClassVar[Set[str]] = {
+    OPTIONALS: ClassVar[set[str]] = {
         "source_language",
         "is_glossary",
         "category",
         "linked_component",
     }
     ID: ClassVar[str] = "slug"
-    MAPPINGS: ClassVar[Dict[str, Any]] = {
+    MAPPINGS: ClassVar[dict[str, Any]] = {
         "category": Category,
         "project": Project,
         "source_language": Language,
@@ -720,7 +721,7 @@ class Component(LazyObject, RepoObjectMixin):
 class Translation(LazyObject, RepoObjectMixin):
     """Translation object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
         "web_url",
         "language",
@@ -748,7 +749,7 @@ class Translation(LazyObject, RepoObjectMixin):
         "last_author",
     )
     ID: ClassVar[str] = "language_code"
-    MAPPINGS: ClassVar[Dict[str, Any]] = {"language": Language, "component": Component}
+    MAPPINGS: ClassVar[dict[str, Any]] = {"language": Language, "component": Component}
     REPOSITORY_CLASS = Repository
 
     def list(self):
@@ -797,7 +798,7 @@ class Translation(LazyObject, RepoObjectMixin):
 class Statistics(LazyObject):
     """Statistics object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "failing_percent",
         "translated_percent",
         "total_words",
@@ -817,13 +818,13 @@ class Statistics(LazyObject):
 class TranslationStatistics(Statistics):
     """Translation statistics."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (*Statistics.PARAMS, "code", "last_author")
+    PARAMS: ClassVar[tuple[str, ...]] = (*Statistics.PARAMS, "code", "last_author")
 
 
 class Change(LazyObject):
     """Change object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
         "unit",
         "translation",
@@ -833,7 +834,7 @@ class Change(LazyObject):
         "target",
     )
     ID: ClassVar[str] = "id"
-    MAPPINGS: ClassVar[Dict[str, Any]] = {
+    MAPPINGS: ClassVar[dict[str, Any]] = {
         "translation": Translation,
         "component": Component,
     }
@@ -842,7 +843,7 @@ class Change(LazyObject):
 class Unit(LazyObject):
     """Unit object."""
 
-    PARAMS: ClassVar[Tuple[str, ...]] = (
+    PARAMS: ClassVar[tuple[str, ...]] = (
         "approved",
         "content_hash",
         "context",
@@ -871,7 +872,7 @@ class Unit(LazyObject):
         "web_url",
     )
     ID: ClassVar[str] = "id"
-    MAPPINGS: ClassVar[Dict[str, Any]] = {"translation": Translation}
+    MAPPINGS: ClassVar[dict[str, Any]] = {"translation": Translation}
 
     def list(self):
         """API compatibility method, returns self."""

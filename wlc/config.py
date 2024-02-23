@@ -4,6 +4,8 @@
 
 """Weblate API library, configuration."""
 
+from __future__ import annotations
+
 import os.path
 from configparser import NoOptionError, RawConfigParser
 

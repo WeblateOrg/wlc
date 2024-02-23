@@ -127,7 +127,7 @@ select = [
   "N"
 ]
 
-[tool.ruff.mccabe]
+[tool.ruff.lint.mccabe]
 max-complexity = 16
 
 [tool.setuptools]

@@ -3,9 +3,10 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test the module."""
+from __future__ import annotations
 import io
 import os
-from typing import Any, ClassVar, Dict, Optional
+from typing import Any, ClassVar
 
 from requests.exceptions import RequestException
 
@@ -289,7 +290,7 @@ class WeblateTest(APITest):
 class ObjectTestBaseClass(APITest):
     """Base class for objects testing."""
 
-    _name: Optional[str] = None
+    _name: str | None = None
     _cls: Any = None
 
     def check_object(self, obj):
@@ -641,7 +642,7 @@ class TranslationTest(ObjectTest):
 class UnitTest(ObjectTestBaseClass):
     _name = "123"
     _cls = Unit
-    patch_data: ClassVar[Dict[str, Any]] = {
+    patch_data: ClassVar[dict[str, Any]] = {
         "target": ["foo"],
         "state": 30,
     }
