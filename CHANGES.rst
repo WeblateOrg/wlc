@@ -1,9 +1,10 @@
 1.14
 ----
 
-* Not yet released.
+* Released on 23rd February 2024.
 * Dropped support for Python 3.6 and 3.7.
 * Tested against Python 3.11 and 3.12.
+* Added support for categories.
 * Added support for the linked_component field.
 
 1.13
