@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Command-line interface for Weblate."""
+
 from __future__ import annotations
 import csv
 import http.client

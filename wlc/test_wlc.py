@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test the module."""
+
 from __future__ import annotations
 import io
 import os
