@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test helpers."""
+
 from __future__ import annotations
 import os
 from email import message_from_string
