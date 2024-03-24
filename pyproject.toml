@@ -48,7 +48,7 @@ name = "Michal Čihař"
 text = "GPL-3.0-or-later"
 
 [project.optional-dependencies]
-lint = ["pre-commit==3.6.2"]
+lint = ["pre-commit==3.7.0"]
 test = [
   "pytest",
   "pytest-cov",
