@@ -2,6 +2,7 @@
 ----
 
 * Not yet released.
+* Fixed installation on certain filesystems.
 
 1.14
 ----
