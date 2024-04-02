@@ -49,11 +49,11 @@ class ResponseHandler:
         return self.body
 
     @staticmethod
-    def format_body(body):
+    def format_body(body) -> str:
         if not body:
             return ""
         body = body.decode()
-        return (
+        result = (
             body.replace(": ", "=")
             .replace("{", "")
             .replace("}", "")
@@ -66,6 +66,11 @@ class ResponseHandler:
             .replace("]", "-")
             .replace("*", "-")
         )
+        if len(result) < 100:
+            return result
+        digest = blake2b(digest_size=4)
+        digest.update(result.encode())
+        return digest.hexdigest()
 
     def get_filename(self, request):
         """Return filename for given request."""
