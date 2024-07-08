@@ -53,7 +53,7 @@ repos:
   hooks:
   - id: markdownlint
 - repo: https://github.com/fsfe/reuse-tool
-  rev: v4.0.2
+  rev: v4.0.3
   hooks:
   - id: reuse
 ci:
