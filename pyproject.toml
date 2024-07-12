@@ -77,7 +77,6 @@ Twitter = "https://twitter.com/WeblateOrg"
 profile = "black"
 
 [tool.ruff]
-output-format = "github"
 target-version = "py38"
 
 [tool.ruff.lint]
