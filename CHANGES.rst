@@ -1,7 +1,7 @@
 1.15
 ----
 
-* Not yet released.
+* Released on 3rd September 2024.
 * Fixed installation on certain filesystems.
 
 1.14
