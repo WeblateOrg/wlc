@@ -552,6 +552,7 @@ class ComponentCompatibilityTest(ObjectTest):
             obj.keys(),
             [
                 "agreement",
+                "category",
                 "branch",
                 "file_format",
                 "filemask",

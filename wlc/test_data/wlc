@@ -9,3 +9,11 @@ timeout = 30
 [withkey]
 url = http://127.0.0.1:8000/api/
 key = KEY
+
+[withcomponent]
+url = http://127.0.0.1:8000/api/
+translation = hello/weblate
+
+[withproject]
+url = http://127.0.0.1:8000/api/
+translation = hello

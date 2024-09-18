@@ -668,8 +668,9 @@ class Download(ObjectCommand):
             if getattr(component, "is_glossary", False) and self.args.no_glossary:
                 continue
             self.download_component(component)
-            item = f"{component.project.slug}/{component.slug}"
-            self.println(f"downloaded translations for component: {item}")
+            self.println(
+                f"downloaded translations for component: {component.full_slug()}"
+            )
 
     def run(self):
         """Executor."""
@@ -687,20 +688,20 @@ class Download(ObjectCommand):
 
         # All translations for a component
         if isinstance(obj, wlc.Component):
-            for component in self.wlc.list_components():
-                # Only download for the component we scoped
-                if obj.slug == component.slug:
-                    self.download_component(component)
-                    self.println(
-                        f"downloaded translations for component: {self.args.object[0]}"
-                    )
-
+            # Only download for the component we scoped
+            self.download_components(
+                [
+                    component
+                    for component in self.wlc.list_components()
+                    if obj.full_slug() == component.full_slug()
+                ]
+            )
             return
 
         # All translations for a project
         if isinstance(obj, wlc.Project):
             self.download_components(obj.list())
-            self.println(f"downloaded translations for project: {self.args.object[0]}")
+            self.println(f"downloaded translations for project: {obj.full_slug()}")
             return
 
         self.download_components(self.wlc.list_components())

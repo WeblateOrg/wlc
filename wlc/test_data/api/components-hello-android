@@ -2,6 +2,7 @@
     "branch": "main",
     "file_format": "aresource",
     "filemask": "android/values-*/strings.xml",
+    "category": "http://127.0.0.1:8000/api/categories/1/",
     "git_export": "",
     "license": "",
     "license_url": "",

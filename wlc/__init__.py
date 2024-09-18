@@ -368,6 +368,7 @@ class LazyObject(dict):
 
     PARAMS: ClassVar[tuple[str, ...]] = ()
     OPTIONALS: ClassVar[set[str]] = set()
+    NULLS: ClassVar[set[str]] = set()
     MAPPINGS: ClassVar[dict[str, Any]] = {}
     ID: ClassVar[str] = "url"
 
@@ -431,6 +432,8 @@ class LazyObject(dict):
         try:
             return self._data[name]
         except KeyError as error:
+            if name in self.NULLS:
+                return None
             raise AttributeError(name) from error
 
     def setattrvalue(self, name, value):
@@ -451,7 +454,11 @@ class LazyObject(dict):
         if len(self._data) <= 1:
             self.refresh()
         for param in self.PARAMS:
-            if param not in self.OPTIONALS or param in self._data:
+            if (
+                param not in self.OPTIONALS
+                or param in self._data
+                or param in self.NULLS
+            ):
                 yield param
 
     def items(self):
@@ -604,12 +611,23 @@ class Project(LazyObject, RepoObjectMixin):
     def create_component(self, **kwargs):
         return self.weblate.create_component(self.slug, **kwargs)
 
+    def full_slug(self):
+        return self.slug
+
 
 class Category(LazyObject):
     """Category object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = ("category", "name", "project", "slug", "url")
     MAPPINGS: ClassVar[dict[str, Any]] = {"project": Project}
+
+    def full_slug(self):
+        current = self
+        slugs = [self.project.slug, self.slug]
+        while current.category:
+            current = current.category
+            slugs.insert(1, current.slug)
+        return "/".join(slugs)
 
 
 class Component(LazyObject, RepoObjectMixin):
@@ -645,6 +663,7 @@ class Component(LazyObject, RepoObjectMixin):
         "category",
         "linked_component",
     }
+    NULLS: ClassVar[set[str]] = {"category"}
     ID: ClassVar[str] = "slug"
     MAPPINGS: ClassVar[dict[str, Any]] = {
         "category": Category,
@@ -652,6 +671,11 @@ class Component(LazyObject, RepoObjectMixin):
         "source_language": Language,
     }
     REPOSITORY_CLASS = Repository
+
+    def full_slug(self):
+        if self.category:
+            return f"{self.category.full_slug()}/{self.slug}"
+        return f"{self.project.full_slug()}/{self.slug}"
 
     def list(self):
         """List translations in the component."""

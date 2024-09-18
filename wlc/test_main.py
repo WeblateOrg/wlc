@@ -454,6 +454,38 @@ class TestCommands(APITest):
             )
             self.assertEqual(os.listdir(tmpdirname), ["output"])
 
+    def test_download_config(self):
+        with TemporaryDirectory() as tmpdirname:
+            execute(
+                [
+                    "--config",
+                    TEST_CONFIG,
+                    "--config-section",
+                    "withcomponent",
+                    "download",
+                    "--output",
+                    tmpdirname,
+                ],
+                settings=False,
+            )
+            self.assertEqual(os.listdir(tmpdirname), ["hello-weblate.zip"])
+        with TemporaryDirectory() as tmpdirname:
+            execute(
+                [
+                    "--config",
+                    TEST_CONFIG,
+                    "--config-section",
+                    "withproject",
+                    "download",
+                    "--output",
+                    tmpdirname,
+                ],
+                settings=False,
+            )
+            self.assertEqual(
+                os.listdir(tmpdirname), ["hello-weblate.zip", "hello-android.zip"]
+            )
+
     def test_upload(self):
         """Translation file uploads."""
         msg = "Error: Failed to upload translations!\nNot found.\n"

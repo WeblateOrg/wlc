@@ -1,7 +1,9 @@
-1.15
+1.16
 ----
 
 * Not yet released.
+* Fixed downloading components based on configration.
+* Improved handling of categorized components.
 
 1.15
 ----
