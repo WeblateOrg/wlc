@@ -483,7 +483,7 @@ class TestCommands(APITest):
                 settings=False,
             )
             self.assertEqual(
-                os.listdir(tmpdirname), ["hello-weblate.zip", "hello-android.zip"]
+                set(os.listdir(tmpdirname)), {"hello-weblate.zip", "hello-android.zip"}
             )
 
     def test_upload(self):
