@@ -50,7 +50,7 @@ repos:
     - mdformat-shfmt==0.1.0
     - mdformat_tables==1.0.0
 - repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.41.0
+  rev: v0.42.0
   hooks:
   - id: markdownlint
 - repo: https://github.com/fsfe/reuse-tool
