@@ -17,7 +17,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Build, ${{ matrix.architecture }}
     strategy:
       matrix:
@@ -43,7 +43,7 @@ jobs:
       run: .github/bin/docker-build
 
   buildx:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Build, ${{ matrix.architecture }}
     strategy:
       matrix:
@@ -75,7 +75,7 @@ jobs:
       run: .github/bin/docker-build
 
   test:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Test, ${{ matrix.architecture }}
     needs: [build]
     strategy:
@@ -105,7 +105,7 @@ jobs:
       run: docker run --rm weblate/wlc:test version | grep "version"
 
   anchore:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Anchore Container Scan, ${{ matrix.architecture }}
     needs:
     - build
@@ -151,7 +151,7 @@ jobs:
         path: results.sarif
 
   trivy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Trivy Container Scan, ${{ matrix.architecture }}
     needs:
     - build
@@ -200,7 +200,7 @@ jobs:
         path: trivy-results.sarif
 
   push_dockerhub:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Publish to Docker Hub
     needs:
     - test
@@ -246,7 +246,7 @@ jobs:
       run: .github/bin/docker-build publish
 
   push_github:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     name: Publish to GitHub
     permissions:
       packages: write
