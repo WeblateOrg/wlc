@@ -136,7 +136,7 @@ jobs:
     - name: Checkout the code
       uses: actions/checkout@v4
     - name: Anchore scan action
-      uses: anchore/scan-action@v5
+      uses: anchore/scan-action@v6
       with:
         image: weblate/wlc:test
         fail-build: false
