@@ -240,8 +240,7 @@ class ObjectCommand(Command):
             "object",
             nargs="*",
             help=(
-                "Object on which we should operate "
-                "(project, component or translation)"
+                "Object on which we should operate (project, component or translation)"
             ),
         )
         return parser
@@ -486,8 +485,7 @@ class Pull(ObjectCommand):
 
     name = "pull"
     description = (
-        "Pulls changes to Weblate from repository "
-        "in translation, component or project"
+        "Pulls changes to Weblate from repository in translation, component or project"
     )
 
     def run(self):
