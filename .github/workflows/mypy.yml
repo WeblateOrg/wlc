@@ -1,0 +1,41 @@
+# Copyright © Michal Čihař <michal@weblate.org>
+#
+# SPDX-License-Identifier: CC0-1.0
+
+name: mypy
+
+on:
+  push:
+    branches-ignore:
+    - deepsource-fix-**
+    - renovate/**
+    - weblate
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  mypy:
+    runs-on: ubuntu-24.04
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 2
+
+    - uses: astral-sh/setup-uv@v5
+      with:
+        cache-suffix: test
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Install pip dependencies
+      run: uv pip install --system -e .[types,test]
+
+    - name: Run mypy
+      run: |
+        echo "::add-matcher::.github/matchers/mypy.json"
+        mypy --show-column-numbers wlc
+        echo "::remove-matcher owner=mypy::"

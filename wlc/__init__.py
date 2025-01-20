@@ -14,7 +14,7 @@ from urllib.parse import urlencode, urlparse
 import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry
+from requests.packages.urllib3.util.retry import Retry  # type: ignore[import-not-found]
 
 log = logging.getLogger("wlc")
 

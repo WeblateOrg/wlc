@@ -9,7 +9,7 @@ from __future__ import annotations
 import os.path
 from configparser import NoOptionError, RawConfigParser
 
-from xdg.BaseDirectory import load_config_paths
+from xdg.BaseDirectory import load_config_paths  # type: ignore[import-untyped]
 
 import wlc
 
