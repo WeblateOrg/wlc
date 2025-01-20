@@ -8,27 +8,70 @@ on: [push, pull_request]
 
 jobs:
   setup:
+    name: Build packages
     runs-on: ubuntu-24.04
-
     steps:
     - uses: actions/checkout@v4
     - name: Setup Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.13'
-        cache: pip
-        cache-dependency-path: pyproject.toml
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip wheel
-        pip install -e .[test]
-    - name: build
-      run: pyproject-build
-    - name: twine
-      run: twine check dist/*
-    - name: Publish package
-      if: ${{ github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') }}
-      uses: pypa/gh-action-pypi-publish@release/v1
+    - uses: astral-sh/setup-uv@v5
       with:
-        user: __token__
-        password: ${{ secrets.pypi_password }}
+        enable-cache: true
+        cache-dependency-glob: ''
+    - name: Install dependencies
+      run: uv pip install --system -e .[dev]
+    - name: build sdist
+      run: uv build
+    - name: twine
+      run: uvx twine check dist/*
+    - name: pydistcheck
+      run: uvx pydistcheck --inspect dist/*
+    - name: pyroma
+      run: uvx pyroma dist/*.tar.gz
+    - name: check-wheel-contents
+      run: uvx check-wheel-contents dist/*.whl
+    - name: check-manifest
+      run: uvx check-manifest -v
+
+    - uses: actions/upload-artifact@v4
+      with:
+        path: dist/*
+        name: dist
+
+  release_pypi:
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.repository == 'WeblateOrg/language-data'
+    runs-on: ubuntu-24.04
+    name: Publish release to PyPI
+    permissions:
+      # this permission is mandatory for trusted publishing
+      id-token: write
+    needs:
+    - setup
+    steps:
+    - uses: astral-sh/setup-uv@v5
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist
+    - name: Publish package
+      run: uv publish --trusted-publishing always
+
+  release_github:
+    runs-on: ubuntu-24.04
+    name: Create release on GitHub
+    permissions:
+      contents: write
+    needs:
+    - setup
+    if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/language-data'
+    steps:
+    - uses: actions/download-artifact@v4
+      with:
+        name: dist
+        path: dist
+    - uses: ncipollo/release-action@v1
+      with:
+        generateReleaseNotes: true
+        artifacts: dist/*
