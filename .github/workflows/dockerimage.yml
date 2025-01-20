@@ -149,7 +149,7 @@ jobs:
     - uses: actions/upload-artifact@v4
       with:
         name: Anchore scan SARIF
-        path: results.sarif
+        path: ${{ steps.scan.outputs.sarif }}
 
   trivy:
     runs-on: ubuntu-24.04
