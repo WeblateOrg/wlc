@@ -1,5 +1,7 @@
 include README.md
+include SECURITY.md
 include LICENSE
+include wl
 recursive-include LICENSES *
 include CHANGES.rst
 include MANIFEST.in
