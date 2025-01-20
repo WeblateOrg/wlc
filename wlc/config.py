@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
+from collections.abc import Generator
 
 from xdg.BaseDirectory import load_config_paths  # type: ignore[import-untyped]
 
@@ -40,12 +41,13 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "backoff_factor", 0)
 
     @staticmethod
-    def find_configs():
+    def find_configs() -> Generator[str]:
         # Handle Windows specifically
-        if "APPDATA" in os.environ:
-            win_path = os.path.join(os.environ["APPDATA"], "weblate.ini")
-            if os.path.exists(win_path):
-                yield win_path
+        for envname in ("APPDATA", "LOCALAPPDATA"):
+            if path := os.environ.get(envname):
+                win_path = os.path.join(path, "weblate.ini")
+                if os.path.exists(win_path):
+                    yield win_path
 
         # Generic XDG paths
         yield from load_config_paths("weblate")
