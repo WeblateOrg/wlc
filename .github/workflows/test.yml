@@ -51,11 +51,3 @@ jobs:
         token: ${{secrets.CODECOV_TOKEN}}
         flags: unittests
         name: Python ${{ matrix.python-version }}, ${{ matrix.os }}
-    - name: DeepSource
-      if: ${{ matrix.os == 'ubuntu-20.04' }}
-      continue-on-error: true
-      env:
-        DEEPSOURCE_DSN: ${{secrets.DEEPSOURCE_DSN}}
-      run: |
-        curl https://deepsource.io/cli | sh
-        ./bin/deepsource report --analyzer test-coverage --key python --value-file ./coverage.xml
