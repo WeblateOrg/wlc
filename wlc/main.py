@@ -5,6 +5,7 @@
 """Command-line interface for Weblate."""
 
 from __future__ import annotations
+
 import csv
 import http.client
 import json
@@ -81,7 +82,7 @@ class CommandError(Exception):
     def __init__(self, message, detail=None):
         """Create CommandError exception."""
         if detail is not None:
-            message = "\n".join((message, detail))
+            message = f"{message}\n{detail}"
         super().__init__(message)
 
 

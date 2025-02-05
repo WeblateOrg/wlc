@@ -5,6 +5,7 @@
 """Test helpers."""
 
 from __future__ import annotations
+
 import os
 from email import message_from_string
 from hashlib import blake2b
@@ -112,7 +113,7 @@ class ResponseHandler:
 def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
     """Simplified URL registration."""
     filename = os.path.join(DATA_TEST_BASE, path.replace("/", "-"))
-    url = "/".join((domain, path, ""))
+    url = f"{domain}/{path}/"
     with open(filename, "rb") as handle:
         responses.add_callback(
             responses.GET,
@@ -157,7 +158,7 @@ def register_error(
     path, code, domain="http://127.0.0.1:8000/api", method=responses.GET, **kwargs
 ):
     """Simplified URL error registration."""
-    url = "/".join((domain, path, ""))
+    url = f"{domain}/{path}/"
     if "callback" in kwargs:
         responses.add_callback(method, url, **kwargs)
     else:

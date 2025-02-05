@@ -5,6 +5,7 @@
 """Weblate API client library."""
 
 from __future__ import annotations
+
 import json
 import logging
 from copy import copy
@@ -153,7 +154,7 @@ class Weblate:
             reason = error.response.reason
             try:
                 error_string = str(error.response.json())
-            except Exception:
+            except Exception:  # noqa: BLE001
                 error_string = ""
             raise WeblateException(
                 f"HTTP error {status_code}: {reason} {error_string}"
@@ -221,7 +222,7 @@ class Weblate:
 
     def _post_factory(self, prefix, path, kwargs):
         """Wrapper for posting objects."""
-        return self.post("/".join((prefix, path, "")), **kwargs)
+        return self.post(f"{prefix}/{path}/", **kwargs)
 
     def get(self, path, params=None):
         """Perform GET request on the API."""
@@ -238,7 +239,7 @@ class Weblate:
 
     def _get_factory(self, prefix, path, parser):
         """Wrapper for getting objects."""
-        data = self.get("/".join((prefix, path, "")))
+        data = self.get(f"{prefix}/{path}/")
         return parser(weblate=self, **data)
 
     def get_object(self, path):

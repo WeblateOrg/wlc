@@ -23,65 +23,68 @@ TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
 TEST_SECTION = os.path.join(TEST_DATA, "section")
 
 
-def execute(args, settings=None, stdout=None, stdin=None, expected=0):
-    """Execute command and return output."""
-    if settings is None:
-        settings = ()
-    elif not settings:
-        settings = None
-    output = StringIO()
-    output.buffer = BytesIO()
-    backup = sys.stdout
-    backup_err = sys.stderr
-    try:
-        sys.stdout = output
-        sys.stderr = output
-        if stdout:
-            stdout = output
-        result = main(args=args, settings=settings, stdout=stdout, stdin=stdin)
-        assert result == expected
-    finally:
-        sys.stdout = backup
-        sys.stderr = backup_err
-    result = output.buffer.getvalue()
-    if result:
-        return result
-    return output.getvalue()
+class CLITestBase(APITest):
+    def execute(self, args, settings=None, stdout=None, stdin=None, expected=0):
+        """Execute command and return output."""
+        if settings is None:
+            settings = ()
+        elif not settings:
+            settings = None
+        output = StringIO()
+        output.buffer = BytesIO()
+        backup = sys.stdout
+        backup_err = sys.stderr
+        try:
+            sys.stdout = output
+            sys.stderr = output
+            if stdout:
+                stdout = output
+            result = main(args=args, settings=settings, stdout=stdout, stdin=stdin)
+            self.assertEqual(result, expected)
+        finally:
+            sys.stdout = backup
+            sys.stderr = backup_err
+        result = output.buffer.getvalue()
+        if result:
+            return result
+        return output.getvalue()
 
 
-class TestSettings(APITest):
+class TestSettings(CLITestBase):
     """Test settings handling."""
 
     def test_commandline(self):
         """Configuration using command-line."""
-        output = execute(["--url", "https://example.net/", "list-projects"])
+        output = self.execute(["--url", "https://example.net/", "list-projects"])
         self.assertIn("Hello", output)
 
     def test_stdout(self):
         """Configuration using params."""
-        output = execute(["list-projects"], stdout=True)
+        output = self.execute(["list-projects"], stdout=True)
         self.assertIn("Hello", output)
 
     def test_debug(self):
         """Debug mode."""
-        output = execute(["--debug", "list-projects"], stdout=True)
+        output = self.execute(["--debug", "list-projects"], stdout=True)
         self.assertIn("api/projects", output)
 
     def test_settings(self):
         """Configuration using settings param."""
-        output = execute(
+        output = self.execute(
             ["list-projects"], settings=(("weblate", "url", "https://example.net/"),)
         )
         self.assertIn("Hello", output)
 
     def test_config(self):
         """Configuration using custom config file."""
-        output = execute(["--config", TEST_CONFIG, "list-projects"], settings=False)
+        output = self.execute(
+            ["--config", TEST_CONFIG, "list-projects"], settings=False
+        )
         self.assertIn("Hello", output)
 
     def test_config_section(self):
         """Configuration using custom config file section."""
-        output = execute(
+        output = self.execute(
             ["--config", TEST_SECTION, "--config-section", "custom", "list-projects"],
             settings=False,
         )
@@ -89,7 +92,7 @@ class TestSettings(APITest):
 
     def test_config_key(self):
         """Configuration using custom config file section and key set."""
-        output = execute(
+        output = self.execute(
             ["--config", TEST_CONFIG, "--config-section", "withkey", "show", "acl"],
             settings=False,
         )
@@ -97,10 +100,10 @@ class TestSettings(APITest):
 
     def test_config_appdata(self):
         """Configuration using custom config file section and key set."""
-        output = execute(["show", "acl"], settings=False, expected=1)
+        output = self.execute(["show", "acl"], settings=False, expected=1)
         try:
             os.environ["APPDATA"] = TEST_DATA
-            output = execute(["show", "acl"], settings=False)
+            output = self.execute(["show", "acl"], settings=False)
             self.assertIn("ACL", output)
         finally:
             del os.environ["APPDATA"]
@@ -110,7 +113,7 @@ class TestSettings(APITest):
         current = os.path.abspath(".")
         try:
             os.chdir(os.path.join(os.path.dirname(__file__), "test_data"))
-            output = execute(["show"], settings=False)
+            output = self.execute(["show"], settings=False)
             self.assertIn("Weblate", output)
         finally:
             os.chdir(current)
@@ -164,55 +167,55 @@ class TestSettings(APITest):
         backup = sys.argv
         try:
             sys.argv = ["wlc", "version"]
-            output = execute(None)
+            output = self.execute(None)
             self.assertIn(f"version: {wlc.__version__}", output)
         finally:
             sys.argv = backup
 
 
-class TestOutput(APITest):
+class TestOutput(CLITestBase):
     """Test output formatting."""
 
     def test_version_text(self):
         """Test version printing."""
-        output = execute(["--format", "text", "version"])
+        output = self.execute(["--format", "text", "version"])
         self.assertIn(f"version: {wlc.__version__}", output)
 
     def test_version_json(self):
         """Test version printing."""
-        output = execute(["--format", "json", "version"])
+        output = self.execute(["--format", "json", "version"])
         values = json.loads(output)
         self.assertEqual({"version": wlc.__version__}, values)
 
     def test_version_csv(self):
         """Test version printing."""
-        output = execute(["--format", "csv", "version"])
+        output = self.execute(["--format", "csv", "version"])
         self.assertIn(f"version,{wlc.__version__}", output)
 
     def test_version_html(self):
         """Test version printing."""
-        output = execute(["--format", "html", "version"])
+        output = self.execute(["--format", "html", "version"])
         self.assertIn(wlc.__version__, output)
 
     def test_projects_text(self):
         """Test projects printing."""
-        output = execute(["--format", "text", "list-projects"])
+        output = self.execute(["--format", "text", "list-projects"])
         self.assertIn("name: {}".format("Hello"), output)
 
     def test_projects_json(self):
         """Test projects printing."""
-        output = execute(["--format", "json", "list-projects"])
+        output = self.execute(["--format", "json", "list-projects"])
         values = json.loads(output)
         self.assertEqual(2, len(values))
 
     def test_projects_csv(self):
         """Test projects printing."""
-        output = execute(["--format", "csv", "list-projects"])
+        output = self.execute(["--format", "csv", "list-projects"])
         self.assertIn("Hello", output)
 
     def test_projects_html(self):
         """Test projects printing."""
-        output = execute(["--format", "html", "list-projects"])
+        output = self.execute(["--format", "html", "list-projects"])
         self.assertIn("Hello", output)
 
     def test_json_encoder(self):
@@ -223,226 +226,228 @@ class TestOutput(APITest):
             cmd.print_json(self)
 
 
-class TestCommands(APITest):
+class TestCommands(CLITestBase):
     """Individual command tests."""
 
     def test_version_bare(self):
         """Test version printing."""
-        output = execute(["version", "--bare"])
+        output = self.execute(["version", "--bare"])
         self.assertEqual(f"{wlc.__version__}\n", output)
 
     def test_ls(self):
         """Project listing."""
-        output = execute(["ls"])
+        output = self.execute(["ls"])
         self.assertIn("Hello", output)
-        output = execute(["ls", "hello"])
+        output = self.execute(["ls", "hello"])
         self.assertIn("Weblate", output)
-        output = execute(["ls", "empty"])
+        output = self.execute(["ls", "empty"])
         self.assertEqual("", output)
 
     def test_list_languages(self):
         """Language listing."""
-        output = execute(["list-languages"])
+        output = self.execute(["list-languages"])
         self.assertIn("Turkish", output)
 
     def test_list_projects(self):
         """Project listing."""
-        output = execute(["list-projects"])
+        output = self.execute(["list-projects"])
         self.assertIn("Hello", output)
 
     def test_list_components(self):
         """Components listing."""
-        output = execute(["list-components"])
+        output = self.execute(["list-components"])
         self.assertIn("/hello/weblate", output)
 
-        output = execute(["list-components", "hello"])
+        output = self.execute(["list-components", "hello"])
         self.assertIn("/hello/weblate", output)
 
-        output = execute(["list-components", "hello/weblate"], expected=1)
+        output = self.execute(["list-components", "hello/weblate"], expected=1)
         self.assertIn("Not supported", output)
 
     def test_list_translations(self):
         """Translations listing."""
-        output = execute(["list-translations"])
+        output = self.execute(["list-translations"])
         self.assertIn("/hello/weblate/cs/", output)
 
-        output = execute(["list-translations", "hello/weblate"])
+        output = self.execute(["list-translations", "hello/weblate"])
         self.assertIn("/hello/weblate/cs/", output)
 
-        output = execute(["list-translations", "hello/weblate"])
+        output = self.execute(["list-translations", "hello/weblate"])
         self.assertIn("/hello/weblate/cs/", output)
 
-        output = execute(["--format", "json", "list-translations", "hello/weblate"])
+        output = self.execute(
+            ["--format", "json", "list-translations", "hello/weblate"]
+        )
         self.assertIn("/hello/weblate/cs/", output)
 
     def test_show(self):
         """Project show."""
-        output = execute(["show", "hello"])
+        output = self.execute(["show", "hello"])
         self.assertIn("Hello", output)
 
-        output = execute(["show", "hello/weblate"])
+        output = self.execute(["show", "hello/weblate"])
         self.assertIn("Weblate", output)
 
-        output = execute(["show", "hello/weblate/cs"])
+        output = self.execute(["show", "hello/weblate/cs"])
         self.assertIn("/hello/weblate/cs/", output)
 
     def test_show_error(self):
-        execute(["show", "io"], expected=10)
+        self.execute(["show", "io"], expected=10)
         with self.assertRaises(FileNotFoundError):
-            execute(["show", "bug"])
+            self.execute(["show", "bug"])
 
     def test_delete(self):
         """Project delete."""
-        output = execute(["delete", "hello"])
+        output = self.execute(["delete", "hello"])
         self.assertEqual("", output)
 
-        output = execute(["delete", "hello/weblate"])
+        output = self.execute(["delete", "hello/weblate"])
         self.assertEqual("", output)
 
-        output = execute(["delete", "hello/weblate/cs"])
+        output = self.execute(["delete", "hello/weblate/cs"])
         self.assertEqual("", output)
 
     def test_commit(self):
         """Project commit."""
-        output = execute(["commit", "hello"])
+        output = self.execute(["commit", "hello"])
         self.assertEqual("", output)
 
-        output = execute(["commit", "hello/weblate"])
+        output = self.execute(["commit", "hello/weblate"])
         self.assertEqual("", output)
 
-        output = execute(["commit", "hello/weblate/cs"])
+        output = self.execute(["commit", "hello/weblate/cs"])
         self.assertEqual("", output)
 
     def test_push(self):
         """Project push."""
         msg = "Error: Failed to push changes!\nPush is disabled for Hello/Weblate.\n"
-        output = execute(["push", "hello"], expected=1)
+        output = self.execute(["push", "hello"], expected=1)
         self.assertEqual(msg, output)
 
-        output = execute(["push", "hello/weblate"], expected=1)
+        output = self.execute(["push", "hello/weblate"], expected=1)
         self.assertEqual(msg, output)
 
-        output = execute(["push", "hello/weblate/cs"], expected=1)
+        output = self.execute(["push", "hello/weblate/cs"], expected=1)
         self.assertEqual(msg, output)
 
     def test_pull(self):
         """Project pull."""
-        output = execute(["pull", "hello"])
+        output = self.execute(["pull", "hello"])
         self.assertEqual("", output)
 
-        output = execute(["pull", "hello/weblate"])
+        output = self.execute(["pull", "hello/weblate"])
         self.assertEqual("", output)
 
-        output = execute(["pull", "hello/weblate/cs"])
+        output = self.execute(["pull", "hello/weblate/cs"])
         self.assertEqual("", output)
 
     def test_reset(self):
         """Project reset."""
-        output = execute(["reset", "hello"])
+        output = self.execute(["reset", "hello"])
         self.assertEqual("", output)
 
-        output = execute(["reset", "hello/weblate"])
+        output = self.execute(["reset", "hello/weblate"])
         self.assertEqual("", output)
 
-        output = execute(["reset", "hello/weblate/cs"])
+        output = self.execute(["reset", "hello/weblate/cs"])
         self.assertEqual("", output)
 
     def test_cleanup(self):
         """Project cleanup."""
-        output = execute(["cleanup", "hello"])
+        output = self.execute(["cleanup", "hello"])
         self.assertEqual("", output)
 
-        output = execute(["cleanup", "hello/weblate"])
+        output = self.execute(["cleanup", "hello/weblate"])
         self.assertEqual("", output)
 
-        output = execute(["cleanup", "hello/weblate/cs"])
+        output = self.execute(["cleanup", "hello/weblate/cs"])
         self.assertEqual("", output)
 
     def test_repo(self):
         """Project repo."""
-        output = execute(["repo", "hello"])
+        output = self.execute(["repo", "hello"])
         self.assertIn("needs_commit", output)
 
-        output = execute(["repo", "hello/weblate"])
+        output = self.execute(["repo", "hello/weblate"])
         self.assertIn("needs_commit", output)
 
-        output = execute(["repo", "hello/weblate/cs"])
+        output = self.execute(["repo", "hello/weblate/cs"])
         self.assertIn("needs_commit", output)
 
     def test_stats(self):
         """Project stats."""
-        output = execute(["stats", "hello"])
+        output = self.execute(["stats", "hello"])
         self.assertIn("translated_percent", output)
 
-        output = execute(["stats", "hello/weblate"])
+        output = self.execute(["stats", "hello/weblate"])
         self.assertIn("failing_percent", output)
 
-        output = execute(["stats", "hello/weblate/cs"])
+        output = self.execute(["stats", "hello/weblate/cs"])
         self.assertIn("failing_percent", output)
 
     def test_locks(self):
         """Project locks."""
-        output = execute(["lock-status", "hello"], expected=1)
+        output = self.execute(["lock-status", "hello"], expected=1)
         self.assertIn("This command is supported only at component level", output)
 
-        output = execute(["lock-status", "hello/weblate"])
+        output = self.execute(["lock-status", "hello/weblate"])
         self.assertIn("locked", output)
-        output = execute(["lock", "hello/weblate"])
+        output = self.execute(["lock", "hello/weblate"])
         self.assertEqual("", output)
-        output = execute(["unlock", "hello/weblate"])
+        output = self.execute(["unlock", "hello/weblate"])
         self.assertEqual("", output)
 
-        output = execute(["lock-status", "hello/weblate/cs"], expected=1)
+        output = self.execute(["lock-status", "hello/weblate/cs"], expected=1)
         self.assertIn("This command is supported only at component level", output)
 
     def test_changes(self):
         """Project changes."""
-        output = execute(["changes", "hello"])
+        output = self.execute(["changes", "hello"])
         self.assertIn("action_name", output)
 
-        output = execute(["changes", "hello/weblate"])
+        output = self.execute(["changes", "hello/weblate"])
         self.assertIn("action_name", output)
 
-        output = execute(["changes", "hello/weblate/cs"])
+        output = self.execute(["changes", "hello/weblate/cs"])
         self.assertIn("action_name", output)
 
     def test_download(self):
         """Translation file downloads."""
-        output = execute(["download"], expected=1)
+        output = self.execute(["download"], expected=1)
         self.assertIn("Output is needed", output)
 
         with TemporaryDirectory() as tmpdirname:
-            execute(["download", "--output", tmpdirname])
+            self.execute(["download", "--output", tmpdirname])
 
-        output = execute(["download", "hello/weblate/cs"])
+        output = self.execute(["download", "hello/weblate/cs"])
         self.assertIn(b"Plural-Forms:", output)
 
-        output = execute(["download", "hello/weblate/cs", "--convert", "csv"])
+        output = self.execute(["download", "hello/weblate/cs", "--convert", "csv"])
         self.assertIn(b'"location"', output)
 
         with NamedTemporaryFile() as handle:
             handle.close()
-            execute(["download", "hello/weblate/cs", "-o", handle.name])
+            self.execute(["download", "hello/weblate/cs", "-o", handle.name])
             with open(handle.name, "rb") as tmp:
                 output = tmp.read()
             self.assertIn(b"Plural-Forms:", output)
 
-        output = execute(["download", "hello/weblate"], expected=1)
+        output = self.execute(["download", "hello/weblate"], expected=1)
         self.assertIn("Output is needed", output)
 
         with TemporaryDirectory() as tmpdirname:
-            execute(["download", "hello/weblate", "--output", tmpdirname])
+            self.execute(["download", "hello/weblate", "--output", tmpdirname])
 
-        output = execute(["download", "hello"], expected=1)
+        output = self.execute(["download", "hello"], expected=1)
         self.assertIn("Output is needed", output)
 
         with TemporaryDirectory() as tmpdirname:
-            execute(["download", "hello", "--no-glossary", "--output", tmpdirname])
+            self.execute(["download", "hello", "--no-glossary", "--output", tmpdirname])
             # The hello-android should not be present as it is flagged as a glossary
             self.assertEqual(os.listdir(tmpdirname), ["hello-weblate.zip"])
 
         with TemporaryDirectory() as tmpdirname:
-            execute(
+            self.execute(
                 [
                     "download",
                     "hello",
@@ -456,7 +461,7 @@ class TestCommands(APITest):
 
     def test_download_config(self):
         with TemporaryDirectory() as tmpdirname:
-            execute(
+            self.execute(
                 [
                     "--config",
                     TEST_CONFIG,
@@ -470,7 +475,7 @@ class TestCommands(APITest):
             )
             self.assertEqual(os.listdir(tmpdirname), ["hello-weblate.zip"])
         with TemporaryDirectory() as tmpdirname:
-            execute(
+            self.execute(
                 [
                     "--config",
                     TEST_CONFIG,
@@ -490,23 +495,25 @@ class TestCommands(APITest):
         """Translation file uploads."""
         msg = "Error: Failed to upload translations!\nNot found.\n"
 
-        output = execute(["upload", "hello/weblate"], expected=1)
+        output = self.execute(["upload", "hello/weblate"], expected=1)
         self.assertEqual(
             "Error: This command is supported only at translation level\n", output
         )
 
         with self.get_text_io_wrapper("test upload data") as stdin:
-            output = execute(["upload", "hello/weblate/cs"], stdin=stdin)
+            output = self.execute(["upload", "hello/weblate/cs"], stdin=stdin)
             self.assertEqual("", output)
 
         with self.get_text_io_wrapper("wrong upload data") as stdin:
-            output = execute(["upload", "hello/weblate/cs"], stdin=stdin, expected=1)
+            output = self.execute(
+                ["upload", "hello/weblate/cs"], stdin=stdin, expected=1
+            )
             self.assertEqual(msg, output)
 
         with NamedTemporaryFile(delete=False) as handle:
             handle.write(b"test upload overwrite")
             handle.close()
-            output = execute(
+            output = self.execute(
                 ["upload", "hello/weblate/cs", "-i", handle.name, "--overwrite"]
             )
             self.assertEqual("", output)
@@ -517,19 +524,19 @@ class TestCommands(APITest):
         return TextIOWrapper(BytesIO(string.encode()), "utf8")
 
 
-class TestErrors(APITest):
+class TestErrors(CLITestBase):
     """Error handling tests."""
 
     def test_commandline_missing_key(self):
         """Configuration using command-line."""
-        output = execute(
+        output = self.execute(
             ["--url", "http://denied.example.com", "list-projects"], expected=1
         )
         self.assertIn("Missing API key", output)
 
     def test_commandline_wrong_key(self):
         """Configuration using command-line."""
-        output = execute(
+        output = self.execute(
             ["--key", "x", "--url", "http://denied.example.com", "list-projects"],
             expected=1,
         )

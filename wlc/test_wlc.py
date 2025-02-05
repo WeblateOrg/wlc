@@ -5,6 +5,7 @@
 """Test the module."""
 
 from __future__ import annotations
+
 import io
 import os
 from typing import Any, ClassVar

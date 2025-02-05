@@ -132,42 +132,15 @@ ignore = [
   "TRY003",  # WONTFIX: Avoid specifying long messages outside the exception class
   "PLR0913",  # WONTFIX: Too many arguments to function call
   "PLR2004",  # TODO: Magic value used in comparison, consider replacing 201 with a constant variable
+  "COM",  # CONFIG: No trailing commas
+  "PT",  # CONFIG: Not using pytest
+  "PTH",  # TODO: Not using pathlib
+  "EM",  # TODO: Exception strings
+  "FBT",  # TODO: Boolean in function definition
+  "ANN",  # TODO: type annotations
   "N818"  # TODO: exception naming
 ]
-select = [
-  "E",
-  "F",
-  "B",
-  "T10",
-  "A",
-  "C4",
-  "C90",
-  "YTT",
-  "DJ",
-  "UP",
-  "D",
-  "PD",
-  "PGH",
-  "PL",
-  "TRY",
-  "RUF",
-  "ERA",
-  "ICN",
-  "ISC",
-  "EXE",
-  "INP",
-  "PIE",
-  "G",
-  "PYI",
-  "Q",
-  "SIM",
-  "TID",
-  "RSE",
-  "T20",
-  "RET",
-  "SLF",
-  "N"
-]
+select = ["ALL"]
 
 [tool.ruff.lint.mccabe]
 max-complexity = 16

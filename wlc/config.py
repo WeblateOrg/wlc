@@ -8,11 +8,14 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
-from collections.abc import Generator
+from typing import TYPE_CHECKING
 
 from xdg.BaseDirectory import load_config_paths  # type: ignore[import-untyped]
 
 import wlc
+
+if TYPE_CHECKING:
+    from collections.abc import Generator
 
 __all__ = ["NoOptionError", "WeblateConfig"]
 
