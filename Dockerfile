@@ -1,7 +1,7 @@
 # Copyright © Michal Čihař <michal@weblate.org>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-FROM python:3.13.1-alpine
+FROM python:3.13.2-alpine
 
 LABEL name="wlc"
 LABEL maintainer="Michal Čihař <michal@cihar.com>"
