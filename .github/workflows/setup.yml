@@ -75,3 +75,5 @@ jobs:
       with:
         generateReleaseNotes: true
         artifacts: dist/*
+permissions:
+  contents: read
