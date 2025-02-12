@@ -31,7 +31,7 @@ jobs:
       with:
         python-version: '3.13'
     - name: Install pip dependencies
-      run: uv pip install --system -e .[types,test]
+      run: uv pip install --system -e ".[types,test]"
 
     - name: Run mypy
       run: |
