@@ -25,14 +25,14 @@ jobs:
     env:
       MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache
       with:
         path: /tmp/.buildx-cache/${{ matrix.architecture }}
@@ -53,18 +53,18 @@ jobs:
     env:
       MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3.4.0
+      uses: docker/setup-qemu-action@4574d27a4764455b42196d70a065bc6853246a25 # v3.4.0
       with:
         platforms: ${{ matrix.architecture }}
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache
       with:
         path: /tmp/.buildx-cache/${{ matrix.architecture }}
@@ -85,14 +85,14 @@ jobs:
       MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
       COMPOSE_PROJECT_NAME: wl
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache
       with:
         path: /tmp/.buildx-cache/${{ matrix.architecture }}
@@ -117,14 +117,14 @@ jobs:
     env:
       MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache
       with:
         path: /tmp/.buildx-cache/${{ matrix.architecture }}
@@ -134,19 +134,19 @@ jobs:
     - name: List Docker images
       run: docker image ls --all
     - name: Checkout the code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Anchore scan action
-      uses: anchore/scan-action@v6
+      uses: anchore/scan-action@7c05671ae9be166aeb155bad2d7df9121823df32 # v6
       id: scan
       with:
         image: weblate/wlc:test
         fail-build: false
         severity-cutoff: high
     - name: Upload Anchore Scan Report
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3
       with:
         sarif_file: ${{ steps.scan.outputs.sarif }}
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
       with:
         name: Anchore scan SARIF
         path: ${{ steps.scan.outputs.sarif }}
@@ -164,14 +164,14 @@ jobs:
     env:
       MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache
       with:
         path: /tmp/.buildx-cache/${{ matrix.architecture }}
@@ -181,9 +181,9 @@ jobs:
     - name: List Docker images
       run: docker image ls --all
     - name: Checkout the code
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@0.29.0
+      uses: aquasecurity/trivy-action@18f2510ee396bbf400402947b394f2dd8c87dbb0 # 0.29.0
       with:
         image-ref: weblate/wlc:test
         format: template
@@ -192,10 +192,10 @@ jobs:
         severity: CRITICAL,HIGH
 
     - name: Upload Trivy scan results to GitHub Security tab
-      uses: github/codeql-action/upload-sarif@v3
+      uses: github/codeql-action/upload-sarif@9e8d0789d4a0fa9ceb6b1738f7e269594bdd67f0 # v3
       with:
         sarif_file: trivy-results.sarif
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
       with:
         name: Trivy scan SARIF
         path: trivy-results.sarif
@@ -211,30 +211,30 @@ jobs:
     if: ${{ (startsWith(github.ref, 'refs/tags/') || (github.ref == 'refs/heads/main')) && github.repository == 'WeblateOrg/wlc' }}
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3.4.0
+      uses: docker/setup-qemu-action@4574d27a4764455b42196d70a065bc6853246a25 # v3.4.0
       with:
         platforms: all
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache-arm64
       with:
         path: /tmp/.buildx-cache/linux/arm64
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm64
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache-arm-v7
       with:
         path: /tmp/.buildx-cache/linux/arm/v7
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm/v7
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache-amd64
       with:
         path: /tmp/.buildx-cache/linux/amd64
@@ -261,37 +261,37 @@ jobs:
       DOCKER_IMAGE: ghcr.io/weblateorg/wlc
     steps:
     - name: Checkout
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3.4.0
+      uses: docker/setup-qemu-action@4574d27a4764455b42196d70a065bc6853246a25 # v3.4.0
       with:
         platforms: all
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v3.9.0
+      uses: docker/setup-buildx-action@f7ce87c1d6bead3e36075b2ce75da1f6cc28aaca # v3.9.0
       with:
         # renovate: datasource=github-releases depName=docker/buildx
         version: v0.20.1
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache-arm64
       with:
         path: /tmp/.buildx-cache/linux/arm64
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm64
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache-arm-v7
       with:
         path: /tmp/.buildx-cache/linux/arm/v7
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm/v7
     - name: Cache Docker layers
-      uses: actions/cache@v4
+      uses: actions/cache@0c907a75c2c80ebcb7f088228285e798b750cf8f # v4
       id: cache-amd64
       with:
         path: /tmp/.buildx-cache/linux/amd64
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/amd64
     - name: Login to GitHub Container Registry
       if: ${{ github.event_name != 'pull_request'}}
-      uses: docker/login-action@v3
+      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
       with:
         registry: ghcr.io
         username: ${{ github.actor }}

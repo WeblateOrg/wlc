@@ -11,12 +11,12 @@ jobs:
     name: Build packages
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: Setup Python
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@42375524e23c412d93fb67b49958b491fce71c38 # v5
       with:
         python-version: '3.13'
-    - uses: astral-sh/setup-uv@v5
+    - uses: astral-sh/setup-uv@4db96194c378173c656ce18a155ffc14a9fc4355 # v5
       with:
         enable-cache: true
         cache-dependency-glob: ''
@@ -35,7 +35,7 @@ jobs:
     - name: check-manifest
       run: uvx check-manifest -v
 
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@65c4c4a1ddee5b72f698fdd19549f0f0fb45cf08 # v4
       with:
         path: dist/*
         name: dist
@@ -50,8 +50,8 @@ jobs:
     needs:
     - setup
     steps:
-    - uses: astral-sh/setup-uv@v5
-    - uses: actions/download-artifact@v4
+    - uses: astral-sh/setup-uv@4db96194c378173c656ce18a155ffc14a9fc4355 # v5
+    - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
       with:
         name: dist
         path: dist
@@ -67,11 +67,11 @@ jobs:
     - setup
     if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/language-data'
     steps:
-    - uses: actions/download-artifact@v4
+    - uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
       with:
         name: dist
         path: dist
-    - uses: ncipollo/release-action@v1
+    - uses: ncipollo/release-action@cdcc88a9acf3ca41c16c37bb7d21b9ad48560d87 # v1
       with:
         generateReleaseNotes: true
         artifacts: dist/*
