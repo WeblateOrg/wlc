@@ -35,7 +35,7 @@ jobs:
     - name: check-manifest
       run: uvx check-manifest -v
 
-    - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+    - uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4.6.1
       with:
         path: dist/*
         name: dist
@@ -51,7 +51,7 @@ jobs:
     - setup
     steps:
     - uses: astral-sh/setup-uv@1edb52594c857e2b5b13128931090f0640537287 # v5.3.0
-    - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
+    - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: dist
         path: dist
@@ -67,11 +67,11 @@ jobs:
     - setup
     if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/language-data'
     steps:
-    - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9@cc203385981b70ca67e1cc392babf9cc229d5806 # v4
+    - uses: actions/download-artifact@cc203385981b70ca67e1cc392babf9cc229d5806 # v4.1.9
       with:
         name: dist
         path: dist
-    - uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1
+    - uses: ncipollo/release-action@440c8c1cb0ed28b9f43e4d1d670870f059653174 # v1.16.0
       with:
         generateReleaseNotes: true
         artifacts: dist/*
