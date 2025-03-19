@@ -51,7 +51,7 @@ jobs:
     - setup
     steps:
     - uses: astral-sh/setup-uv@f94ec6bedd8674c4426838e6b50417d36b6ab231 # v5.3.1
-    - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4.2.0
+    - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
       with:
         name: dist
         path: dist
@@ -67,7 +67,7 @@ jobs:
     - setup
     if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/language-data'
     steps:
-    - uses: actions/download-artifact@b14cf4c92620c250e1c074ab0a5800e37df86765 # v4.2.0
+    - uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
       with:
         name: dist
         path: dist
