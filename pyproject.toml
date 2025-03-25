@@ -36,15 +36,13 @@ keywords = [
   "mercurial",
   "translate"
 ]
+license = {text = "GPL-3.0-or-later"}
 name = "wlc"
 requires-python = ">=3.9"
 
 [[project.authors]]
 email = "michal@cihar.com"
 name = "Michal Čihař"
-
-[project.license]
-text = "GPL-3.0-or-later"
 
 [project.optional-dependencies]
 lint = ["pre-commit==4.2.0"]
