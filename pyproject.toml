@@ -36,7 +36,8 @@ keywords = [
   "mercurial",
   "translate"
 ]
-license = {text = "GPL-3.0-or-later"}
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
 name = "wlc"
 requires-python = ">=3.9"
 
