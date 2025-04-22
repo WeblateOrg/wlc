@@ -42,7 +42,7 @@ name = "wlc"
 requires-python = ">=3.9"
 
 [[project.authors]]
-email = "michal@cihar.com"
+email = "michal@weblate.org"
 name = "Michal Čihař"
 
 [project.optional-dependencies]
