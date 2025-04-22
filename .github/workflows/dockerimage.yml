@@ -45,12 +45,11 @@ jobs:
       run: .github/bin/docker-build
 
   buildx:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-24.04-arm
     name: Build, ${{ matrix.architecture }}
     strategy:
       matrix:
         architecture:
-        - linux/arm/v7
         - linux/arm64
     env:
       MATRIX_ARCHITECTURE: ${{ matrix.architecture }}
@@ -58,10 +57,6 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         persist-credentials: false
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
-      with:
-        platforms: ${{ matrix.architecture }}
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
       with:
@@ -245,12 +240,6 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm64
     - name: Cache Docker layers
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-      id: cache-arm-v7
-      with:
-        path: /tmp/.buildx-cache/linux/arm/v7
-        key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm/v7
-    - name: Cache Docker layers
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       id: cache-amd64
       with:
         path: /tmp/.buildx-cache/linux/amd64
@@ -295,12 +284,6 @@ jobs:
       with:
         path: /tmp/.buildx-cache/linux/arm64
         key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm64
-    - name: Cache Docker layers
-      uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
-      id: cache-arm-v7
-      with:
-        path: /tmp/.buildx-cache/linux/arm/v7
-        key: ${{ runner.os }}-buildx-${{ github.sha }}-linux/arm/v7
     - name: Cache Docker layers
       uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
       id: cache-amd64

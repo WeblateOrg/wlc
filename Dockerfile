@@ -1,7 +1,7 @@
 # Copyright © Michal Čihař <michal@weblate.org>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-FROM python:3.13.3-alpine@sha256:18159b2be11db91f84b8f8f655cd860f805dbd9e49a583ddaac8ab39bf4fe1a7
+FROM weblate/base:2025.17.0@sha256:6be4634dccb3ca57d94997c4564c13313973c439902118930bf5a9ccf4a196ef
 
 LABEL name="wlc"
 LABEL maintainer="Michal Čihař <michal@cihar.com>"
@@ -14,16 +14,20 @@ LABEL org.opencontainers.image.title="wlc"
 LABEL org.opencontainers.image.description="Command-line client for Weblate"
 LABEL org.opencontainers.image.licenses="GPL-3.0-or-later"
 
-COPY README.md LICENSE pyproject.toml /app/
-COPY ./wlc/ /app/wlc
+COPY README.md LICENSE pyproject.toml /app/src/
+COPY ./wlc/ /app/src/wlc
 
 # This hack is widely applied to avoid python printing issues in docker containers.
 # See: https://github.com/Docker-Hub-frolvlad/docker-alpine-python3/pull/13
 ENV PYTHONUNBUFFERED=1
 
-RUN pip install --no-cache-dir -e /app && adduser -S weblate
+# hadolint ignore=SC1091
+RUN \
+    uv venv /app/venv && \
+    source /app/venv/bin/activate && \
+    uv pip install --no-cache-dir -e /app/src
 
 WORKDIR /home/weblate
 USER weblate
 
-ENTRYPOINT ["wlc"]
+ENTRYPOINT ["/app/venv/bin/wlc"]
