@@ -80,6 +80,7 @@ Twitter = "https://twitter.com/WeblateOrg"
 ignore = [
   ".dockerignore",
   "Dockerfile",
+  ".well-known/*",
   ".editorconfig",
   "*.toml",
   "*.yaml",
