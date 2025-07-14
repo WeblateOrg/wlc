@@ -55,7 +55,7 @@ test = [
   "twine==6.1.0"
 ]
 types = [
-  "mypy==1.16.1",
+  "mypy==1.17.0",
   "types-python-dateutil==2.9.0.20250708",
   "types-requests==2.32.4.20250611"
 ]
