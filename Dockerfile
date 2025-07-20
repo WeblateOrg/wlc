@@ -1,7 +1,7 @@
 # Copyright © Michal Čihař <michal@weblate.org>
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-FROM weblate/base:2025.29.0@sha256:eaa6607bbd22c70fe350323ee44909d6d2f4aee13077158de95d795d4786de96
+FROM weblate/base:2025.30.0@sha256:86a3cf49ebb8e66a49c3919b918db0ad664dc70703058981b0f140c4f521c3c3
 
 LABEL name="wlc"
 LABEL maintainer="Michal Čihař <michal@cihar.com>"
