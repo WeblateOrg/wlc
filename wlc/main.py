@@ -725,11 +725,7 @@ class Upload(TranslationCommand):
         )
         parser.add_argument(
             "--conflicts",
-            choices=(
-                "ignore",
-                "replace-translated",
-                "replace-approved"
-            ),
+            choices=("ignore", "replace-translated", "replace-approved"),
         )
         parser.add_argument(
             "--author-name",
