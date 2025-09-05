@@ -724,6 +724,14 @@ class Upload(TranslationCommand):
             help="Overwrite existing translations (defaults to none)",
         )
         parser.add_argument(
+            "--conflicts",
+            choices=(
+                "ignore",
+                "replace-translated",
+                "replace-approved"
+            ),
+        )
+        parser.add_argument(
             "--author-name",
             help="Author name, to override currently authenticated user",
         )
@@ -752,7 +760,7 @@ class Upload(TranslationCommand):
         obj = self.get_object()
 
         kwargs = {"overwrite": self.args.overwrite}
-        for arg in ("author_name", "author_email", "method", "fuzzy"):
+        for arg in ("author_name", "author_email", "method", "fuzzy", "conflicts"):
             value = getattr(self.args, arg, None)
             if value:
                 kwargs[arg] = value
