@@ -24,7 +24,7 @@ ENV PYTHONUNBUFFERED=1
 # hadolint ignore=SC1091
 RUN \
     uv venv /app/venv && \
-    source /app/venv/bin/activate && \
+    . /app/venv/bin/activate && \
     uv pip install --no-cache-dir -e /app/src
 
 WORKDIR /home/weblate
