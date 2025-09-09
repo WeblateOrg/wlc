@@ -48,7 +48,7 @@ name = "Michal Čihař"
 [project.optional-dependencies]
 lint = ["pre-commit==4.3.0"]
 test = [
-  "pytest-cov==6.3.0",
+  "pytest-cov==7.0.0",
   "pytest-github-actions-annotate-failures==0.3.0",
   "pytest==8.4.2",
   "responses==0.25.8"
