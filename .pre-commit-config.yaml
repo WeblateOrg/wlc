@@ -80,3 +80,4 @@ ci:
   autoupdate_schedule: quarterly
   skip:
   - gitleaks-docker
+  - reuse
