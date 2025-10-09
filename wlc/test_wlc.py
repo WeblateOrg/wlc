@@ -52,6 +52,18 @@ class WeblateErrorTest(APITest):
                 repo="a_repo",
             )
 
+    def test_denied_json_510(self):
+        """Test permission denied when posting components."""
+        with self.assertRaisesRegex(WeblateException, "This is a required error"):
+            Weblate().create_component(
+                project="denied_json_510",
+                slug="component1",
+                name="component1",
+                file_format="po",
+                filemask="/something",
+                repo="a_repo",
+            )
+
     def test_throttled(self):
         """Test listing projects."""
         with self.assertRaisesRegex(

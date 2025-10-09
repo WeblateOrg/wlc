@@ -220,6 +220,20 @@ def register_uris():
         json={"detail": "Can not create components"},
     )
     register_error(
+        "projects/denied_json_510/components",
+        403,
+        method=responses.POST,
+        json={
+            "type": "validation_error",
+            "errors": [
+                {
+                    "code": "required",
+                    "detail": "This is a required error.",
+                }
+            ],
+        },
+    )
+    register_error(
         "projects/throttled",
         429,
         headers={"X-RateLimit-Limit": "100", "Retry-After": "81818"},
