@@ -1,0 +1,22 @@
+SPDX-PackageDownloadLocation = "https://weblate.org/"
+SPDX-PackageName = "wlc"
+SPDX-PackageSupplier = "Michal Čihař <michal@weblate.org>"
+version = 1
+
+[[annotations]]
+SPDX-FileCopyrightText = "Michal Čihař <michal@weblate.org>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+path = "wlc/test_data/**"
+precedence = "aggregate"
+
+[[annotations]]
+SPDX-FileCopyrightText = "Michal Čihař <michal@weblate.org>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+path = [".coveragerc", ".dockerignore", ".gitignore", ".isort.cfg", ".pre-commit-config.yaml", "MANIFEST.in", "codecov.yml", "requirements**.txt", "setup.cfg", "pyproject.toml", ".editorconfig", ".well-known/**"]
+precedence = "aggregate"
+
+[[annotations]]
+SPDX-FileCopyrightText = "Michal Čihař <michal@weblate.org>"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+path = ["CHANGES.rst", "README.md"]
+precedence = "aggregate"
