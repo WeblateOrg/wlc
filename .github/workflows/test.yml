@@ -14,18 +14,17 @@ jobs:
         os:
         - ubuntu-latest
         python-version:
-        - '3.9'
         - '3.10'
         - '3.11'
         - '3.12'
         - '3.13'
         include:
         - os: windows-latest
-          python-version: '3.13'
+          python-version: '3.14'
         - os: macos-latest
-          python-version: '3.13'
+          python-version: '3.14'
         - os: ubuntu-24.04-arm
-          python-version: '3.13'
+          python-version: '3.14'
     name: ${{ matrix.os }}, Python ${{ matrix.python-version }}
 
     steps:
