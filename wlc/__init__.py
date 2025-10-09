@@ -140,7 +140,8 @@ class Weblate:
             if status_code == 429:
                 headers = error.response.headers
                 raise WeblateThrottlingError(
-                    headers.get("X-RateLimit-Limit"), headers.get("Retry-After")
+                    headers.get("X-RateLimit-Limit", "unknown"),
+                    headers.get("Retry-After", "unknown"),
                 ) from error
             if status_code == 404:
                 raise WeblateException(
@@ -388,9 +389,9 @@ class LazyObject(dict):
         super().__init__()
         self.weblate = weblate
         self._url = url
-        self._data = {}
+        self._data: dict[str, Any] = {}
         self._loaded = False
-        self._attribs = {}
+        self._attribs: dict[str, Any] = {}
         self._load_params(**kwargs)
         self._load_params(url=url)
 

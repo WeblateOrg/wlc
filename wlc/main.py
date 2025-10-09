@@ -159,10 +159,10 @@ class Command:
     def print_csv(self, value, header) -> None:
         """CSV print."""
         if header is not None:
-            writer = csv.DictWriter(self.stdout, header)
-            writer.writeheader()
+            dict_writer = csv.DictWriter(self.stdout, header)
+            dict_writer.writeheader()
             for row in value:
-                writer.writerow({k: self.format_value(v) for k, v in row.items()})
+                dict_writer.writerow({k: self.format_value(v) for k, v in row.items()})
         else:
             writer = csv.writer(self.stdout)
             for key, data in sorted_items(value):

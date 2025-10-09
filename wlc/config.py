@@ -35,13 +35,13 @@ class WeblateConfig(RawConfigParser):
         self.add_section(self.section)
         self.set(self.section, "key", "")
         self.set(self.section, "url", wlc.API_URL)
-        self.set(self.section, "retries", 0)
-        self.set(self.section, "timeout", 300)
+        self.set(self.section, "retries", "0")
+        self.set(self.section, "timeout", "300")
         self.set(self.section, "status_forcelist", None)
         self.set(
             self.section, "method_whitelist", "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET"
         )
-        self.set(self.section, "backoff_factor", 0)
+        self.set(self.section, "backoff_factor", "0")
 
     @staticmethod
     def find_configs() -> Generator[str]:
