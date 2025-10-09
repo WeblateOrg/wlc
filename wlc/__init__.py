@@ -118,9 +118,19 @@ class Weblate:
     def permission_error_message(error):
         """Get detail from serialized DRF PermissionDenied exception."""
         try:
-            return error.response.json()["detail"]
-        except (json.JSONDecodeError, KeyError):
+            response_json = error.response.json()
+        except json.JSONDecodeError:
             return None
+
+        # Since Weblate 5.10
+        if "errors" in response_json:
+            return ", ".join(error["detail"] for error in response_json["errors"])
+
+        # Weblate before 5.10
+        if "detail" in response_json:
+            return response_json["detail"]
+
+        return None
 
     def process_error(self, error):
         """Raise WeblateException for known HTTP errors."""
