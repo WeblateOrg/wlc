@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any, ClassVar, NoReturn
+from typing import Any, ClassVar
 
 from requests.exceptions import RequestException
 
@@ -307,7 +307,7 @@ class ObjectTestBaseClass(APITest):
     _name: str | None = None
     _cls: Any = None
 
-    def check_object(self, obj) -> NoReturn:
+    def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         raise NotImplementedError
 
@@ -321,7 +321,7 @@ class ObjectTestBaseClass(APITest):
         self.assertIsInstance(obj, self._cls)
         self.check_object(obj)
 
-    def check_list(self, obj) -> NoReturn:
+    def check_list(self, obj) -> None:
         """Perform verification whether listing is valid."""
         raise NotImplementedError
 
