@@ -53,36 +53,36 @@ class CLITestBase(APITest):
 class TestSettings(CLITestBase):
     """Test settings handling."""
 
-    def test_commandline(self):
+    def test_commandline(self) -> None:
         """Configuration using command-line."""
         output = self.execute(["--url", "https://example.net/", "list-projects"])
         self.assertIn("Hello", output)
 
-    def test_stdout(self):
+    def test_stdout(self) -> None:
         """Configuration using params."""
         output = self.execute(["list-projects"], stdout=True)
         self.assertIn("Hello", output)
 
-    def test_debug(self):
+    def test_debug(self) -> None:
         """Debug mode."""
         output = self.execute(["--debug", "list-projects"], stdout=True)
         self.assertIn("api/projects", output)
 
-    def test_settings(self):
+    def test_settings(self) -> None:
         """Configuration using settings param."""
         output = self.execute(
             ["list-projects"], settings=(("weblate", "url", "https://example.net/"),)
         )
         self.assertIn("Hello", output)
 
-    def test_config(self):
+    def test_config(self) -> None:
         """Configuration using custom config file."""
         output = self.execute(
             ["--config", TEST_CONFIG, "list-projects"], settings=False
         )
         self.assertIn("Hello", output)
 
-    def test_config_section(self):
+    def test_config_section(self) -> None:
         """Configuration using custom config file section."""
         output = self.execute(
             ["--config", TEST_SECTION, "--config-section", "custom", "list-projects"],
@@ -90,7 +90,7 @@ class TestSettings(CLITestBase):
         )
         self.assertIn("Hello", output)
 
-    def test_config_key(self):
+    def test_config_key(self) -> None:
         """Configuration using custom config file section and key set."""
         output = self.execute(
             ["--config", TEST_CONFIG, "--config-section", "withkey", "show", "acl"],
@@ -98,7 +98,7 @@ class TestSettings(CLITestBase):
         )
         self.assertIn("ACL", output)
 
-    def test_config_appdata(self):
+    def test_config_appdata(self) -> None:
         """Configuration using custom config file section and key set."""
         output = self.execute(["show", "acl"], settings=False, expected=1)
         try:
@@ -108,7 +108,7 @@ class TestSettings(CLITestBase):
         finally:
             del os.environ["APPDATA"]
 
-    def test_config_cwd(self):
+    def test_config_cwd(self) -> None:
         """Test loading settings from current dir."""
         current = os.path.abspath(".")
         try:
@@ -118,7 +118,7 @@ class TestSettings(CLITestBase):
         finally:
             os.chdir(current)
 
-    def test_default_config_values(self):
+    def test_default_config_values(self) -> None:
         """Test default parser values."""
         config = WeblateConfig()
         self.assertEqual(config.get("weblate", "key"), "")
@@ -131,7 +131,7 @@ class TestSettings(CLITestBase):
         self.assertEqual(config.get("weblate", "backoff_factor"), 0)
         self.assertIsNone(config.get("weblate", "status_forcelist"))
 
-    def test_parsing(self):
+    def test_parsing(self) -> None:
         """Test config file parsing."""
         config = WeblateConfig()
         self.assertEqual(config.get("weblate", "url"), wlc.API_URL)
@@ -145,7 +145,7 @@ class TestSettings(CLITestBase):
             config.get("weblate", "status_forcelist"), "429,500,502,503,504"
         )
 
-    def test_get_request_options(self):
+    def test_get_request_options(self) -> None:
         """Test the get_request_options method when all options are in config."""
         config = WeblateConfig()
         config.load()
@@ -162,7 +162,7 @@ class TestSettings(CLITestBase):
         self.assertEqual(method_whitelist, ["PUT", "POST"])
         self.assertEqual(backoff_factor, 0.2)
 
-    def test_argv(self):
+    def test_argv(self) -> None:
         """Test sys.argv processing."""
         backup = sys.argv
         try:
@@ -176,49 +176,49 @@ class TestSettings(CLITestBase):
 class TestOutput(CLITestBase):
     """Test output formatting."""
 
-    def test_version_text(self):
+    def test_version_text(self) -> None:
         """Test version printing."""
         output = self.execute(["--format", "text", "version"])
         self.assertIn(f"version: {wlc.__version__}", output)
 
-    def test_version_json(self):
+    def test_version_json(self) -> None:
         """Test version printing."""
         output = self.execute(["--format", "json", "version"])
         values = json.loads(output)
         self.assertEqual({"version": wlc.__version__}, values)
 
-    def test_version_csv(self):
+    def test_version_csv(self) -> None:
         """Test version printing."""
         output = self.execute(["--format", "csv", "version"])
         self.assertIn(f"version,{wlc.__version__}", output)
 
-    def test_version_html(self):
+    def test_version_html(self) -> None:
         """Test version printing."""
         output = self.execute(["--format", "html", "version"])
         self.assertIn(wlc.__version__, output)
 
-    def test_projects_text(self):
+    def test_projects_text(self) -> None:
         """Test projects printing."""
         output = self.execute(["--format", "text", "list-projects"])
         self.assertIn("name: {}".format("Hello"), output)
 
-    def test_projects_json(self):
+    def test_projects_json(self) -> None:
         """Test projects printing."""
         output = self.execute(["--format", "json", "list-projects"])
         values = json.loads(output)
         self.assertEqual(2, len(values))
 
-    def test_projects_csv(self):
+    def test_projects_csv(self) -> None:
         """Test projects printing."""
         output = self.execute(["--format", "csv", "list-projects"])
         self.assertIn("Hello", output)
 
-    def test_projects_html(self):
+    def test_projects_html(self) -> None:
         """Test projects printing."""
         output = self.execute(["--format", "html", "list-projects"])
         self.assertIn("Hello", output)
 
-    def test_json_encoder(self):
+    def test_json_encoder(self) -> None:
         """Test JSON encoder."""
         output = StringIO()
         cmd = Version(args=[], config=WeblateConfig(), stdout=output)
@@ -229,12 +229,12 @@ class TestOutput(CLITestBase):
 class TestCommands(CLITestBase):
     """Individual command tests."""
 
-    def test_version_bare(self):
+    def test_version_bare(self) -> None:
         """Test version printing."""
         output = self.execute(["version", "--bare"])
         self.assertEqual(f"{wlc.__version__}\n", output)
 
-    def test_ls(self):
+    def test_ls(self) -> None:
         """Project listing."""
         output = self.execute(["ls"])
         self.assertIn("Hello", output)
@@ -243,17 +243,17 @@ class TestCommands(CLITestBase):
         output = self.execute(["ls", "empty"])
         self.assertEqual("", output)
 
-    def test_list_languages(self):
+    def test_list_languages(self) -> None:
         """Language listing."""
         output = self.execute(["list-languages"])
         self.assertIn("Turkish", output)
 
-    def test_list_projects(self):
+    def test_list_projects(self) -> None:
         """Project listing."""
         output = self.execute(["list-projects"])
         self.assertIn("Hello", output)
 
-    def test_list_components(self):
+    def test_list_components(self) -> None:
         """Components listing."""
         output = self.execute(["list-components"])
         self.assertIn("/hello/weblate", output)
@@ -264,7 +264,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["list-components", "hello/weblate"], expected=1)
         self.assertIn("Not supported", output)
 
-    def test_list_translations(self):
+    def test_list_translations(self) -> None:
         """Translations listing."""
         output = self.execute(["list-translations"])
         self.assertIn("/hello/weblate/cs/", output)
@@ -280,7 +280,7 @@ class TestCommands(CLITestBase):
         )
         self.assertIn("/hello/weblate/cs/", output)
 
-    def test_show(self):
+    def test_show(self) -> None:
         """Project show."""
         output = self.execute(["show", "hello"])
         self.assertIn("Hello", output)
@@ -291,12 +291,12 @@ class TestCommands(CLITestBase):
         output = self.execute(["show", "hello/weblate/cs"])
         self.assertIn("/hello/weblate/cs/", output)
 
-    def test_show_error(self):
+    def test_show_error(self) -> None:
         self.execute(["show", "io"], expected=10)
         with self.assertRaises(FileNotFoundError):
             self.execute(["show", "bug"])
 
-    def test_delete(self):
+    def test_delete(self) -> None:
         """Project delete."""
         output = self.execute(["delete", "hello"])
         self.assertEqual("", output)
@@ -307,7 +307,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["delete", "hello/weblate/cs"])
         self.assertEqual("", output)
 
-    def test_commit(self):
+    def test_commit(self) -> None:
         """Project commit."""
         output = self.execute(["commit", "hello"])
         self.assertEqual("", output)
@@ -318,7 +318,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["commit", "hello/weblate/cs"])
         self.assertEqual("", output)
 
-    def test_push(self):
+    def test_push(self) -> None:
         """Project push."""
         msg = "Error: Failed to push changes!\nPush is disabled for Hello/Weblate.\n"
         output = self.execute(["push", "hello"], expected=1)
@@ -330,7 +330,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["push", "hello/weblate/cs"], expected=1)
         self.assertEqual(msg, output)
 
-    def test_pull(self):
+    def test_pull(self) -> None:
         """Project pull."""
         output = self.execute(["pull", "hello"])
         self.assertEqual("", output)
@@ -341,7 +341,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["pull", "hello/weblate/cs"])
         self.assertEqual("", output)
 
-    def test_reset(self):
+    def test_reset(self) -> None:
         """Project reset."""
         output = self.execute(["reset", "hello"])
         self.assertEqual("", output)
@@ -352,7 +352,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["reset", "hello/weblate/cs"])
         self.assertEqual("", output)
 
-    def test_cleanup(self):
+    def test_cleanup(self) -> None:
         """Project cleanup."""
         output = self.execute(["cleanup", "hello"])
         self.assertEqual("", output)
@@ -363,7 +363,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["cleanup", "hello/weblate/cs"])
         self.assertEqual("", output)
 
-    def test_repo(self):
+    def test_repo(self) -> None:
         """Project repo."""
         output = self.execute(["repo", "hello"])
         self.assertIn("needs_commit", output)
@@ -374,7 +374,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["repo", "hello/weblate/cs"])
         self.assertIn("needs_commit", output)
 
-    def test_stats(self):
+    def test_stats(self) -> None:
         """Project stats."""
         output = self.execute(["stats", "hello"])
         self.assertIn("translated_percent", output)
@@ -385,7 +385,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["stats", "hello/weblate/cs"])
         self.assertIn("failing_percent", output)
 
-    def test_locks(self):
+    def test_locks(self) -> None:
         """Project locks."""
         output = self.execute(["lock-status", "hello"], expected=1)
         self.assertIn("This command is supported only at component level", output)
@@ -400,7 +400,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["lock-status", "hello/weblate/cs"], expected=1)
         self.assertIn("This command is supported only at component level", output)
 
-    def test_changes(self):
+    def test_changes(self) -> None:
         """Project changes."""
         output = self.execute(["changes", "hello"])
         self.assertIn("action_name", output)
@@ -411,7 +411,7 @@ class TestCommands(CLITestBase):
         output = self.execute(["changes", "hello/weblate/cs"])
         self.assertIn("action_name", output)
 
-    def test_download(self):
+    def test_download(self) -> None:
         """Translation file downloads."""
         output = self.execute(["download"], expected=1)
         self.assertIn("Output is needed", output)
@@ -459,7 +459,7 @@ class TestCommands(CLITestBase):
             )
             self.assertEqual(os.listdir(tmpdirname), ["output"])
 
-    def test_download_config(self):
+    def test_download_config(self) -> None:
         with TemporaryDirectory() as tmpdirname:
             self.execute(
                 [
@@ -491,7 +491,7 @@ class TestCommands(CLITestBase):
                 set(os.listdir(tmpdirname)), {"hello-weblate.zip", "hello-android.zip"}
             )
 
-    def test_upload(self):
+    def test_upload(self) -> None:
         """Translation file uploads."""
         msg = "Error: Failed to upload translations!\nNot found.\n"
 
@@ -527,14 +527,14 @@ class TestCommands(CLITestBase):
 class TestErrors(CLITestBase):
     """Error handling tests."""
 
-    def test_commandline_missing_key(self):
+    def test_commandline_missing_key(self) -> None:
         """Configuration using command-line."""
         output = self.execute(
             ["--url", "http://denied.example.com", "list-projects"], expected=1
         )
         self.assertIn("Missing API key", output)
 
-    def test_commandline_wrong_key(self):
+    def test_commandline_wrong_key(self) -> None:
         """Configuration using command-line."""
         output = self.execute(
             ["--key", "x", "--url", "http://denied.example.com", "list-projects"],

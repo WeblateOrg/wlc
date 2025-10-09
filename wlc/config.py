@@ -23,13 +23,13 @@ __all__ = ["NoOptionError", "WeblateConfig"]
 class WeblateConfig(RawConfigParser):
     """Configuration parser wrapper with defaults."""
 
-    def __init__(self, section="weblate"):
+    def __init__(self, section="weblate") -> None:
         """Construct WeblateConfig object."""
         super().__init__(delimiters=("=",))
         self.section = section
         self.set_defaults()
 
-    def set_defaults(self):
+    def set_defaults(self) -> None:
         """Set default values."""
         self.add_section("keys")
         self.add_section(self.section)
@@ -56,7 +56,7 @@ class WeblateConfig(RawConfigParser):
         yield from load_config_paths("weblate")
         yield from load_config_paths("weblate.ini")
 
-    def load(self, path=None):
+    def load(self, path=None) -> None:
         """Load configuration from XDG paths."""
         if path is None:
             path = list(self.find_configs())

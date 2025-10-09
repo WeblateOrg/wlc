@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from email import message_from_string
 from hashlib import blake2b
+from typing import NoReturn
 from unittest import TestCase
 
 import responses
@@ -20,7 +21,7 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
 class ResponseHandler:
     """responses response handler."""
 
-    def __init__(self, body, filename, auth=False):
+    def __init__(self, body, filename, auth=False) -> None:
         """Construct response handler object."""
         self.body = body
         self.filename = filename
@@ -110,7 +111,7 @@ class ResponseHandler:
         return digest.hexdigest()
 
 
-def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
+def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False) -> None:
     """Simplified URL registration."""
     filename = os.path.join(DATA_TEST_BASE, path.replace("/", "-"))
     url = f"{domain}/{path}/"
@@ -147,7 +148,7 @@ def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False):
         )
 
 
-def raise_error(request):
+def raise_error(request) -> NoReturn:
     """Raise IOError."""
     if "/io" in request.path_url:
         raise RequestException("Some error")
@@ -156,7 +157,7 @@ def raise_error(request):
 
 def register_error(
     path, code, domain="http://127.0.0.1:8000/api", method=responses.GET, **kwargs
-):
+) -> None:
     """Simplified URL error registration."""
     url = f"{domain}/{path}/"
     if "callback" in kwargs:
@@ -165,7 +166,7 @@ def register_error(
         responses.add(method, url, status=code, **kwargs)
 
 
-def register_uris():
+def register_uris() -> None:
     """Register URIs for responses."""
     paths = (
         "categories",
@@ -247,12 +248,12 @@ def register_uris():
 class APITest(TestCase):
     """Base class for API testing."""
 
-    def setUp(self):
+    def setUp(self) -> None:
         """Enable responses and register urls."""
         responses.mock.start()
         register_uris()
 
-    def tearDown(self):
+    def tearDown(self) -> None:
         """Disable responses."""
         responses.mock.stop()
         responses.mock.reset()

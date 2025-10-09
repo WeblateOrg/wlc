@@ -79,7 +79,7 @@ Invoke with --help to get more detailed help.
 class CommandError(Exception):
     """Generic error from command-line."""
 
-    def __init__(self, message, detail=None):
+    def __init__(self, message, detail=None) -> None:
         """Create CommandError exception."""
         if detail is not None:
             message = f"{message}\n{detail}"
@@ -114,7 +114,7 @@ class Command:
     name = ""
     description = ""
 
-    def __init__(self, args, config, stdout=None, stdin=None):
+    def __init__(self, args, config, stdout=None, stdin=None) -> None:
         """Construct Command object."""
         self.args = args
         self.config = config
@@ -135,11 +135,11 @@ class Command:
         """Create parser for command-line."""
         return subparser.add_parser(cls.name, description=cls.description)
 
-    def println(self, line):
+    def println(self, line) -> None:
         """Print single line to output."""
         print(line, file=self.stdout)
 
-    def print_json(self, value):
+    def print_json(self, value) -> None:
         """JSON print."""
         json.dump(value, self.stdout, cls=DateTimeEncoder, indent=2)
 
@@ -156,7 +156,7 @@ class Command:
             return value.to_value()
         return value
 
-    def print_csv(self, value, header):
+    def print_csv(self, value, header) -> None:
         """CSV print."""
         if header is not None:
             writer = csv.DictWriter(self.stdout, header)
@@ -168,7 +168,7 @@ class Command:
             for key, data in sorted_items(value):
                 writer.writerow((key, self.format_value(data)))
 
-    def print_html(self, value, header):
+    def print_html(self, value, header) -> None:
         """HTML print."""
         if header is not None:
             self.println("<table>")
@@ -197,7 +197,7 @@ class Command:
                 self.println("  </tr>")
             self.println("</table>")
 
-    def print_text(self, value, header):
+    def print_text(self, value, header) -> None:
         """Text print."""
         if header is not None:
             for item in value:
@@ -208,7 +208,7 @@ class Command:
             for key, data in sorted_items(value):
                 self.println(f"{key}: {self.format_value(data)}")
 
-    def print(self, value):
+    def print(self, value) -> None:
         """Print value."""
         header = None
         if isinstance(value, list):
@@ -225,7 +225,7 @@ class Command:
         else:
             self.print_text(value, header)
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         raise NotImplementedError
 
@@ -263,12 +263,12 @@ class ObjectCommand(Command):
 
         return self.wlc.get_object(path)
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         raise NotImplementedError
 
     @staticmethod
-    def check_result(result, message):
+    def check_result(result, message) -> None:
         """Check result json data."""
         if not result["result"]:
             raise CommandError(message, result.get("detail", ""))
@@ -284,7 +284,7 @@ class ProjectCommand(ObjectCommand):
             raise CommandError("Not supported")
         return obj
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         raise NotImplementedError
 
@@ -299,7 +299,7 @@ class ComponentCommand(ObjectCommand):
             raise CommandError("This command is supported only at component level")
         return obj
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         raise NotImplementedError
 
@@ -314,7 +314,7 @@ class TranslationCommand(ObjectCommand):
             raise CommandError("This command is supported only at translation level")
         return obj
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         raise NotImplementedError
 
@@ -333,7 +333,7 @@ class Version(Command):
         parser.add_argument("--bare", action="store_true", help="Print only version")
         return parser
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         if self.args.bare:
             self.println(wlc.__version__)
@@ -348,7 +348,7 @@ class ListProjects(Command):
     name = "list-projects"
     description = "Lists all projects"
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         self.print(list(self.wlc.list_projects()))
 
@@ -360,7 +360,7 @@ class ListComponents(ProjectCommand):
     name = "list-components"
     description = "Lists all components (optionally per project)"
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         if self.args.object:
             obj = self.get_object()
@@ -381,7 +381,7 @@ class ListLanguages(Command):
     name = "list-languages"
     description = "Lists all languages"
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         self.print(list(self.wlc.list_languages()))
 
@@ -393,7 +393,7 @@ class ListTranslations(ComponentCommand):
     name = "list-translations"
     description = "Lists all translations (optionally per component)"
 
-    def run(self):
+    def run(self) -> None:
         """Main execution of the command."""
         if self.args.object:
             obj = self.get_object()
@@ -414,7 +414,7 @@ class Show(ObjectCommand):
     name = "show"
     description = "Shows translation, component or project"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         self.print(self.get_object())
 
@@ -426,7 +426,7 @@ class Delete(ObjectCommand):
     name = "delete"
     description = "Delete translation, component or project"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         self.get_object().delete()
 
@@ -438,7 +438,7 @@ class ListObjects(ObjectCommand):
     name = "ls"
     description = "List content of translation, component or project"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object(blank=True)
         if obj:
@@ -456,7 +456,7 @@ class Commit(ObjectCommand):
     name = "commit"
     description = "Commits changes in translation, component or project"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         result = obj.commit()
@@ -473,7 +473,7 @@ class Push(ObjectCommand):
         "in translation, component or project from Weblate"
     )
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         result = obj.push()
@@ -489,7 +489,7 @@ class Pull(ObjectCommand):
         "Pulls changes to Weblate from repository in translation, component or project"
     )
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         result = obj.pull()
@@ -506,7 +506,7 @@ class Reset(ObjectCommand):
         "in translation, component or project"
     )
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         result = obj.reset()
@@ -523,7 +523,7 @@ class Cleanup(ObjectCommand):
         "in translation, component or project"
     )
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         result = obj.cleanup()
@@ -539,7 +539,7 @@ class Repo(ObjectCommand):
         "Displays status of Weblate repository for translation, component or project"
     )
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         self.print(obj.repository())
@@ -552,7 +552,7 @@ class Changes(ObjectCommand):
     name = "changes"
     description = "Displays list of changes for translation, component or project"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         self.print(list(obj.changes()))
@@ -565,7 +565,7 @@ class Stats(ObjectCommand):
     name = "stats"
     description = "Displays statistics for translation, component or project"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         if isinstance(obj, wlc.Project):
@@ -583,7 +583,7 @@ class LockStatus(ComponentCommand):
     name = "lock-status"
     description = "Shows component lock status"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         self.print(obj.lock_status())
@@ -596,7 +596,7 @@ class Lock(ComponentCommand):
     name = "lock"
     description = "Locks componets from translations"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         obj.lock()
@@ -609,7 +609,7 @@ class Unlock(ComponentCommand):
     name = "unlock"
     description = "Unlocks componets from translations"
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
         obj.unlock()
@@ -646,7 +646,7 @@ class Download(ObjectCommand):
         )
         return parser
 
-    def download_component(self, component):
+    def download_component(self, component) -> None:
         """Download a single component as file (if not a translation)."""
         content = component.download(self.args.convert)
         if self.args.output is None:
@@ -661,7 +661,7 @@ class Download(ObjectCommand):
         with open(file_path, "wb") as file:
             file.write(content)
 
-    def download_components(self, iterable):
+    def download_components(self, iterable) -> None:
         for component in iterable:
             # Ignore glossary via --no-glossary
             if getattr(component, "is_glossary", False) and self.args.no_glossary:
@@ -671,7 +671,7 @@ class Download(ObjectCommand):
                 f"downloaded translations for component: {component.full_slug()}"
             )
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object(blank=True)
 
@@ -751,7 +751,7 @@ class Upload(TranslationCommand):
         parser.add_argument("--fuzzy", choices=("", "process", "approve"), default="")
         return parser
 
-    def run(self):
+    def run(self) -> None:
         """Executor."""
         obj = self.get_object()
 
@@ -798,7 +798,7 @@ def parse_settings(args, settings):
     return config
 
 
-def main(settings=None, stdout=None, stdin=None, args=None):
+def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     """Execution entry point."""
     parser = get_parser()
     if args is None:

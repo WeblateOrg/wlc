@@ -32,14 +32,14 @@ TIMESTAMPS = {"last_change"}
 class WeblateException(Exception):
     """Generic error."""
 
-    def __init__(self, message: str | None = None):
+    def __init__(self, message: str | None = None) -> None:
         super().__init__(message or self.__doc__)
 
 
 class WeblateThrottlingError(WeblateException):
     """Throttling on the server."""
 
-    def __init__(self, limit: str, retry_after: str):
+    def __init__(self, limit: str, retry_after: str) -> None:
         self.limit = limit
         self.retry_after = retry_after
         message_segments = [
@@ -73,7 +73,7 @@ class Weblate:
         method_whitelist: Collection[str] | None = None,
         backoff_factor: int = 0,
         timeout: int = 300,
-    ):
+    ) -> None:
         """Create the object, storing key, API url and requests retry args."""
         self.session = requests.Session()
         if config is not None:
@@ -132,7 +132,7 @@ class Weblate:
 
         return None
 
-    def process_error(self, error):
+    def process_error(self, error) -> None:
         """Raise WeblateException for known HTTP errors."""
         if isinstance(error, requests.HTTPError):
             status_code = error.response.status_code
@@ -383,7 +383,7 @@ class LazyObject(dict):
     MAPPINGS: ClassVar[dict[str, Any]] = {}
     ID: ClassVar[str] = "url"
 
-    def __init__(self, weblate, url, **kwargs):
+    def __init__(self, weblate, url, **kwargs) -> None:
         """Construct object for given Weblate instance."""
         super().__init__()
         self.weblate = weblate
@@ -397,13 +397,13 @@ class LazyObject(dict):
     def get_data(self):
         return copy(self._data)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return str(self._data)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return repr(self._data)
 
-    def _load_params(self, **kwargs):
+    def _load_params(self, **kwargs) -> None:
         for param in self.PARAMS:
             if param in kwargs:
                 value = kwargs[param]
@@ -422,14 +422,14 @@ class LazyObject(dict):
         for key, value in kwargs.items():
             self._attribs[key] = value
 
-    def ensure_loaded(self, attrib):
+    def ensure_loaded(self, attrib) -> None:
         """Ensure attribute is loaded from remote."""
         if attrib in self._data or attrib in self._attribs:
             return
         if not self._loaded:
             self.refresh()
 
-    def refresh(self):
+    def refresh(self) -> None:
         """Read object again from remote."""
         data = self.weblate.get(self._url)
         self._load_params(**data)
@@ -447,7 +447,7 @@ class LazyObject(dict):
                 return None
             raise AttributeError(name) from error
 
-    def setattrvalue(self, name, value):
+    def setattrvalue(self, name, value) -> None:
         if name not in self.PARAMS:
             raise AttributeError(name)
 
@@ -456,7 +456,7 @@ class LazyObject(dict):
     def __getitem__(self, name):
         return self.__getattr__(name)
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(list(self.keys()))
 
     def keys(self):
@@ -616,7 +616,7 @@ class Project(LazyObject, RepoObjectMixin):
         self.ensure_loaded("categories_url")
         return self.weblate.list_categories(self._attribs["categories_url"])
 
-    def delete(self):
+    def delete(self) -> None:
         self.weblate.raw_request("delete", self._url)
 
     def create_component(self, **kwargs):
@@ -683,7 +683,7 @@ class Component(LazyObject, RepoObjectMixin):
     }
     REPOSITORY_CLASS = Repository
 
-    def full_slug(self):
+    def full_slug(self) -> str:
         if self.category:
             return f"{self.category.full_slug()}/{self.slug}"
         return f"{self.project.full_slug()}/{self.slug}"
@@ -728,7 +728,7 @@ class Component(LazyObject, RepoObjectMixin):
         self.ensure_loaded("changes_list_url")
         return self.weblate.list_changes(self._attribs["changes_list_url"])
 
-    def delete(self):
+    def delete(self) -> None:
         self.weblate.raw_request("delete", self._url)
 
     def add_source_string(self, msgid, msgstr):
@@ -821,7 +821,7 @@ class Translation(LazyObject, RepoObjectMixin):
 
         return self.weblate.request("post", url, files=files, data=kwargs)
 
-    def delete(self):
+    def delete(self) -> None:
         self.weblate.raw_request("delete", self._url)
 
     def units(self, **kwargs):

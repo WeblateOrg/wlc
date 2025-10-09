@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import io
 import os
-from typing import Any, ClassVar
+from typing import Any, ClassVar, NoReturn
 
 from requests.exceptions import RequestException
 
@@ -30,17 +30,17 @@ from .test_base import APITest
 class WeblateErrorTest(APITest):
     """Testing error handling."""
 
-    def test_nonexisting(self):
+    def test_nonexisting(self) -> None:
         """Test listing projects."""
         with self.assertRaisesRegex(WeblateException, "not found"):
             Weblate().get_object("nonexisting")
 
-    def test_denied(self):
+    def test_denied(self) -> None:
         """Test listing projects."""
         with self.assertRaisesRegex(WeblateException, "permission"):
             Weblate().get_object("denied")
 
-    def test_denied_json(self):
+    def test_denied_json(self) -> None:
         """Test permission denied when posting components."""
         with self.assertRaisesRegex(WeblateException, "Can not create"):
             Weblate().create_component(
@@ -52,7 +52,7 @@ class WeblateErrorTest(APITest):
                 repo="a_repo",
             )
 
-    def test_denied_json_510(self):
+    def test_denied_json_510(self) -> None:
         """Test permission denied when posting components."""
         with self.assertRaisesRegex(WeblateException, "This is a required error"):
             Weblate().create_component(
@@ -64,7 +64,7 @@ class WeblateErrorTest(APITest):
                 repo="a_repo",
             )
 
-    def test_throttled(self):
+    def test_throttled(self) -> None:
         """Test listing projects."""
         with self.assertRaisesRegex(
             WeblateException,
@@ -72,32 +72,32 @@ class WeblateErrorTest(APITest):
         ):
             Weblate().get_object("throttled")
 
-    def test_error(self):
+    def test_error(self) -> None:
         """Test listing projects."""
         with self.assertRaisesRegex(WeblateException, "500"):
             Weblate().get_object("error")
 
-    def test_oserror(self):
+    def test_oserror(self) -> None:
         """Test listing projects."""
         with self.assertRaises(RequestException):
             Weblate().get_object("io")
 
-    def test_bug(self):
+    def test_bug(self) -> None:
         """Test listing projects."""
         with self.assertRaises(FileNotFoundError):
             Weblate().get_object("bug")
 
-    def test_invalid(self):
+    def test_invalid(self) -> None:
         """Test listing projects."""
         with self.assertRaisesRegex(WeblateException, "invalid JSON"):
             Weblate().get_object("invalid")
 
-    def test_too_long(self):
+    def test_too_long(self) -> None:
         """Test listing projects."""
         with self.assertRaises(ValueError):
             Weblate().get_object("a/b/c/d")
 
-    def test_invalid_attribute(self):
+    def test_invalid_attribute(self) -> None:
         """Test attributes getting."""
         obj = Weblate().get_object("hello")
         self.assertEqual(obj.name, "Hello")
@@ -108,38 +108,38 @@ class WeblateErrorTest(APITest):
 class WeblateTest(APITest):
     """Testing of Weblate class."""
 
-    def test_languages(self):
+    def test_languages(self) -> None:
         """Test listing projects."""
         self.assertEqual(len(list(Weblate().list_languages())), 47)
 
-    def test_api_trailing_slash(self):
+    def test_api_trailing_slash(self) -> None:
         """Test listing projects."""
         self.assertEqual(len(list(Weblate(url=API_URL[:-1]).list_languages())), 47)
 
-    def test_projects(self):
+    def test_projects(self) -> None:
         """Test listing projects."""
         self.assertEqual(len(list(Weblate().list_projects())), 2)
 
-    def test_components(self):
+    def test_components(self) -> None:
         """Test listing components."""
         self.assertEqual(len(list(Weblate().list_components())), 2)
 
-    def test_translations(self):
+    def test_translations(self) -> None:
         """Test listing translations."""
         self.assertEqual(len(list(Weblate().list_translations())), 50)
 
-    def test_categories(self):
+    def test_categories(self) -> None:
         """Test listing translations."""
         self.assertEqual(len(list(Weblate().list_categories())), 2)
 
-    def test_authentication(self):
+    def test_authentication(self) -> None:
         """Test authentication against server."""
         with self.assertRaisesRegex(WeblateException, "permission"):
             obj = Weblate().get_object("acl")
         obj = Weblate(key="KEY").get_object("acl")
         self.assertEqual(obj.name, "ACL")
 
-    def test_ensure_loaded(self):
+    def test_ensure_loaded(self) -> None:
         """Test lazy loading of attributes."""
         obj = Weblate().get_object("hello")
         obj.ensure_loaded("missing")
@@ -147,19 +147,19 @@ class WeblateTest(APITest):
         with self.assertRaises(AttributeError):
             print(obj.missing)
 
-    def test_setattrvalue(self):
+    def test_setattrvalue(self) -> None:
         """Test lazy loading of attributes."""
         obj = Weblate().get_object("hello")
         with self.assertRaises(AttributeError):
             obj.setattrvalue("missing", "")
 
-    def test_repr(self):
+    def test_repr(self) -> None:
         """Test str and repr behavior."""
         obj = Weblate().get_object("hello")
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
 
-    def test_add_source_string_to_monolingual_component(self):
+    def test_add_source_string_to_monolingual_component(self) -> None:
         resp = Weblate().add_source_string(
             project="hello",
             component="android",
@@ -171,7 +171,7 @@ class WeblateTest(APITest):
         self.assertEqual(resp["component"]["slug"], "android")
         self.assertEqual(resp["id"], 1646)
 
-    def test_create_project(self):
+    def test_create_project(self) -> None:
         resp = Weblate().create_project(
             "Hello", "hello", "http://example.com/", "Malayalam", "ml"
         )
@@ -181,7 +181,7 @@ class WeblateTest(APITest):
         self.assertEqual("Malayalam", resp["source_language"]["name"])
         self.assertEqual("ml", resp["source_language"]["code"])
 
-    def test_create_language(self):
+    def test_create_language(self) -> None:
         resp = Weblate().create_language(
             name="Test Language",
             code="tst",
@@ -194,7 +194,7 @@ class WeblateTest(APITest):
         self.assertEqual(2, resp["plural"]["number"])
         self.assertEqual("n != 1", resp["plural"]["formula"])
 
-    def test_create_component(self):
+    def test_create_component(self) -> None:
         resp = Weblate().create_component(
             project="hello",
             branch="main",
@@ -244,7 +244,7 @@ class WeblateTest(APITest):
                 filemask="po/*.po",
             )
 
-    def test_create_component_local_files(self):
+    def test_create_component_local_files(self) -> None:
         test_file = os.path.join(
             os.path.dirname(__file__), "test_data", "mock", "project-local-file.pot"
         )
@@ -307,7 +307,7 @@ class ObjectTestBaseClass(APITest):
     _name: str | None = None
     _cls: Any = None
 
-    def check_object(self, obj):
+    def check_object(self, obj) -> NoReturn:
         """Perform verification whether object is valid."""
         raise NotImplementedError
 
@@ -315,17 +315,17 @@ class ObjectTestBaseClass(APITest):
         """Return remote object."""
         return Weblate().get_object(self._name)
 
-    def test_get(self):
+    def test_get(self) -> None:
         """Test getting project."""
         obj = self.get()
         self.assertIsInstance(obj, self._cls)
         self.check_object(obj)
 
-    def check_list(self, obj):
+    def check_list(self, obj) -> NoReturn:
         """Perform verification whether listing is valid."""
         raise NotImplementedError
 
-    def test_list(self):
+    def test_list(self) -> None:
         """Item listing test."""
         obj = self.get()
         self.check_list(obj.list())
@@ -334,53 +334,53 @@ class ObjectTestBaseClass(APITest):
 class ObjectTest(ObjectTestBaseClass):
     """Additional tests for projects, components, and translations."""
 
-    def test_refresh(self):
+    def test_refresh(self) -> None:
         """Object refreshing test."""
         obj = self.get()
         obj.refresh()
         self.assertIsInstance(obj, self._cls)
         self.check_object(obj)
 
-    def test_changes(self):
+    def test_changes(self) -> None:
         """Item listing test."""
         obj = self.get()
         lst = list(obj.changes())
         self.assertEqual(len(lst), 2)
         self.assertIsInstance(lst[0], Change)
 
-    def test_repository(self):
+    def test_repository(self) -> None:
         """Repository get test."""
         obj = self.get()
         repository = obj.repository()
         self.assertFalse(repository.needs_commit)
 
-    def test_repository_commit(self):
+    def test_repository_commit(self) -> None:
         """Repository commit test."""
         obj = self.get()
         repository = obj.repository()
         self.assertEqual(repository.commit(), {"result": True})
 
-    def test_commit(self):
+    def test_commit(self) -> None:
         """Direct commit test."""
         obj = self.get()
         self.assertEqual(obj.commit(), {"result": True})
 
-    def test_pull(self):
+    def test_pull(self) -> None:
         """Direct pull test."""
         obj = self.get()
         self.assertEqual(obj.pull(), {"result": True})
 
-    def test_reset(self):
+    def test_reset(self) -> None:
         """Direct reset test."""
         obj = self.get()
         self.assertEqual(obj.reset(), {"result": True})
 
-    def test_cleanup(self):
+    def test_cleanup(self) -> None:
         """Direct cleanup test."""
         obj = self.get()
         self.assertEqual(obj.cleanup(), {"result": True})
 
-    def test_push(self):
+    def test_push(self) -> None:
         """Direct push test."""
         obj = self.get()
         self.assertEqual(
@@ -388,11 +388,11 @@ class ObjectTest(ObjectTestBaseClass):
             {"result": False, "detail": "Push is disabled for Hello/Weblate."},
         )
 
-    def test_data(self):
+    def test_data(self) -> None:
         obj = self.get()
         self.assertIsNotNone(obj.get_data())
 
-    def test_delete(self):
+    def test_delete(self) -> None:
         obj = self.get()
         self.assertIsNone(obj.delete())
 
@@ -403,32 +403,32 @@ class ProjectTest(ObjectTest):
     _name = "hello"
     _cls = Project
 
-    def check_object(self, obj):
+    def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Hello")
 
-    def check_list(self, obj):
+    def check_list(self, obj) -> None:
         """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(len(lst), 2)
         self.assertIsInstance(lst[0], Component)
 
-    def test_languages(self):
+    def test_languages(self) -> None:
         """Component statistics test."""
         obj = self.get()
         self.assertEqual(2, len(list(obj.languages())))
 
-    def test_statistics(self):
+    def test_statistics(self) -> None:
         """Component statistics test."""
         obj = self.get()
         stats = obj.statistics()
         self.assertEqual(stats["name"], "Hello")
 
-    def test_categories(self):
+    def test_categories(self) -> None:
         obj = self.get()
         self.assertEqual(2, len(list(obj.categories())))
 
-    def test_create_component(self):
+    def test_create_component(self) -> None:
         """Component creation test."""
         obj = self.get()
         resp = obj.create_component(
@@ -463,19 +463,19 @@ class ComponentTest(ObjectTest):
     _name = "hello/weblate"
     _cls = Component
 
-    def check_object(self, obj):
+    def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
         self.assertEqual(obj.agreement, "")
 
-    def check_list(self, obj):
+    def check_list(self, obj) -> None:
         """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(len(lst), 33)
         self.assertIsInstance(lst[0], Translation)
 
-    def test_add_translation(self):
+    def test_add_translation(self) -> None:
         """Perform verification that the correct endpoint is accessed."""
         obj = self.get()
         resp = obj.add_translation("nl_BE")
@@ -484,27 +484,27 @@ class ComponentTest(ObjectTest):
             resp["data"]["revision"], "da6ea2777f61fbe1d2a207ff6ebdadfa15f26d1a"
         )
 
-    def test_statistics(self):
+    def test_statistics(self) -> None:
         """Component statistics test."""
         obj = self.get()
         self.assertEqual(33, len(list(obj.statistics())))
 
-    def test_lock_status(self):
+    def test_lock_status(self) -> None:
         """Component lock status test."""
         obj = self.get()
         self.assertEqual({"locked": False}, obj.lock_status())
 
-    def test_lock(self):
+    def test_lock(self) -> None:
         """Component lock test."""
         obj = self.get()
         self.assertEqual({"locked": True}, obj.lock())
 
-    def test_unlock(self):
+    def test_unlock(self) -> None:
         """Component unlock test."""
         obj = self.get()
         self.assertEqual({"locked": False}, obj.unlock())
 
-    def test_keys(self):
+    def test_keys(self) -> None:
         """Test keys lazy loading."""
         obj = Component(Weblate(), f"components/{self._name}/")
         self.assertCountEqual(
@@ -534,7 +534,7 @@ class ComponentTest(ObjectTest):
             ],
         )
 
-    def test_components_patch(self):
+    def test_components_patch(self) -> None:
         obj = self.get()
         resp = obj.patch(priority=80)
         self.assertIn("--patched--", resp.decode())
@@ -546,19 +546,19 @@ class ComponentCompatibilityTest(ObjectTest):
     _name = "hello/olderweblate"
     _cls = Component
 
-    def check_object(self, obj):
+    def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
         self.assertEqual(obj.agreement, "")
 
-    def check_list(self, obj):
+    def check_list(self, obj) -> None:
         """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(len(lst), 33)
         self.assertIsInstance(lst[0], Translation)
 
-    def test_keys(self):
+    def test_keys(self) -> None:
         """Test keys lazy loading."""
         obj = Component(Weblate(), f"components/{self._name}/")
         self.assertCountEqual(
@@ -592,61 +592,61 @@ class TranslationTest(ObjectTest):
     _name = "hello/weblate/cs"
     _cls = Translation
 
-    def check_object(self, obj):
+    def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.language.code, "cs")
 
-    def check_list(self, obj):
+    def check_list(self, obj) -> None:
         """Perform verification whether listing is valid."""
         self.assertIsInstance(obj, Translation)
 
-    def test_statistics(self):
+    def test_statistics(self) -> None:
         """Translation statistics test."""
         obj = self.get()
         data = obj.statistics()
         self.assertEqual(data.name, "Czech")
 
-    def test_download(self):
+    def test_download(self) -> None:
         """Test verbatim file download."""
         obj = self.get()
         content = obj.download()
         self.assertIn(b"Plural-Forms:", content)
 
-    def test_download_csv(self):
+    def test_download_csv(self) -> None:
         """Test dowload of file converted to CSV."""
         obj = self.get()
         content = obj.download("csv")
         self.assertIn(b'"location"', content)
 
-    def test_upload(self):
+    def test_upload(self) -> None:
         """Test file upload."""
         obj = self.get()
         file = io.StringIO("test upload data")
 
         obj.upload(file)
 
-    def test_upload_method(self):
+    def test_upload_method(self) -> None:
         """Test file upload."""
         obj = self.get()
         file = io.StringIO("test upload data")
 
         obj.upload(file, method="translate")
 
-    def test_upload_format(self):
+    def test_upload_format(self) -> None:
         """Test file upload."""
         obj = self.get()
         file = io.StringIO("test upload data")
 
         obj.upload(file, format="po")
 
-    def test_units(self):
+    def test_units(self) -> None:
         obj = self.get()
         units = list(obj.units())
         self.assertEqual(1, len(units))
         self.assertIsInstance(units[0], Unit)
         self.assertEqual(units[0].id, 35664)
 
-    def test_units_search(self):
+    def test_units_search(self) -> None:
         obj = self.get()
         units = list(obj.units(q='source:="mr"'))
         self.assertEqual(1, len(units))
@@ -662,32 +662,32 @@ class UnitTest(ObjectTestBaseClass):
         "state": 30,
     }
 
-    def check_object(self, obj):
+    def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.id, 123)
 
-    def check_list(self, obj):
+    def check_list(self, obj) -> None:
         """Perform verification whether listing is valid."""
         self.assertIsInstance(obj, Unit)
 
-    def test_units_patch(self):
+    def test_units_patch(self) -> None:
         obj = self.get()
         resp = obj.patch(**self.patch_data)
         self.assertIn("--patched--", resp.decode())
 
-    def test_units_put(self):
+    def test_units_put(self) -> None:
         obj = self.get()
         resp = obj.put(**self.patch_data)
         self.assertIn("--put--", resp.decode())
 
-    def test_units_delete(self):
+    def test_units_delete(self) -> None:
         obj = self.get()
         resp = obj.delete()
         self.assertIn("--deleted--", resp.decode())
 
 
 class CategoryTest(APITest):
-    def test(self):
+    def test(self) -> None:
         obj = Category(Weblate(), "http://127.0.0.1:8000/api/categories/1/")
         self.assertIsInstance(obj, Category)
         self.assertIsNone(obj.category)
