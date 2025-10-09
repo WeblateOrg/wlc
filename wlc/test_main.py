@@ -122,13 +122,13 @@ class TestSettings(CLITestBase):
         """Test default parser values."""
         config = WeblateConfig()
         self.assertEqual(config.get("weblate", "key"), "")
-        self.assertEqual(config.get("weblate", "retries"), 0)
-        self.assertEqual(config.get("weblate", "timeout"), 300)
+        self.assertEqual(config.get("weblate", "retries"), "0")
+        self.assertEqual(config.get("weblate", "timeout"), "300")
         self.assertEqual(
             config.get("weblate", "method_whitelist"),
             "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
         )
-        self.assertEqual(config.get("weblate", "backoff_factor"), 0)
+        self.assertEqual(config.get("weblate", "backoff_factor"), "0")
         self.assertIsNone(config.get("weblate", "status_forcelist"))
 
     def test_parsing(self) -> None:
