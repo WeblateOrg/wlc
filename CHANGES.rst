@@ -4,8 +4,8 @@
 * Not yet released.
 * Fixed downloading components based on configration.
 * Improved handling of categorized components.
-* Dropped support for Python 3.8.
-* Added support for Python 3.13.
+* Dropped support for Python 3.8 and 3.9.
+* Added support for Python 3.13 and 3.14.
 
 1.15
 ----
