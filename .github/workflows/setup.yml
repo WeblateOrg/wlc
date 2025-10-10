@@ -43,7 +43,7 @@ jobs:
         name: dist
 
   release_pypi:
-    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.repository == 'WeblateOrg/language-data'
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.repository == 'WeblateOrg/wlc'
     runs-on: ubuntu-24.04
     name: Publish release to PyPI
     permissions:
@@ -67,7 +67,7 @@ jobs:
       contents: write
     needs:
     - setup
-    if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/language-data'
+    if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/wlc'
     steps:
     - uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
       with:

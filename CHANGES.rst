@@ -1,3 +1,9 @@
+1.16.1
+------
+
+* Released on 10th October 2025.
+* Fixed packages publishing.
+
 1.16
 ----
 
