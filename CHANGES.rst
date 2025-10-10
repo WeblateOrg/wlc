@@ -1,7 +1,7 @@
 1.16
 ----
 
-* Not yet released.
+* Released on 10th October 2025.
 * Fixed downloading components based on configuration.
 * Improved error reporting with Weblate 5.10 and newer.
 * Improved handling of categorized components.
