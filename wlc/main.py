@@ -591,10 +591,10 @@ class LockStatus(ComponentCommand):
 
 @register_command
 class Lock(ComponentCommand):
-    """Lock component for transaltion."""
+    """Lock component for translation."""
 
     name = "lock"
-    description = "Locks componets from translations"
+    description = "Locks components from translations"
 
     def run(self) -> None:
         """Executor."""
@@ -604,10 +604,10 @@ class Lock(ComponentCommand):
 
 @register_command
 class Unlock(ComponentCommand):
-    """Unock component for transaltion."""
+    """Unock component for translation."""
 
     name = "unlock"
-    description = "Unlocks componets from translations"
+    description = "Unlocks components from translations"
 
     def run(self) -> None:
         """Executor."""

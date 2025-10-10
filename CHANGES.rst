@@ -2,7 +2,7 @@
 ----
 
 * Not yet released.
-* Fixed downloading components based on configration.
+* Fixed downloading components based on configuration.
 * Improved error reporting with Weblate 5.10 and newer.
 * Improved handling of categorized components.
 * Dropped support for Python 3.8 and 3.9.
