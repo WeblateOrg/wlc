@@ -19,7 +19,7 @@ from requests.packages.urllib3.util.retry import Retry  # type: ignore[import-no
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.15"
+__version__ = "1.16"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
