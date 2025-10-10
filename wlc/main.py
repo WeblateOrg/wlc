@@ -604,7 +604,7 @@ class Lock(ComponentCommand):
 
 @register_command
 class Unlock(ComponentCommand):
-    """Unock component for translation."""
+    """Unlock component for translation."""
 
     name = "unlock"
     description = "Unlocks components from translations"
