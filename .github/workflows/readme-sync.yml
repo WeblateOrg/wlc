@@ -24,7 +24,7 @@ jobs:
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
-        repository: weblate/weblate
+        repository: weblate/wlc
         short-description: ${{ github.event.repository.description }}
 permissions:
   contents: read
