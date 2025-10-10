@@ -11,7 +11,7 @@ wlc is a [Weblate](https://weblate.org/) command-line client using [Weblate's RE
 [![Translation status](https://hosted.weblate.org/widgets/weblate/-/svg-badge.svg)](https://hosted.weblate.org/engage/weblate/?utm_source=widget)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/552/badge)](https://bestpractices.coreinfrastructure.org/projects/552)
 [![PyPI package](https://img.shields.io/pypi/v/wlc.svg)](https://pypi.org/project/wlc/)
-[![Documenation](https://readthedocs.org/projects/weblate/badge/)](https://docs.weblate.org/en/latest/wlc.html)
+[![Documentation](https://readthedocs.org/projects/weblate/badge/)](https://docs.weblate.org/en/latest/wlc.html)
 
 ## PIP Installation
 

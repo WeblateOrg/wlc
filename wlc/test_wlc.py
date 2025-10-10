@@ -613,7 +613,7 @@ class TranslationTest(ObjectTest):
         self.assertIn(b"Plural-Forms:", content)
 
     def test_download_csv(self) -> None:
-        """Test dowload of file converted to CSV."""
+        """Test download of file converted to CSV."""
         obj = self.get()
         content = obj.download("csv")
         self.assertIn(b'"location"', content)

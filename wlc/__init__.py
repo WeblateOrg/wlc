@@ -369,7 +369,7 @@ class Weblate:
 
     @staticmethod
     def _should_verify_ssl(path):
-        """Cheks if it should verify ssl certificates."""
+        """Checks if it should verify ssl certificates."""
         url = urlparse(path)
         is_localhost = url.netloc.startswith(LOCALHOST_NETLOC)
         return url.scheme == "https" and (not is_localhost)

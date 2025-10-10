@@ -159,3 +159,9 @@ wlc = "wlc"
 [tool.setuptools.packages.find]
 include = ["wlc*"]
 namespaces = true
+
+[tool.typos.default]
+extend-ignore-re = [
+  "\"shortrevision\": \"[a-f0-9]+\"",
+  "code\": \"[a-z]+\""
+]
