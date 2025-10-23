@@ -813,7 +813,7 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         http.client.HTTPConnection.debuglevel = 1
         logging.basicConfig()
         logging.getLogger().setLevel(logging.DEBUG)
-        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log = logging.getLogger("urllib3")
         requests_log.setLevel(logging.DEBUG)
         requests_log.propagate = True
 
@@ -847,5 +847,5 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         if args.debug:
             http.client.HTTPConnection.debuglevel = 0
             logging.getLogger().setLevel(logging.DEBUG)
-            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log = logging.getLogger("urllib3")
             requests_log.setLevel(logging.DEBUG)
