@@ -15,7 +15,7 @@ from urllib.parse import urlencode, urlparse
 import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry  # type: ignore[import-not-found]
+from urllib3.util.retry import Retry
 
 log = logging.getLogger("wlc")
 
@@ -158,7 +158,7 @@ class Weblate:
 
             if 300 <= status_code < 400:
                 raise WeblateException(
-                    "Server responded with an unexpectedHTTP redirect. "
+                    "Server responded with an unexpected HTTP redirect. "
                     "Please check your configuration."
                 ) from error
 
@@ -747,7 +747,7 @@ class Component(LazyObject, RepoObjectMixin):
         self.ensure_loaded("repository_url")
         url = self._get_repo_url().replace("repository", "file")
         if convert is not None:
-            url = "{}?{}".format(url, urlencode({"format": convert}))
+            url = f"{url}?{urlencode({'format': convert})}"
         return self.weblate.raw_request("get", url)
 
     def patch(self, **kwargs):
@@ -809,7 +809,7 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         if convert is not None:
-            url = "{}?{}".format(url, urlencode({"format": convert}))
+            url = f"{url}?{urlencode({'format': convert})}"
         return self.weblate.raw_request("get", url)
 
     def upload(self, file, overwrite=None, format=None, **kwargs):  # noqa: A002
