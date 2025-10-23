@@ -200,7 +200,7 @@ class TestOutput(CLITestBase):
     def test_projects_text(self) -> None:
         """Test projects printing."""
         output = self.execute(["--format", "text", "list-projects"])
-        self.assertIn("name: {}".format("Hello"), output)
+        self.assertIn("name: Hello", output)
 
     def test_projects_json(self) -> None:
         """Test projects printing."""

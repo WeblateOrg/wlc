@@ -12,9 +12,9 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
+from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
 
 import argcomplete
 from requests.exceptions import RequestException
@@ -216,14 +216,15 @@ class Command:
                 return
             header = sorted(value[0].keys(), key=sort_key)
 
-        if self.args.format == "json":
-            self.print_json(value)
-        elif self.args.format == "csv":
-            self.print_csv(value, header)
-        elif self.args.format == "html":
-            self.print_html(value, header)
-        else:
-            self.print_text(value, header)
+        match self.args.format:
+            case "json":
+                self.print_json(value)
+            case "csv":
+                self.print_csv(value, header)
+            case "html":
+                self.print_html(value, header)
+            case _:
+                self.print_text(value, header)
 
     def run(self) -> None:
         """Main execution of the command."""
