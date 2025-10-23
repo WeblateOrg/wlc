@@ -12,15 +12,18 @@ import json
 import logging
 import sys
 from argparse import ArgumentParser
-from collections.abc import Callable
 from datetime import datetime
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import argcomplete
 from requests.exceptions import RequestException
 
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 COMMANDS: dict[str, Callable] = {}
 

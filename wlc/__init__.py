@@ -8,10 +8,12 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Collection
 from copy import copy
-from typing import Any, ClassVar, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import urlencode, urlparse
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 import dateutil.parser
 import requests
