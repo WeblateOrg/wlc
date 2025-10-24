@@ -14,13 +14,16 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import Callable
+from typing import TYPE_CHECKING
 
 import argcomplete
 from requests.exceptions import RequestException
 
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
 
 COMMANDS: dict[str, Callable] = {}
 
@@ -216,14 +219,15 @@ class Command:
                 return
             header = sorted(value[0].keys(), key=sort_key)
 
-        if self.args.format == "json":
-            self.print_json(value)
-        elif self.args.format == "csv":
-            self.print_csv(value, header)
-        elif self.args.format == "html":
-            self.print_html(value, header)
-        else:
-            self.print_text(value, header)
+        match self.args.format:
+            case "json":
+                self.print_json(value)
+            case "csv":
+                self.print_csv(value, header)
+            case "html":
+                self.print_html(value, header)
+            case _:
+                self.print_text(value, header)
 
     def run(self) -> None:
         """Main execution of the command."""
@@ -809,7 +813,7 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         http.client.HTTPConnection.debuglevel = 1
         logging.basicConfig()
         logging.getLogger().setLevel(logging.DEBUG)
-        requests_log = logging.getLogger("requests.packages.urllib3")
+        requests_log = logging.getLogger("urllib3")
         requests_log.setLevel(logging.DEBUG)
         requests_log.propagate = True
 
@@ -843,5 +847,5 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         if args.debug:
             http.client.HTTPConnection.debuglevel = 0
             logging.getLogger().setLevel(logging.DEBUG)
-            requests_log = logging.getLogger("requests.packages.urllib3")
+            requests_log = logging.getLogger("urllib3")
             requests_log.setLevel(logging.DEBUG)

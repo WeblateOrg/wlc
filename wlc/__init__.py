@@ -9,13 +9,16 @@ from __future__ import annotations
 import json
 import logging
 from copy import copy
-from typing import Any, ClassVar, Collection, cast
+from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import urlencode, urlparse
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util.retry import Retry  # type: ignore[import-not-found]
+from urllib3.util.retry import Retry
 
 log = logging.getLogger("wlc")
 
@@ -137,39 +140,38 @@ class Weblate:
         if isinstance(error, requests.HTTPError):
             status_code = error.response.status_code
 
-            if status_code == 429:
-                headers = error.response.headers
-                raise WeblateThrottlingError(
-                    headers.get("X-RateLimit-Limit", "unknown"),
-                    headers.get("Retry-After", "unknown"),
-                ) from error
-            if status_code == 404:
-                raise WeblateException(
-                    "Object not found on the server "
-                    "(maybe operation is not supported on the server)"
-                ) from error
-            if status_code == 403:
-                raise WeblatePermissionError(
-                    self.permission_error_message(error)
-                ) from error
-
-            if status_code == 401:
-                raise WeblateDeniedError from error
-
-            if 300 <= status_code < 400:
-                raise WeblateException(
-                    "Server responded with an unexpectedHTTP redirect. "
-                    "Please check your configuration."
-                ) from error
-
-            reason = error.response.reason
-            try:
-                error_string = str(error.response.json())
-            except Exception:  # noqa: BLE001
-                error_string = ""
-            raise WeblateException(
-                f"HTTP error {status_code}: {reason} {error_string}"
-            ) from error
+            match status_code:
+                case _ if 300 <= status_code < 400:
+                    raise WeblateException(
+                        "Server responded with an unexpected HTTP redirect. "
+                        "Please check your configuration."
+                    ) from error
+                case 429:
+                    headers = error.response.headers
+                    raise WeblateThrottlingError(
+                        headers.get("X-RateLimit-Limit", "unknown"),
+                        headers.get("Retry-After", "unknown"),
+                    ) from error
+                case 404:
+                    raise WeblateException(
+                        "Object not found on the server "
+                        "(maybe operation is not supported on the server)"
+                    ) from error
+                case 403:
+                    raise WeblatePermissionError(
+                        self.permission_error_message(error)
+                    ) from error
+                case 401:
+                    raise WeblateDeniedError from error
+                case _:
+                    reason = error.response.reason
+                    try:
+                        error_string = str(error.response.json())
+                    except Exception:  # noqa: BLE001
+                        error_string = ""
+                    raise WeblateException(
+                        f"HTTP error {status_code}: {reason} {error_string}"
+                    ) from error
 
     def raw_request(self, method, path, data=None, files=None, params=None):
         """Construct request object and returns raw content."""
@@ -265,13 +267,17 @@ class Weblate:
             return self.get_unit(path)
         except ValueError:
             pass
-        if len(parts) == 3:
-            return self.get_translation(path)
-        if len(parts) == 2:
-            return self.get_component(path)
-        if len(parts) == 1:
-            return self.get_project(path)
-        raise ValueError(f"Not supported path: {path}")
+        match len(parts):
+            case 3:
+                return self.get_translation(path)
+            case 2:
+                return self.get_component(path)
+            case 1:
+                return self.get_project(path)
+            case 0:
+                raise ValueError("Empty path is not supported")
+            case _:
+                raise ValueError(f"Not supported path: {path}")
 
     def get_project(self, path):
         """Return project of given path."""
@@ -747,7 +753,7 @@ class Component(LazyObject, RepoObjectMixin):
         self.ensure_loaded("repository_url")
         url = self._get_repo_url().replace("repository", "file")
         if convert is not None:
-            url = "{}?{}".format(url, urlencode({"format": convert}))
+            url = f"{url}?{urlencode({'format': convert})}"
         return self.weblate.raw_request("get", url)
 
     def patch(self, **kwargs):
@@ -809,7 +815,7 @@ class Translation(LazyObject, RepoObjectMixin):
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         if convert is not None:
-            url = "{}?{}".format(url, urlencode({"format": convert}))
+            url = f"{url}?{urlencode({'format': convert})}"
         return self.weblate.raw_request("get", url)
 
     def upload(self, file, overwrite=None, format=None, **kwargs):  # noqa: A002
