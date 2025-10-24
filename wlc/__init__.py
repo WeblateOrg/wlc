@@ -140,13 +140,12 @@ class Weblate:
         if isinstance(error, requests.HTTPError):
             status_code = error.response.status_code
 
-            if 300 <= status_code < 400:
-                raise WeblateException(
-                    "Server responded with an unexpected HTTP redirect. "
-                    "Please check your configuration."
-                ) from error
-
             match status_code:
+                case _ if 300 <= status_code < 400:
+                    raise WeblateException(
+                        "Server responded with an unexpected HTTP redirect. "
+                        "Please check your configuration."
+                    ) from error
                 case 429:
                     headers = error.response.headers
                     raise WeblateThrottlingError(
@@ -275,6 +274,8 @@ class Weblate:
                 return self.get_component(path)
             case 1:
                 return self.get_project(path)
+            case 0:
+                raise ValueError("Empty path is not supported")
             case _:
                 raise ValueError(f"Not supported path: {path}")
 
