@@ -55,7 +55,7 @@ test = [
 ]
 types = [
   "mypy==1.18.2",
-  "types-python-dateutil==2.9.0.20251008",
+  "types-python-dateutil==2.9.0.20251108",
   "types-requests==2.32.4.20250913"
 ]
 
