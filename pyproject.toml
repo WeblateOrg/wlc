@@ -50,7 +50,7 @@ lint = ["pre-commit==4.4.0"]
 test = [
   "pytest-cov==7.0.0",
   "pytest-github-actions-annotate-failures==0.3.0",
-  "pytest==9.0.0",
+  "pytest==9.0.1",
   "responses==0.25.8"
 ]
 types = [
