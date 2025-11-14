@@ -71,7 +71,7 @@ repos:
   - id: shellcheck
     require_serial: true
 - repo: https://github.com/crate-ci/typos
-  rev: v1.39.1
+  rev: v1.39.2
   hooks:
   - id: typos
     args: []
