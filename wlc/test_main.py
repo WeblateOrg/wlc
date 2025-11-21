@@ -101,6 +101,7 @@ class TestSettings(CLITestBase):
     def test_config_appdata(self) -> None:
         """Configuration using custom config file section and key set."""
         output = self.execute(["show", "acl"], settings=False, expected=1)
+        self.assertIn("You don't have permission to access this object", output)
         try:
             os.environ["APPDATA"] = TEST_DATA
             output = self.execute(["show", "acl"], settings=False)
