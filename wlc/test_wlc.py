@@ -135,7 +135,7 @@ class WeblateTest(APITest):
     def test_authentication(self) -> None:
         """Test authentication against server."""
         with self.assertRaisesRegex(WeblateException, "permission"):
-            obj = Weblate().get_object("acl")
+            Weblate().get_object("acl")
         obj = Weblate(key="KEY").get_object("acl")
         self.assertEqual(obj.name, "ACL")
 
