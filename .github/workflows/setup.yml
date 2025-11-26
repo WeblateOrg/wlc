@@ -22,7 +22,7 @@ jobs:
       with:
         enable-cache: true
         cache-dependency-glob: ''
-        version: 0.9.12
+        version: 0.9.13
     - name: Install dependencies
       run: uv pip install --system -e .[dev]
     - name: build sdist
@@ -55,7 +55,7 @@ jobs:
     steps:
     - uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
       with:
-        version: 0.9.12
+        version: 0.9.13
     - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53 # v6.0.0
       with:
         name: dist
