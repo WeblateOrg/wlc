@@ -46,7 +46,7 @@ email = "michal@weblate.org"
 name = "Michal Čihař"
 
 [project.optional-dependencies]
-lint = ["pre-commit==4.5.0"]
+lint = ["pre-commit==4.5.1"]
 test = [
   "pytest-cov==7.0.0",
   "pytest-github-actions-annotate-failures==0.3.0",
