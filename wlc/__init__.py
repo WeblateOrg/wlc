@@ -666,7 +666,6 @@ class Component(LazyObject, RepoObjectMixin):
         "license",
         "license_url",
         "agreement",
-        "source_language",
         "priority",
         "is_glossary",
         "category",
