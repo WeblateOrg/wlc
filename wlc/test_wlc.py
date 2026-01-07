@@ -300,6 +300,14 @@ class WeblateTest(APITest):
                     filemask="po/*.po",
                 )
 
+    def test_should_verify_ssl(self) -> None:
+        self.assertEqual(Weblate.should_verify_ssl("http://localhost/api/"), False)
+        self.assertEqual(Weblate.should_verify_ssl("invalid/api/"), True)
+        self.assertEqual(
+            Weblate.should_verify_ssl("https://localhost.example.com/api/"), True
+        )
+        self.assertEqual(Weblate.should_verify_ssl("http://example.com/api/"), True)
+
 
 class ObjectTestBaseClass(APITest):
     """Base class for objects testing."""
