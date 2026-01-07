@@ -31,7 +31,7 @@ class WeblateErrorTest(APITest):
     """Testing error handling."""
 
     def test_nonexisting(self) -> None:
-        """Test listing projects."""
+        """Test error handling for non-existing objects."""
         with self.assertRaisesRegex(WeblateException, "not found"):
             Weblate().get_object("nonexisting")
 
