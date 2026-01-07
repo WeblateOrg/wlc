@@ -534,7 +534,6 @@ class ComponentTest(ObjectTest):
                 "repo",
                 "slug",
                 "source_language",
-                "source_language",
                 "template",
                 "url",
                 "vcs",
