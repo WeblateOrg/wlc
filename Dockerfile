@@ -4,7 +4,7 @@
 FROM weblate/base:2026.2.0@sha256:98c2113fdee09078a5e10b30b06ea077a7105c2aef16d5a49b5c426e8d4405b0
 
 LABEL name="wlc"
-LABEL maintainer="Michal Čihař <michal@cihar.com>"
+LABEL maintainer="Michal Čihař <michal@weblate.org>"
 LABEL org.opencontainers.image.url="https://weblate.org/"
 LABEL org.opencontainers.image.documentation="https://docs.weblate.org/en/latest/wlc.html"
 LABEL org.opencontainers.image.source="https://github.com/WeblateOrg/wlc"
