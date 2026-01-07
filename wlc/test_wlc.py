@@ -31,12 +31,12 @@ class WeblateErrorTest(APITest):
     """Testing error handling."""
 
     def test_nonexisting(self) -> None:
-        """Test listing projects."""
+        """Test error handling for non-existing objects."""
         with self.assertRaisesRegex(WeblateException, "not found"):
             Weblate().get_object("nonexisting")
 
     def test_denied(self) -> None:
-        """Test listing projects."""
+        """Test permission denied error handling."""
         with self.assertRaisesRegex(WeblateException, "permission"):
             Weblate().get_object("denied")
 
@@ -65,7 +65,7 @@ class WeblateErrorTest(APITest):
             )
 
     def test_throttled(self) -> None:
-        """Test listing projects."""
+        """Test handling of throttling error when listing projects."""
         with self.assertRaisesRegex(
             WeblateException,
             "Throttling.*Limit is 100 requests. Retry after 81818 seconds.",
@@ -73,12 +73,12 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("throttled")
 
     def test_error(self) -> None:
-        """Test listing projects."""
+        """Test general server error (HTTP 500) handling."""
         with self.assertRaisesRegex(WeblateException, "500"):
             Weblate().get_object("error")
 
     def test_oserror(self) -> None:
-        """Test listing projects."""
+        """Test handling of OS/request-level errors when listing projects."""
         with self.assertRaises(RequestException):
             Weblate().get_object("io")
 
