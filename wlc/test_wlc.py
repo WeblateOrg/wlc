@@ -73,7 +73,7 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("throttled")
 
     def test_error(self) -> None:
-        """Test listing projects."""
+        """Test general server error (HTTP 500) handling."""
         with self.assertRaisesRegex(WeblateException, "500"):
             Weblate().get_object("error")
 
