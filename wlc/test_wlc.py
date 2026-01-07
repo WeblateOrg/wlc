@@ -78,7 +78,7 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("error")
 
     def test_oserror(self) -> None:
-        """Test listing projects."""
+        """Test handling of OS/request-level errors when listing projects."""
         with self.assertRaises(RequestException):
             Weblate().get_object("io")
 
