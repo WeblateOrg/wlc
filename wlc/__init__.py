@@ -274,10 +274,7 @@ class Weblate:
                 return self.get_component(path)
             case 1:
                 return self.get_project(path)
-            case 0:
-                raise ValueError("Empty path is not supported")
-            case _:
-                raise ValueError(f"Not supported path: {path}")
+        raise ValueError(f"Not supported path: {path}")
 
     def get_project(self, path):
         """Return project of given path."""
