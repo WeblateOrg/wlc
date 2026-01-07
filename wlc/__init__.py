@@ -28,7 +28,8 @@ URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
 API_URL = "http://127.0.0.1:8000/api/"
 USER_AGENT = f"wlc/{__version__}"
-LOCALHOST_NETLOC = "127.0.0.1"
+LOCALHOST_ADDRESSES = {"127.0.0.1", "localhost", "::1", "[::1]"}
+
 TIMESTAMPS = {"last_change"}
 
 
@@ -195,7 +196,7 @@ class Weblate:
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
             headers["Authorization"] = f"Token {self.key}"
-        verify_ssl = self._should_verify_ssl(path)
+        verify_ssl = self.should_verify_ssl(path)
         kwargs = {
             "headers": headers,
             "verify": verify_ssl,
@@ -374,11 +375,10 @@ class Weblate:
         return self.post("languages/", **data)
 
     @staticmethod
-    def _should_verify_ssl(path):
+    def should_verify_ssl(path: str) -> bool:
         """Checks if it should verify ssl certificates."""
         url = urlparse(path)
-        is_localhost = url.netloc.startswith(LOCALHOST_NETLOC)
-        return url.scheme == "https" and (not is_localhost)
+        return url.hostname not in LOCALHOST_ADDRESSES
 
 
 class LazyObject(dict):
