@@ -91,15 +91,16 @@ class TestSettings(CLITestBase):
         self.assertIn("Hello", output)
 
     def test_config_key(self) -> None:
-        """Configuration using custom config file section and key set."""
+        """Configuration using custom config file section and key set is ignored."""
         output = self.execute(
             ["--config", TEST_CONFIG, "--config-section", "withkey", "show", "acl"],
             settings=False,
+            expected=1,
         )
-        self.assertIn("ACL", output)
+        self.assertIn("Error: You don't have permission to access this object", output)
 
     def test_config_appdata(self) -> None:
-        """Configuration using custom config file section and key set."""
+        """Verify keys are loaded from the [keys] section in APPDATA-based config."""
         output = self.execute(["show", "acl"], settings=False, expected=1)
         self.assertIn("You don't have permission to access this object", output)
         try:
@@ -122,7 +123,6 @@ class TestSettings(CLITestBase):
     def test_default_config_values(self) -> None:
         """Test default parser values."""
         config = WeblateConfig()
-        self.assertEqual(config.get("weblate", "key"), "")
         self.assertEqual(config.get("weblate", "retries"), "0")
         self.assertEqual(config.get("weblate", "timeout"), "300")
         self.assertEqual(

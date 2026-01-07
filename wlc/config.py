@@ -8,14 +8,11 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
-from typing import TYPE_CHECKING
+from typing import cast
 
-from xdg.BaseDirectory import load_config_paths  # type: ignore[import-untyped]
+from xdg.BaseDirectory import load_first_config  # type: ignore[import-untyped]
 
 import wlc
-
-if TYPE_CHECKING:
-    from collections.abc import Generator
 
 __all__ = ["NoOptionError", "WeblateConfig"]
 
@@ -23,17 +20,18 @@ __all__ = ["NoOptionError", "WeblateConfig"]
 class WeblateConfig(RawConfigParser):
     """Configuration parser wrapper with defaults."""
 
-    def __init__(self, section="weblate") -> None:
+    def __init__(self, section: str = "weblate") -> None:
         """Construct WeblateConfig object."""
         super().__init__(delimiters=("=",))
-        self.section = section
+        self.section: str = section
+        self.cli_key: str | None = None
+        self.cli_url: str | None = None
         self.set_defaults()
 
     def set_defaults(self) -> None:
         """Set default values."""
         self.add_section("keys")
         self.add_section(self.section)
-        self.set(self.section, "key", "")
         self.set(self.section, "url", wlc.API_URL)
         self.set(self.section, "retries", "0")
         self.set(self.section, "timeout", "300")
@@ -44,23 +42,27 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "backoff_factor", "0")
 
     @staticmethod
-    def find_configs() -> Generator[str]:
+    def find_config() -> str | None:
         # Handle Windows specifically
         for envname in ("APPDATA", "LOCALAPPDATA"):
             if path := os.environ.get(envname):
                 win_path = os.path.join(path, "weblate.ini")
                 if os.path.exists(win_path):
-                    yield win_path
+                    return win_path
 
         # Generic XDG paths
-        yield from load_config_paths("weblate")
-        yield from load_config_paths("weblate.ini")
+        for filename in ("weblate", "weblate.ini"):
+            if config := load_first_config(filename):
+                return config
 
-    def load(self, path=None) -> None:
+        return None
+
+    def load(self, path: str | None = None) -> None:
         """Load configuration from XDG paths."""
         if path is None:
-            path = list(self.find_configs())
-        self.read(path)
+            path = self.find_config()
+        if path:
+            self.read(path)
 
         # Try reading from current dir
         cwd = os.path.abspath(".")
@@ -74,15 +76,10 @@ class WeblateConfig(RawConfigParser):
             prev = cwd
             cwd = os.path.dirname(cwd)
 
-    def get_url_key(self):
+    def get_url_key(self) -> tuple[str, str]:
         """Get API URL and key."""
-        url = self.get(self.section, "url")
-        key = self.get(self.section, "key")
-        if not key:
-            try:
-                key = self.get("keys", url)
-            except NoOptionError:
-                key = ""
+        url = self.cli_url or cast("str", self.get(self.section, "url"))
+        key = self.cli_key or cast("str", self.get("keys", url, fallback=""))
         return url, key
 
     def get_request_options(self):

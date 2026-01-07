@@ -21,7 +21,7 @@ DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
 class ResponseHandler:
     """responses response handler."""
 
-    def __init__(self, body, filename, auth=False) -> None:
+    def __init__(self, body: bytes, filename: str, auth: bool = False) -> None:
         """Construct response handler object."""
         self.body = body
         self.filename = filename
@@ -111,7 +111,9 @@ class ResponseHandler:
         return digest.hexdigest()
 
 
-def register_uri(path, domain="http://127.0.0.1:8000/api", auth=False) -> None:
+def register_uri(
+    path: str, domain: str = "http://127.0.0.1:8000/api", auth: bool = False
+) -> None:
     """Simplified URL registration."""
     filename = os.path.join(DATA_TEST_BASE, path.replace("/", "-"))
     url = f"{domain}/{path}/"

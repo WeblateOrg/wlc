@@ -794,10 +794,10 @@ def parse_settings(args, settings):
         for section, key, value in settings:
             config.set(section, key, value)
 
-    for override in ("key", "url"):
-        value = getattr(args, override)
-        if value is not None:
-            config.set(args.config_section, override, value)
+    if args.key:
+        config.cli_key = args.key
+    if args.url:
+        config.cli_url = args.url
 
     return config
 
