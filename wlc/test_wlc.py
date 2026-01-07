@@ -36,7 +36,7 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("nonexisting")
 
     def test_denied(self) -> None:
-        """Test listing projects."""
+        """Test permission denied error handling."""
         with self.assertRaisesRegex(WeblateException, "permission"):
             Weblate().get_object("denied")
 
