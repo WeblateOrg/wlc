@@ -12,13 +12,14 @@ from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import urlencode, urlparse
 
-if TYPE_CHECKING:
-    from collections.abc import Collection
-
 import dateutil.parser
 import requests
+from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 log = logging.getLogger("wlc")
 
@@ -174,22 +175,47 @@ class Weblate:
                         f"HTTP error {status_code}: {reason} {error_string}"
                     ) from error
 
-    def raw_request(self, method, path, data=None, files=None, params=None):
+    def raw_request(
+        self,
+        method: str,
+        path: str,
+        data: dict[str, str] | None = None,
+        files: dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
+    ) -> bytes:
         """Construct request object and returns raw content."""
-        response = self.invoke_request(method, path, data, files, params=params)
+        response = self.invoke_request(
+            method, path, data=data, files=files, params=params
+        )
 
         return response.content
 
-    def request(self, method, path, data=None, files=None, params=None):
+    def request(
+        self,
+        method: str,
+        path: str,
+        data: dict[str, str] | None = None,
+        files: dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
+    ) -> dict:
         """Construct request object and returns json response."""
-        response = self.invoke_request(method, path, data, files, params=params)
+        response = self.invoke_request(
+            method, path, data=data, files=files, params=params
+        )
 
         try:
             return response.json()
         except ValueError as error:
             raise WeblateException("Server returned invalid JSON") from error
 
-    def invoke_request(self, method, path, data=None, files=None, params=None):
+    def invoke_request(
+        self,
+        method: str,
+        path: str,
+        data: dict[str, str] | None = None,
+        files: dict[str, str] | None = None,
+        params: dict[str, str] | None = None,
+    ) -> Response:
         """Construct request object."""
         if not path.startswith("http"):
             path = f"{self.url}{path}"
@@ -197,31 +223,32 @@ class Weblate:
         if self.key:
             headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self.should_verify_ssl(path)
-        kwargs = {
-            "headers": headers,
-            "verify": verify_ssl,
-            "files": files,
-            "allow_redirects": False,
-        }
 
         # Disable insecure warnings for localhost
         if not verify_ssl:
             logging.captureWarnings(True)
-        if params:
-            kwargs["params"] = params
+        json_data: dict[str, str] | None
         if files:
             # mulitpart/form upload
-            kwargs["data"] = data
+            json_data = None
         else:
             # JSON params to handle complex structures
-            kwargs["json"] = data
+            json_data = data
+            data = None
         try:
             self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
-            kwargs["timeout"] = self.timeout
-            log_kwargs = copy(kwargs)
-            del log_kwargs["files"]
-            log.debug(json.dumps([method, path, log_kwargs], indent=True))
-            response = self.session.request(method, path, **kwargs)
+            response = self.session.request(
+                method,
+                path,
+                headers=headers,
+                params=params,
+                json=json_data,
+                data=data,
+                verify=verify_ssl,
+                files=files,
+                allow_redirects=False,
+                timeout=self.timeout,
+            )
             response.raise_for_status()
             if 300 <= response.status_code < 400:
                 raise requests.HTTPError("Server redirected", response=response)
