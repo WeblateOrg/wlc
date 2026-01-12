@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os
 from email import message_from_string
+from email.message import Message
 from hashlib import blake2b
 from typing import NoReturn
 from unittest import TestCase
@@ -101,6 +102,8 @@ class ResponseHandler:
         )
         payload = []
         for part in message.get_payload():
+            if not isinstance(part, Message):
+                raise TypeError(f"Unexpected test data: {part}")
             name = part.get_param("name", header="content-disposition")
             value = part.get_payload()
             if isinstance(value, bytes):
