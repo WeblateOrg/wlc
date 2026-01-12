@@ -511,7 +511,7 @@ class LanguageStats(LazyObject):
     ID: ClassVar[str] = "code"
 
 
-class RepoMixin:
+class RepoMixin(LazyObject):
     """Repository mixin providing generic repository wide operations."""
 
     def _get_repo_url(self):
@@ -539,7 +539,7 @@ class RepoMixin:
         return self.weblate.post(self._get_repo_url(), operation="cleanup")
 
 
-class ProjectRepository(LazyObject, RepoMixin):
+class ProjectRepository(RepoMixin, LazyObject):
     """Repository object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
@@ -579,7 +579,7 @@ class RepoObjectMixin(RepoMixin):
         return self.REPOSITORY_CLASS(weblate=self.weblate, **data)
 
 
-class Project(LazyObject, RepoObjectMixin):
+class Project(RepoObjectMixin, LazyObject):
     """Project object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
@@ -646,7 +646,7 @@ class Category(LazyObject):
         return "/".join(slugs)
 
 
-class Component(LazyObject, RepoObjectMixin):
+class Component(RepoObjectMixin, LazyObject):
     """Component object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
@@ -757,7 +757,7 @@ class Component(LazyObject, RepoObjectMixin):
         return self.weblate.raw_request("patch", self._url, data=kwargs)
 
 
-class Translation(LazyObject, RepoObjectMixin):
+class Translation(RepoObjectMixin, LazyObject):
     """Translation object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
