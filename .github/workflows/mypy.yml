@@ -33,10 +33,10 @@ jobs:
       with:
         python-version: '3.14'
     - name: Install pip dependencies
-      run: uv pip install --system -e ".[types,test]"
+      run: uv sync --all-extras --dev
 
     - name: Run mypy
       run: |
         echo "::add-matcher::.github/matchers/mypy.json"
-        mypy --show-column-numbers wlc
+        uv run mypy --show-column-numbers wlc
         echo "::remove-matcher owner=mypy::"
