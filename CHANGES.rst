@@ -1,3 +1,12 @@
+1.17.0
+------
+
+* Released on 12th January 2026.
+* Dropped support for unscoped ``key`` in configuration (CVE-2026-22251).
+* Tightened hostname-based SSL verification skip (CVE-2026-22250).
+* Modernized packaging.
+* Improved type annotations.
+
 1.16.1
 ------
 
