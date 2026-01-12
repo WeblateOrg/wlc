@@ -12,13 +12,13 @@ from copy import copy
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 from urllib.parse import urlencode, urlparse
 
-if TYPE_CHECKING:
-    from collections.abc import Collection
-
 import dateutil.parser
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
+
+if TYPE_CHECKING:
+    from collections.abc import Collection
 
 log = logging.getLogger("wlc")
 
@@ -168,6 +168,7 @@ class Weblate:
                     reason = error.response.reason
                     try:
                         error_string = str(error.response.json())
+                    # pylint: disable-next=broad-exception-caught
                     except Exception:  # noqa: BLE001
                         error_string = ""
                     raise WeblateException(
@@ -458,7 +459,7 @@ class LazyObject(dict):
         self._data[name] = value
 
     def __getitem__(self, name):
-        return self.__getattr__(name)
+        return getattr(self, name)
 
     def __len__(self) -> int:
         return len(list(self.keys()))
@@ -479,12 +480,12 @@ class LazyObject(dict):
     def items(self):
         """Iterator over attributes."""
         for key in self.keys():
-            yield key, self.__getattr__(key)
+            yield key, getattr(self, key)
 
     def to_value(self):
         """Return identifier for the object."""
         self.ensure_loaded(self.ID)
-        return self.__getattr__(self.ID)
+        return getattr(self, self.ID)
 
 
 class Language(LazyObject):
@@ -814,6 +815,7 @@ class Translation(LazyObject, RepoObjectMixin):
             url = f"{url}?{urlencode({'format': convert})}"
         return self.weblate.raw_request("get", url)
 
+    # pylint: disable-next=redefined-builtin
     def upload(self, file, overwrite=None, format=None, **kwargs):  # noqa: A002
         """Updoad a translation file to server."""
         self.ensure_loaded("file_url")
