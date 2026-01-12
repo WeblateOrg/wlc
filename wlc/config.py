@@ -10,7 +10,7 @@ import os.path
 from configparser import NoOptionError, RawConfigParser
 from typing import cast
 
-from xdg.BaseDirectory import load_first_config  # type: ignore[import-untyped]
+from xdg.BaseDirectory import load_first_config
 
 import wlc
 
