@@ -14,7 +14,6 @@ import sys
 from argparse import ArgumentParser
 from datetime import datetime
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 import argcomplete
 from requests.exceptions import RequestException
@@ -22,15 +21,12 @@ from requests.exceptions import RequestException
 import wlc
 from wlc.config import NoOptionError, WeblateConfig
 
-if TYPE_CHECKING:
-    from collections.abc import Callable
-
-COMMANDS: dict[str, Callable] = {}
+COMMANDS: dict[str, type[Command]] = {}
 
 SORT_ORDER: list[str] = []
 
 
-def register_command(command):
+def register_command(command: type[Command]) -> type[Command]:
     """Register command decorator in the command-line interface."""
     COMMANDS[command.name] = command
     return command
