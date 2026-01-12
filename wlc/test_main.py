@@ -34,7 +34,7 @@ class CLITestBase(APITest, ABC):
         elif not settings:
             settings = None
         output = StringIO()
-        output.buffer = BytesIO()
+        output.buffer = BytesIO()  # ty:ignore[invalid-assignment]
         backup = sys.stdout
         backup_err = sys.stderr
         try:
@@ -47,7 +47,7 @@ class CLITestBase(APITest, ABC):
         finally:
             sys.stdout = backup
             sys.stderr = backup_err
-        result = output.buffer.getvalue()
+        result = output.buffer.getvalue()  # ty:ignore[unresolved-attribute]
         if result:
             return result
         return output.getvalue()
