@@ -90,6 +90,8 @@ class CommandError(Exception):
 
 
 class DateTimeEncoder(json.JSONEncoder):
+    """JSON encoder with datetime support."""
+
     def default(self, o):
         if isinstance(o, datetime):
             return o.isoformat()

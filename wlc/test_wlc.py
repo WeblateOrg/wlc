@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import io
 import os
+from abc import ABC
 from typing import Any, ClassVar
 
 from requests.exceptions import RequestException
@@ -248,7 +249,7 @@ class WeblateTest(APITest):
         test_file = os.path.join(
             os.path.dirname(__file__), "test_data", "mock", "project-local-file.pot"
         )
-        with open(test_file) as file:
+        with open(test_file, encoding="utf-8") as file:
             resp = Weblate().create_component(
                 docfile=file.read(),
                 project="hello",
@@ -309,7 +310,7 @@ class WeblateTest(APITest):
         self.assertEqual(Weblate.should_verify_ssl("http://example.com/api/"), True)
 
 
-class ObjectTestBaseClass(APITest):
+class ObjectTestBaseClass(APITest, ABC):
     """Base class for objects testing."""
 
     _name: str | None = None
@@ -339,7 +340,7 @@ class ObjectTestBaseClass(APITest):
         self.check_list(obj.list())
 
 
-class ObjectTest(ObjectTestBaseClass):
+class ObjectTest(ObjectTestBaseClass, ABC):
     """Additional tests for projects, components, and translations."""
 
     def test_refresh(self) -> None:
@@ -662,6 +663,8 @@ class TranslationTest(ObjectTest):
 
 
 class UnitTest(ObjectTestBaseClass):
+    """Unit model testing."""
+
     _name = "123"
     _cls = Unit
     patch_data: ClassVar[dict[str, Any]] = {
@@ -694,6 +697,8 @@ class UnitTest(ObjectTestBaseClass):
 
 
 class CategoryTest(APITest):
+    """Category model testing."""
+
     def test(self) -> None:
         obj = Category(Weblate(), "http://127.0.0.1:8000/api/categories/1/")
         self.assertIsInstance(obj, Category)

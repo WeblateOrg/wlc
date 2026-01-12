@@ -132,6 +132,15 @@ exclude_also = [
 [tool.isort]
 profile = "black"
 
+[tool.pylint.main]
+disable = [
+  "too-many-instance-attributes",
+  "too-many-positional-arguments",
+  "too-many-arguments",
+  "missing-function-docstring",
+  "too-many-public-methods"
+]
+
 [tool.ruff]
 target-version = "py310"
 

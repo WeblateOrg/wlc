@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import os
 import sys
+from abc import ABC
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
@@ -23,7 +24,9 @@ TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
 TEST_SECTION = os.path.join(TEST_DATA, "section")
 
 
-class CLITestBase(APITest):
+class CLITestBase(APITest, ABC):
+    """Base class for CLI testing."""
+
     def execute(self, args, settings=None, stdout=None, stdin=None, expected=0):
         """Execute command and return output."""
         if settings is None:
