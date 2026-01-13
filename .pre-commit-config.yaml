@@ -16,7 +16,7 @@ repos:
   - id: pretty-format-json
     args: [--no-sort-keys, --autofix]
 - repo: https://github.com/adrienverge/yamllint
-  rev: v1.37.1
+  rev: v1.38.0
   hooks:
   - id: yamllint
 - repo: https://github.com/astral-sh/ruff-pre-commit
