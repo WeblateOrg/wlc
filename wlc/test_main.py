@@ -100,7 +100,10 @@ class TestSettings(CLITestBase):
             settings=False,
             expected=1,
         )
-        self.assertIn("Error: You don't have permission to access this object", output)
+        self.assertIn(
+            "Error: Using 'key' in settings is insecure, use [keys] section instead",
+            output,
+        )
 
     def test_config_appdata(self) -> None:
         """Verify keys are loaded from the [keys] section in APPDATA-based config."""

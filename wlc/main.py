@@ -19,7 +19,7 @@ import argcomplete
 from requests.exceptions import RequestException
 
 import wlc
-from wlc.config import NoOptionError, WeblateConfig
+from wlc.config import NoOptionError, WeblateConfig, WLCConfigurationError
 
 COMMANDS: dict[str, type[Command]] = {}
 
@@ -815,7 +815,11 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         requests_log.setLevel(logging.DEBUG)
         requests_log.propagate = True
 
-    config = parse_settings(args, settings)
+    try:
+        config = parse_settings(args, settings)
+    except WLCConfigurationError as error:
+        print(f"Error: {error}", file=sys.stderr)
+        return 1
 
     command = COMMANDS[args.command](args, config, stdout, stdin)
     try:

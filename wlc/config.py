@@ -8,13 +8,20 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 from xdg.BaseDirectory import load_first_config
 
 import wlc
 
-__all__ = ["NoOptionError", "WeblateConfig"]
+if TYPE_CHECKING:
+    from pathlib import Path
+
+__all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
+
+
+class WLCConfigurationError(Exception):
+    """Error in the configuration file."""
 
 
 class WeblateConfig(RawConfigParser):
@@ -57,8 +64,8 @@ class WeblateConfig(RawConfigParser):
 
         return None
 
-    def load(self, path: str | None = None) -> None:
-        """Load configuration from XDG paths."""
+    def load(self, path: Path | str | None = None) -> None:
+        """Load configuration from XDG paths and current directory."""
         if path is None:
             path = self.find_config()
         if path:
@@ -75,6 +82,11 @@ class WeblateConfig(RawConfigParser):
                     break
             prev = cwd
             cwd = os.path.dirname(cwd)
+
+        if self.has_option(self.section, "key"):
+            raise WLCConfigurationError(
+                "Using 'key' in settings is insecure, use [keys] section instead."
+            )
 
     def get_url_key(self) -> tuple[str, str]:
         """Get API URL and key."""
