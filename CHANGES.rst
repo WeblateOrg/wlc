@@ -1,7 +1,14 @@
+1.17.1
+------
+
+* Released on 13th January 2026.
+* Unscoped ``key`` in configuration triggers error.
+
 1.17.0
 ------
 
 * Released on 12th January 2026.
+* Configuration change might be needed to move API keys to a new location, see https://docs.weblate.org/en/latest/wlc.html#legacy-configuration.
 * Dropped support for unscoped ``key`` in configuration (CVE-2026-22251).
 * Tightened hostname-based SSL verification skip (CVE-2026-22250).
 * Modernized packaging.
