@@ -25,7 +25,7 @@ test = [
   "responses==0.25.8"
 ]
 types = [
-  "ty==0.0.11",
+  "ty==0.0.12",
   "mypy==1.19.1",
   "types-pyxdg==0.28.0.20251115",
   "types-python-dateutil==2.9.0.20251115",
