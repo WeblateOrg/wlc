@@ -21,6 +21,8 @@ from requests.exceptions import RequestException
 import wlc
 from wlc.config import NoOptionError, WeblateConfig, WLCConfigurationError
 
+from .utils import sanitize_slug
+
 COMMANDS: dict[str, type[Command]] = {}
 
 SORT_ORDER: list[str] = []
@@ -655,13 +657,11 @@ class Download(ObjectCommand):
             raise CommandError("Output is needed for download!")
 
         directory = Path(self.args.output)
-        file_path = directory.joinpath(f"{component.project.slug}-{component.slug}.zip")
-
-        if not directory.exists():
-            directory.mkdir(exist_ok=True, parents=True)
-
-        with open(file_path, "wb") as file:
-            file.write(content)
+        file_path = directory / (
+            f"{sanitize_slug(component.project.slug)}-{sanitize_slug(component.slug)}.zip"
+        )
+        directory.mkdir(exist_ok=True, parents=True)
+        file_path.write_bytes(content)
 
     def download_components(self, iterable) -> None:
         for component in iterable:
