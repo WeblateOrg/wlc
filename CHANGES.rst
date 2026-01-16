@@ -1,3 +1,9 @@
+1.17.2
+------
+
+* Released on 16th January 2026.
+* Fixes path traversal: Unsanitized API slugs in download command (CVE-2026-23535).
+
 1.17.1
 ------
 

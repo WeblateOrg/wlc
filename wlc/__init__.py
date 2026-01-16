@@ -23,7 +23,7 @@ if TYPE_CHECKING:
 
 log = logging.getLogger("wlc")
 
-__version__ = "1.17.1"
+__version__ = "1.17.2"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"
