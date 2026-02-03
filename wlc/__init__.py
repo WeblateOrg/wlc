@@ -395,7 +395,7 @@ class Weblate:
 
     def create_language(self, code, name, direction="ltr", plural=None):
         """Create a new language."""
-        plural = plural if plural else {"number": 2, "formula": "n != 1"}
+        plural = plural or {"number": 2, "formula": "n != 1"}
         data = {"code": code, "name": name, "direction": direction, "plural": plural}
         return self.post("languages/", **data)
 
