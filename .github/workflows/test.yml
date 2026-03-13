@@ -40,7 +40,7 @@ jobs:
     - uses: astral-sh/setup-uv@e06108dd0aef18192324c70427afc47652e63a82 # v7.5.0
       with:
         cache-suffix: ${{ steps.setup_python.outputs.python-version }}
-        version: 0.10.9
+        version: 0.10.10
     - name: Install pip dependencies
       run: uv sync --all-extras --dev
     - name: Test
