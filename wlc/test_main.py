@@ -548,6 +548,43 @@ class TestCommands(CLITestBase):
         """Create a text io wrapper from a string."""
         return TextIOWrapper(BytesIO(string.encode()), "utf8")
 
+    def test_list_units(self) -> None:
+        """Unit listing."""
+        output = self.execute(["list-units", "hello/weblate/cs"])
+        self.assertIn("id", output)
+
+        output = self.execute(
+            ["list-units", "hello/weblate/cs", "--query", 'source:="mr"']
+        )
+        self.assertIn("117", output)
+
+        output = self.execute(["list-units", "hello/weblate"], expected=1)
+        self.assertIn("This command is supported only at translation level", output)
+
+    def test_show_unit(self) -> None:
+        """Unit show."""
+        output = self.execute(["show", "123"])
+        self.assertIn("123", output)
+        self.assertIn("source", output)
+
+    def test_delete_unit(self) -> None:
+        """Unit delete."""
+        output = self.execute(["delete", "123"])
+        self.assertEqual("", output)
+
+    def test_edit_unit(self) -> None:
+        """Unit edit."""
+        output = self.execute(
+            ["edit-unit", "123", "--target", "foo", "--state", "30"]
+        )
+        self.assertEqual("", output)
+
+        output = self.execute(["edit-unit", "hello/weblate/cs"], expected=1)
+        self.assertIn("This command is supported only at unit level", output)
+
+        output = self.execute(["edit-unit", "123"], expected=1)
+        self.assertIn("No changes specified", output)
+
 
 class TestErrors(CLITestBase):
     """Error handling tests."""

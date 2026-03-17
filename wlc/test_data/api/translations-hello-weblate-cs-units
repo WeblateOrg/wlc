@@ -14,6 +14,7 @@
             "context": "",
             "note": "",
             "flags": "",
+            "state": 20,
             "fuzzy": false,
             "translated": true,
             "approved": false,
@@ -22,10 +23,13 @@
             "has_comment": false,
             "has_failing_check": false,
             "num_words": 1,
+            "source_unit": "http://127.0.0.1:8000/api/units/1/",
             "priority": 100,
             "id": 35664,
             "web_url": "http://127.0.0.1:8000/projects/hello/weblate/cs/",
-            "url": "http://127.0.0.1:8000/api/units/35664/"
+            "url": "http://127.0.0.1:8000/api/units/35664/",
+            "explanation": "",
+            "extra_flags": ""
         }
     ]
 }
