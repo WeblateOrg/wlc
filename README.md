@@ -77,8 +77,8 @@ especially useful for CI workflows:
 The configuration precedence (highest to lowest) is:
 
 1. Command-line arguments (`--url`, `--key`)
-2. Environment variables (`WLC_URL`, `WLC_KEY`)
-3. Configuration file
+1. Environment variables (`WLC_URL`, `WLC_KEY`)
+1. Configuration file
 
 ## Docker image
 
