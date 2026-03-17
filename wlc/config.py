@@ -90,8 +90,16 @@ class WeblateConfig(RawConfigParser):
 
     def get_url_key(self) -> tuple[str, str]:
         """Get API URL and key."""
-        url = self.cli_url or cast("str", self.get(self.section, "url"))
-        key = self.cli_key or cast("str", self.get("keys", url, fallback=""))
+        url = (
+            self.cli_url
+            or os.environ.get("WLC_URL", "")
+            or cast("str", self.get(self.section, "url"))
+        )
+        key = (
+            self.cli_key
+            or os.environ.get("WLC_KEY", "")
+            or cast("str", self.get("keys", url, fallback=""))
+        )
         return url, key
 
     def get_request_options(self):
