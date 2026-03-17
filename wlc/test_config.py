@@ -8,6 +8,7 @@ import os
 from pathlib import Path
 from unittest import TestCase
 
+import wlc
 from wlc.config import WeblateConfig, WLCConfigurationError
 
 TEST_DATA = Path(__file__).parent / "test_data"
@@ -33,8 +34,9 @@ class WeblateConfigTestCase(TestCase):
         config = WeblateConfig()
         try:
             os.environ["WLC_KEY"] = "env-api-key"
-            _url, key = config.get_url_key()
+            url, key = config.get_url_key()
             self.assertEqual(key, "env-api-key")
+            self.assertEqual(url, wlc.API_URL)
         finally:
             del os.environ["WLC_KEY"]
 
@@ -43,8 +45,9 @@ class WeblateConfigTestCase(TestCase):
         config = WeblateConfig()
         try:
             os.environ["WLC_URL"] = "https://env.example.com/api/"
-            url, _key = config.get_url_key()
+            url, key = config.get_url_key()
             self.assertEqual(url, "https://env.example.com/api/")
+            self.assertEqual(key, "")
         finally:
             del os.environ["WLC_URL"]
 
