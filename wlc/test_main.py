@@ -574,9 +574,7 @@ class TestCommands(CLITestBase):
 
     def test_edit_unit(self) -> None:
         """Unit edit."""
-        output = self.execute(
-            ["edit-unit", "123", "--target", "foo", "--state", "30"]
-        )
+        output = self.execute(["edit-unit", "123", "--target", "foo", "--state", "30"])
         self.assertEqual("", output)
 
         output = self.execute(["edit-unit", "hello/weblate/cs"], expected=1)
