@@ -116,6 +116,24 @@ class TestSettings(CLITestBase):
         finally:
             del os.environ["APPDATA"]
 
+    def test_env_key(self) -> None:
+        """Verify WLC_KEY environment variable provides API key."""
+        try:
+            os.environ["WLC_KEY"] = "KEY"
+            output = self.execute(["show", "acl"], settings=False)
+            self.assertIn("ACL", output)
+        finally:
+            del os.environ["WLC_KEY"]
+
+    def test_env_url(self) -> None:
+        """Verify WLC_URL environment variable provides API URL."""
+        try:
+            os.environ["WLC_URL"] = "https://example.net/"
+            output = self.execute(["list-projects"], settings=False)
+            self.assertIn("Hello", output)
+        finally:
+            del os.environ["WLC_URL"]
+
     def test_config_cwd(self) -> None:
         """Test loading settings from current dir."""
         current = os.path.abspath(".")

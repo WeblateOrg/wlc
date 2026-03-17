@@ -66,6 +66,20 @@ timeout = 30
 https://hosted.weblate.org/api/ = APIKEY
 ```
 
+## Environment variables
+
+The API URL and key can also be configured using environment variables. This is
+especially useful for CI workflows:
+
+- `WLC_URL` — API URL
+- `WLC_KEY` — API key
+
+The configuration precedence (highest to lowest) is:
+
+1. Command-line arguments (`--url`, `--key`)
+2. Environment variables (`WLC_URL`, `WLC_KEY`)
+3. Configuration file
+
 ## Docker image
 
 The image is published on [Docker Hub](https://hub.docker.com/r/weblate/wlc).
