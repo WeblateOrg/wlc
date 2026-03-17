@@ -323,6 +323,21 @@ class TranslationCommand(ObjectCommand):
         raise NotImplementedError
 
 
+class UnitCommand(ObjectCommand):
+    """Wrapper to allow only unit objects."""
+
+    def get_object(self, blank: bool = False):
+        """Return unit object."""
+        obj = super().get_object(blank=blank)
+        if not isinstance(obj, wlc.Unit):
+            raise CommandError("This command is supported only at unit level")
+        return obj
+
+    def run(self) -> None:
+        """Main execution of the command."""
+        raise NotImplementedError
+
+
 @register_command
 class Version(Command):
     """Print version."""
@@ -412,11 +427,39 @@ class ListTranslations(ComponentCommand):
 
 
 @register_command
+class ListUnits(TranslationCommand):
+    """List units."""
+
+    name = "list-units"
+    description = "Lists units for a translation"
+
+    @classmethod
+    def add_parser(cls, subparser):
+        """Create parser for command-line."""
+        parser = super().add_parser(subparser)
+        parser.add_argument(
+            "-q",
+            "--query",
+            default=None,
+            help="Search query to filter units",
+        )
+        return parser
+
+    def run(self) -> None:
+        """Main execution of the command."""
+        obj = self.get_object()
+        kwargs = {}
+        if self.args.query:
+            kwargs["q"] = self.args.query
+        self.print(list(obj.units(**kwargs)))
+
+
+@register_command
 class Show(ObjectCommand):
     """Show object."""
 
     name = "show"
-    description = "Shows translation, component or project"
+    description = "Shows translation, component, project or unit"
 
     def run(self) -> None:
         """Executor."""
@@ -428,7 +471,7 @@ class Delete(ObjectCommand):
     """Delete object."""
 
     name = "delete"
-    description = "Delete translation, component or project"
+    description = "Delete translation, component, project or unit"
 
     def run(self) -> None:
         """Executor."""
@@ -781,6 +824,54 @@ class Upload(TranslationCommand):
                 "Failed to upload translations!",
                 result.get("detail", ""),
             )
+
+
+@register_command
+class EditUnit(UnitCommand):
+    """Edit a unit."""
+
+    name = "edit-unit"
+    description = "Edits a unit"
+
+    @classmethod
+    def add_parser(cls, subparser):
+        """Create parser for command-line."""
+        parser = super().add_parser(subparser)
+        parser.add_argument(
+            "--target",
+            nargs="+",
+            help="Target (translated) string(s)",
+        )
+        parser.add_argument(
+            "--state",
+            type=int,
+            help="Unit state (0: empty, 10: fuzzy, 20: translated, 30: approved)",
+        )
+        parser.add_argument(
+            "--explanation",
+            help="String explanation",
+        )
+        parser.add_argument(
+            "--extra-flags",
+            help="Additional string flags",
+        )
+        return parser
+
+    def run(self) -> None:
+        """Executor."""
+        obj = self.get_object()
+        kwargs = {}
+        if self.args.target is not None:
+            kwargs["target"] = self.args.target
+        if self.args.state is not None:
+            kwargs["state"] = self.args.state
+        if self.args.explanation is not None:
+            kwargs["explanation"] = self.args.explanation
+        if self.args.extra_flags is not None:
+            kwargs["extra_flags"] = self.args.extra_flags
+        if not kwargs:
+            raise CommandError("No changes specified!")
+        obj.patch(**kwargs)
 
 
 def parse_settings(args, settings):
