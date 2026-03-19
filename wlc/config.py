@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import os.path
+import re
 from configparser import NoOptionError, RawConfigParser
 from typing import TYPE_CHECKING, cast
 
@@ -18,6 +19,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
+
+REQUEST_METHOD_SEPARATOR_RE = re.compile(r"[\s,]+")
 
 
 class WLCConfigurationError(Exception):
@@ -108,6 +111,12 @@ class WeblateConfig(RawConfigParser):
         status_forcelist = self.get(self.section, "status_forcelist")
         if status_forcelist is not None:
             status_forcelist = [int(option) for option in status_forcelist.split(",")]
-        method_whitelist = self.get(self.section, "method_whitelist").split(",")
+        method_whitelist = [
+            option
+            for option in REQUEST_METHOD_SEPARATOR_RE.split(
+                self.get(self.section, "method_whitelist")
+            )
+            if option
+        ]
         backoff_factor = float(self.get(self.section, "backoff_factor"))
         return retries, status_forcelist, method_whitelist, backoff_factor, timeout

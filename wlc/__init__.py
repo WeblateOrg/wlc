@@ -114,7 +114,7 @@ class Weblate:
             allowed_methods=self.method_whitelist,
             raise_on_status=False,
         )
-        self.adapter = HTTPAdapter(pool_connections=1, max_retries=retries)
+        self.adapter = HTTPAdapter(pool_connections=1, max_retries=self.retries)
 
         if not self.url.endswith("/"):
             self.url += "/"
