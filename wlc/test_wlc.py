@@ -113,6 +113,7 @@ class WeblateTest(APITest):
     def test_adapter_uses_configured_retries(self) -> None:
         """HTTP adapter should use the resolved Retry configuration."""
         weblate = Weblate(retries=3, backoff_factor=0.5, method_whitelist=["GET"])
+        self.assertEqual(weblate.retry_total, 3)
         self.assertIsInstance(weblate.adapter.max_retries, Retry)
         self.assertEqual(weblate.adapter.max_retries.total, 3)
         self.assertEqual(weblate.adapter.max_retries.backoff_factor, 0.5)

@@ -84,7 +84,7 @@ class Weblate:
         if config is not None:
             self.url, self.key = config.get_url_key()
             (
-                self.retries,
+                self.retry_total,
                 self.status_forcelist,
                 self.method_whitelist,
                 self.backoff_factor,
@@ -93,7 +93,7 @@ class Weblate:
         else:
             self.key = key
             self.url = url
-            self.retries = retries
+            self.retry_total = retries
             self.status_forcelist = status_forcelist
             self.timeout = timeout
             self.method_whitelist = method_whitelist or [
@@ -107,14 +107,14 @@ class Weblate:
             ]
             self.backoff_factor = backoff_factor
 
-        self.retries = Retry(
-            total=self.retries,
+        retry_config = Retry(
+            total=self.retry_total,
             backoff_factor=self.backoff_factor,
             status_forcelist=self.status_forcelist,
             allowed_methods=self.method_whitelist,
             raise_on_status=False,
         )
-        self.adapter = HTTPAdapter(pool_connections=1, max_retries=self.retries)
+        self.adapter = HTTPAdapter(pool_connections=1, max_retries=retry_config)
 
         if not self.url.endswith("/"):
             self.url += "/"
