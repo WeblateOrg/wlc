@@ -76,7 +76,7 @@ class Weblate:
         retries: int = 0,
         status_forcelist: Collection[int] | None = None,
         method_whitelist: Collection[str] | None = None,
-        backoff_factor: int = 0,
+        backoff_factor: float = 0,
         timeout: int = 300,
     ) -> None:
         """Create the object, storing key, API url and requests retry args."""
