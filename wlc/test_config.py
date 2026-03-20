@@ -94,3 +94,16 @@ class WeblateConfigTestCase(TestCase):
             method_whitelist,
             ["HEAD", "TRACE", "DELETE", "OPTIONS", "PUT", "GET"],
         )
+
+    def test_method_whitelist_strips_comma_separated_values(self) -> None:
+        """Method whitelist strips surrounding whitespace for comma-separated values."""
+        config = WeblateConfig()
+        config.set("weblate", "method_whitelist", " PUT , POST,GET ")
+        (
+            _retries,
+            _status_forcelist,
+            method_whitelist,
+            _backoff_factor,
+            _timeout,
+        ) = config.get_request_options()
+        self.assertEqual(method_whitelist, ["PUT", "POST", "GET"])
