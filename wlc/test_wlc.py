@@ -118,8 +118,10 @@ class WeblateTest(APITest):
         self.assertEqual(weblate.adapter.max_retries.backoff_factor, 0.5)
         allowed_methods = weblate.adapter.max_retries.allowed_methods
         self.assertIsNotNone(allowed_methods)
-        assert allowed_methods is not None
-        self.assertEqual(frozenset(allowed_methods), frozenset({"GET"}))
+        self.assertEqual(
+            frozenset(allowed_methods or ()),
+            frozenset({"GET"}),
+        )
 
     def test_languages(self) -> None:
         """Test listing projects."""
