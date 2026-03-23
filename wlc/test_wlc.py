@@ -12,6 +12,7 @@ from abc import ABC
 from typing import Any, ClassVar
 
 from requests.exceptions import RequestException
+from urllib3.util.retry import Retry
 
 from wlc import (
     API_URL,
@@ -108,6 +109,20 @@ class WeblateErrorTest(APITest):
 
 class WeblateTest(APITest):
     """Testing of Weblate class."""
+
+    def test_adapter_uses_configured_retries(self) -> None:
+        """HTTP adapter should use the resolved Retry configuration."""
+        weblate = Weblate(retries=3, backoff_factor=0.5, method_whitelist=["GET"])
+        self.assertEqual(weblate.retry_total, 3)
+        self.assertIsInstance(weblate.adapter.max_retries, Retry)
+        self.assertEqual(weblate.adapter.max_retries.total, 3)
+        self.assertEqual(weblate.adapter.max_retries.backoff_factor, 0.5)
+        allowed_methods = weblate.adapter.max_retries.allowed_methods
+        self.assertIsNotNone(allowed_methods)
+        self.assertEqual(
+            frozenset(allowed_methods or ()),
+            frozenset({"GET"}),
+        )
 
     def test_languages(self) -> None:
         """Test listing projects."""

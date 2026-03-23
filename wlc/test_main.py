@@ -187,6 +187,25 @@ class TestSettings(CLITestBase):
         self.assertEqual(method_whitelist, ["PUT", "POST"])
         self.assertEqual(backoff_factor, 0.2)
 
+    def test_default_request_options(self) -> None:
+        """Test the get_request_options method with default config values."""
+        config = WeblateConfig()
+        (
+            retries,
+            status_forcelist,
+            method_whitelist,
+            backoff_factor,
+            timeout,
+        ) = config.get_request_options()
+        self.assertEqual(retries, 0)
+        self.assertIsNone(status_forcelist)
+        self.assertEqual(
+            method_whitelist,
+            ["HEAD", "TRACE", "DELETE", "OPTIONS", "PUT", "GET"],
+        )
+        self.assertEqual(backoff_factor, 0.0)
+        self.assertEqual(timeout, 300)
+
     def test_argv(self) -> None:
         """Test sys.argv processing."""
         backup = sys.argv
