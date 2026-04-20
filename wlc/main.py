@@ -4,8 +4,6 @@
 
 """Command-line interface for Weblate."""
 
-# pylint: disable=too-many-lines
-
 from __future__ import annotations
 
 import csv
@@ -13,32 +11,30 @@ import html
 import json
 import sys
 from argparse import ArgumentParser
-from datetime import datetime
 from pathlib import Path
 
 import argcomplete
 from requests.exceptions import RequestException
 
-import wlc
-from wlc.config import NoOptionError, WeblateConfig, WLCConfigurationError
-from wlc.http_debug import disable_debug_logging, enable_debug_logging
-
+from . import __version__
+from .client import Weblate
+from .config import NoOptionError, WeblateConfig, WLCConfigurationError
+from .const import DEVEL_URL, URL
+from .exceptions import WeblateDeniedError, WeblateException
+from .http_debug import disable_debug_logging, enable_debug_logging
+from .models import Component, Project, Translation, Unit
+from .output import (
+    CSV_DANGEROUS_LEADING,
+    CSV_FORMULA_PREFIXES,
+    DateTimeEncoder,
+    format_for_stream,
+    sort_key,
+    sorted_items,
+    stream_isatty,
+)
 from .utils import sanitize_slug
 
 COMMANDS: dict[str, type[Command]] = {}
-
-SORT_ORDER: list[str] = []
-CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
-CSV_DANGEROUS_LEADING = " \t\r\n"
-TERMINAL_CONTROL_REPLACEMENTS = {
-    "\a": r"\a",
-    "\b": r"\b",
-    "\t": r"\t",
-    "\n": r"\n",
-    "\v": r"\v",
-    "\f": r"\f",
-    "\r": r"\r",
-}
 
 
 def register_command(command: type[Command]) -> type[Command]:
@@ -50,8 +46,8 @@ def register_command(command: type[Command]) -> type[Command]:
 def get_parser():
     """Create argument parser."""
     parser = ArgumentParser(
-        description=f"Weblate <{wlc.URL}> command-line utility.",
-        epilog=f"This utility is developed at <{wlc.DEVEL_URL}>.",
+        description=f"Weblate <{URL}> command-line utility.",
+        epilog=f"This utility is developed at <{DEVEL_URL}>.",
     )
     parser.add_argument(
         "--format",
@@ -61,7 +57,7 @@ def get_parser():
         help="Output format to use",
     )
     parser.add_argument(
-        "--version", "-v", action="version", version=f"wlc {wlc.__version__}"
+        "--version", "-v", action="version", version=f"wlc {__version__}"
     )
     parser.add_argument(
         "--debug", "-D", action="store_true", help="Print verbosely http communication"
@@ -100,62 +96,6 @@ class CommandError(Exception):
         super().__init__(message)
 
 
-class DateTimeEncoder(json.JSONEncoder):
-    """JSON encoder with datetime support."""
-
-    def default(self, o):
-        if isinstance(o, datetime):
-            return o.isoformat()
-
-        return super().default(o)
-
-
-def sort_key(value):
-    """Key getter for sorting."""
-    try:
-        return f"{SORT_ORDER.index(value):02d}"
-    except ValueError:
-        return value
-
-
-def sorted_items(value):
-    """Sorted items iterator."""
-    for key in sorted(value.keys(), key=sort_key):
-        yield key, value[key]
-
-
-def stream_isatty(stream) -> bool:
-    """Check whether the given stream is an interactive terminal."""
-    isatty = getattr(stream, "isatty", None)
-    if callable(isatty):
-        return isatty()
-    return False
-
-
-def escape_terminal_text(value: str) -> str:
-    """Render terminal control characters visibly instead of executing them."""
-    escaped: list[str] = []
-    for char in value:
-        if char in TERMINAL_CONTROL_REPLACEMENTS:
-            escaped.append(TERMINAL_CONTROL_REPLACEMENTS[char])
-            continue
-
-        code = ord(char)
-        if code == 0x7F or 0x00 <= code < 0x20 or 0x80 <= code < 0xA0:
-            escaped.append(f"\\x{code:02x}")
-            continue
-
-        escaped.append(char)
-    return "".join(escaped)
-
-
-def format_for_stream(value, stream):
-    """Format output for a stream, escaping control characters on terminals."""
-    if isinstance(value, str) and stream_isatty(stream):
-        return escape_terminal_text(value)
-    return value
-
-
 def print_stderr(message: str) -> None:
     """Print a terminal-safe error message to stderr."""
     print(format_for_stream(message, sys.stderr), file=sys.stderr)
@@ -181,7 +121,7 @@ class Command:
         else:
             self.stdin = stdin
 
-        self.wlc = wlc.Weblate(config=config)
+        self.wlc = Weblate(config=config)
 
     @classmethod
     def add_parser(cls, subparser):
@@ -368,7 +308,7 @@ class ProjectCommand(ObjectCommand):
     def get_object(self, blank: bool = False):
         """Return component object."""
         obj = super().get_object(blank=blank)
-        if not isinstance(obj, wlc.Project):
+        if not isinstance(obj, Project):
             raise CommandError("Not supported")
         return obj
 
@@ -383,7 +323,7 @@ class ComponentCommand(ObjectCommand):
     def get_object(self, blank: bool = False):
         """Return component object."""
         obj = super().get_object(blank=blank)
-        if not isinstance(obj, wlc.Component):
+        if not isinstance(obj, Component):
             raise CommandError("This command is supported only at component level")
         return obj
 
@@ -398,7 +338,7 @@ class TranslationCommand(ObjectCommand):
     def get_object(self, blank: bool = False):
         """Return translation object."""
         obj = super().get_object(blank=blank)
-        if not isinstance(obj, wlc.Translation):
+        if not isinstance(obj, Translation):
             raise CommandError("This command is supported only at translation level")
         return obj
 
@@ -413,7 +353,7 @@ class UnitCommand(ObjectCommand):
     def get_object(self, blank: bool = False):
         """Return unit object."""
         obj = super().get_object(blank=blank)
-        if not isinstance(obj, wlc.Unit):
+        if not isinstance(obj, Unit):
             raise CommandError("This command is supported only at unit level")
         return obj
 
@@ -439,9 +379,9 @@ class Version(Command):
     def run(self) -> None:
         """Main execution of the command."""
         if self.args.bare:
-            self.println(wlc.__version__)
+            self.println(__version__)
         else:
-            self.print({"version": wlc.__version__})
+            self.print({"version": __version__})
 
 
 @register_command
@@ -699,9 +639,9 @@ class Stats(ObjectCommand):
     def run(self) -> None:
         """Executor."""
         obj = self.get_object()
-        if isinstance(obj, wlc.Project):
+        if isinstance(obj, Project):
             self.print(obj.statistics())
-        elif isinstance(obj, wlc.Component):
+        elif isinstance(obj, Component):
             self.print(list(obj.statistics()))
         else:
             self.print(obj.statistics())
@@ -805,7 +745,7 @@ class Download(ObjectCommand):
         obj = self.get_object(blank=True)
 
         # Translation locale for a component
-        if isinstance(obj, wlc.Translation):
+        if isinstance(obj, Translation):
             content = obj.download(self.args.convert)
             if self.args.output and self.args.output != "-":
                 with open(self.args.output, "wb") as handle:
@@ -820,7 +760,7 @@ class Download(ObjectCommand):
             return
 
         # All translations for a component
-        if isinstance(obj, wlc.Component):
+        if isinstance(obj, Component):
             # Only download for the component we scoped
             self.download_components(
                 [
@@ -832,7 +772,7 @@ class Download(ObjectCommand):
             return
 
         # All translations for a project
-        if isinstance(obj, wlc.Project):
+        if isinstance(obj, Project):
             self.download_components(obj.list())
             self.println(f"downloaded translations for project: {obj.full_slug()}")
             return
@@ -1004,7 +944,7 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     command = COMMANDS[args.command](args, config, stdout, stdin)
     try:
         command.run()
-    except wlc.WeblateDeniedError:
+    except WeblateDeniedError:
         url, key = config.get_url_key()
         if key:
             print_stderr(f"API key configured for {url} was rejected by server.")
@@ -1017,7 +957,7 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     except RequestException as error:
         print_stderr(f"Request failed: {error}")
         return 10
-    except (CommandError, wlc.WeblateException) as error:
+    except (CommandError, WeblateException) as error:
         print_stderr(f"Error: {error}")
         return 1
     else:

@@ -12,7 +12,7 @@ from typing import TYPE_CHECKING, cast
 
 from xdg.BaseDirectory import load_first_config
 
-import wlc
+from .const import API_URL
 
 if TYPE_CHECKING:
     from pathlib import Path
@@ -39,7 +39,7 @@ class WeblateConfig(RawConfigParser):
         """Set default values."""
         self.add_section("keys")
         self.add_section(self.section)
-        self.set(self.section, "url", wlc.API_URL)
+        self.set(self.section, "url", API_URL)
         self.set(self.section, "retries", "0")
         self.set(self.section, "timeout", "300")
         self.set(self.section, "status_forcelist", None)
