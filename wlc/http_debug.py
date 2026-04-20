@@ -79,7 +79,7 @@ def log_failure_debug(method: str, path: str, error: Exception) -> None:
     log.debug("HTTP failure %s %s -> %s", method.upper(), path, error)
 
 
-def enable_debug_logging():
+def enable_debug_logging() -> tuple[logging.Handler, int, bool]:
     """Install a temporary debug handler for sanitized HTTP logs."""
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
@@ -91,7 +91,9 @@ def enable_debug_logging():
     return handler, previous_level, previous_propagate
 
 
-def disable_debug_logging(handler, previous_level, previous_propagate) -> None:
+def disable_debug_logging(
+    handler: logging.Handler, previous_level: int, previous_propagate: bool
+) -> None:
     """Remove the temporary debug handler."""
     log.removeHandler(handler)
     handler.close()

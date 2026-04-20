@@ -12,6 +12,7 @@ import json
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import argcomplete
 from requests.exceptions import RequestException
@@ -32,6 +33,9 @@ from .output import (
     stream_isatty,
 )
 from .utils import sanitize_slug
+
+if TYPE_CHECKING:
+    import logging
 
 COMMANDS: dict[str, type[Command]] = {}
 
@@ -926,9 +930,9 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         args = sys.argv[1:]
     args = parser.parse_args(args)
 
-    debug_handler = None
-    previous_wlc_level = None
-    previous_wlc_propagate = None
+    debug_handler: logging.Handler | None = None
+    previous_wlc_level: int | None = None
+    previous_wlc_propagate: bool | None = None
     if args.debug:
         debug_handler, previous_wlc_level, previous_wlc_propagate = (
             enable_debug_logging()
@@ -962,7 +966,11 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     else:
         return 0
     finally:
-        if debug_handler is not None:
+        if (
+            debug_handler is not None
+            and previous_wlc_level is not None
+            and previous_wlc_propagate is not None
+        ):
             disable_debug_logging(
                 debug_handler, previous_wlc_level, previous_wlc_propagate
             )
