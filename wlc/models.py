@@ -132,6 +132,9 @@ class Category(LazyObject):
         return "/".join(slugs)
 
 
+Category.MAPPINGS["category"] = Category
+
+
 class Component(RepoObjectMixin, LazyObject):
     """Component object."""
 
@@ -303,7 +306,7 @@ class Translation(RepoObjectMixin, LazyObject):
 
     # pylint: disable-next=redefined-builtin
     def upload(self, file, overwrite=None, format=None, **kwargs):  # noqa: A002
-        """Updoad a translation file to server."""
+        """Upload a translation file to server."""
         self.ensure_loaded("file_url")
         url = self._attribs["file_url"]
         files = {"file": (f"file.{format}", file)} if format else {"file": file}
