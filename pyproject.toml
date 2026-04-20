@@ -194,7 +194,7 @@ packages = ["wlc"]
 platforms = ["any"]
 
 [tool.setuptools.dynamic.version]
-attr = "wlc.__version__"
+attr = "wlc.const.__version__"
 
 [tool.setuptools.package-data]
 wlc = ["py.typed"]

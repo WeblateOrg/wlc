@@ -4,8 +4,6 @@
 
 """Weblate API client library."""
 
-__version__ = "1.17.2"
-
 from .client import Weblate
 from .const import (
     API_URL,
@@ -14,6 +12,7 @@ from .const import (
     TIMESTAMPS,
     URL,
     USER_AGENT,
+    __version__,
 )
 from .exceptions import (
     WeblateDeniedError,
