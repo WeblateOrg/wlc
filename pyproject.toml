@@ -189,7 +189,8 @@ disable = [
 ]
 
 [tool.setuptools]
-include-package-data = true
+include-package-data = false
+packages = ["wlc"]
 platforms = ["any"]
 
 [tool.setuptools.dynamic.version]
@@ -197,13 +198,6 @@ attr = "wlc.__version__"
 
 [tool.setuptools.package-data]
 wlc = ["py.typed"]
-
-[tool.setuptools.package-dir]
-wlc = "wlc"
-
-[tool.setuptools.packages.find]
-include = ["wlc"]
-namespaces = false
 
 [tool.typos.default]
 extend-ignore-re = [
