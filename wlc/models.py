@@ -502,7 +502,10 @@ class Unit(LazyObject):
 
     def put(self, **kwargs: Any) -> bytes:
         if "target" not in kwargs:
-            kwargs["target"] = list(self.target)
+            target = self.target
+            kwargs["target"] = (
+                list(target) if isinstance(target, (list, tuple)) else target
+            )
         if "labels" not in kwargs:
             with suppress(AttributeError):
                 kwargs["labels"] = list(self.labels)

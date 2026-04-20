@@ -1045,6 +1045,27 @@ class UnitTest(ObjectTestBaseClass):
             },
         )
 
+    def test_units_put_preserves_scalar_target(self) -> None:
+        obj = Unit(
+            Weblate(),
+            "http://127.0.0.1:8000/api/units/987/",
+            target="mr",
+        )
+        with (
+            patch.object(obj, "refresh"),
+            patch.object(obj.weblate, "raw_request", return_value=b"") as raw_request,
+        ):
+            obj.put(state=30)
+
+        raw_request.assert_called_once_with(
+            "put",
+            "http://127.0.0.1:8000/api/units/987/",
+            data={
+                "state": 30,
+                "target": "mr",
+            },
+        )
+
     def test_units_delete(self) -> None:
         obj = self.get()
         resp = obj.delete()
