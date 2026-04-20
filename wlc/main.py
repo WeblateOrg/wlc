@@ -798,7 +798,7 @@ class Upload(TranslationCommand):
         parser.add_argument(
             "--overwrite",
             action="store_true",
-            help="Overwrite existing translations (defaults to none)",
+            help="Overwrite existing translations",
         )
         parser.add_argument(
             "--conflicts",
