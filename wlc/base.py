@@ -84,12 +84,22 @@ class LazyObject(dict):
         for key, value in kwargs.items():
             self._attribs[key] = value
 
-    def ensure_loaded(self, attrib) -> None:
+    def ensure_loaded(self, attrib: str) -> None:
         """Ensure attribute is loaded from remote."""
         if attrib in self._data or attrib in self._attribs:
             return
         if not self._loaded:
             self.refresh()
+
+    def _get_stored(self, name: str) -> Any:
+        """Return a value stored in object data or deferred attributes."""
+        self.ensure_loaded(name)
+        if name in self._data:
+            return self._data[name]
+        try:
+            return self._attribs[name]
+        except KeyError as error:
+            raise AttributeError(name) from error
 
     def refresh(self) -> None:
         """Read object again from remote."""
@@ -97,7 +107,7 @@ class LazyObject(dict):
         self._load_params(**data)
         self._loaded = True
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         if name not in self.PARAMS:
             raise AttributeError(name)
         if name not in self._data:
@@ -109,13 +119,13 @@ class LazyObject(dict):
                 return None
             raise AttributeError(name) from error
 
-    def setattrvalue(self, name, value) -> None:
+    def setattrvalue(self, name: str, value: Any) -> None:
         if name not in self.PARAMS:
             raise AttributeError(name)
 
         self._data[name] = value
 
-    def __getitem__(self, name):
+    def __getitem__(self, name: str) -> Any:
         return getattr(self, name)
 
     def __len__(self) -> int:
@@ -139,7 +149,7 @@ class LazyObject(dict):
         for key in self.keys():
             yield key, getattr(self, key)
 
-    def to_value(self):
+    def to_value(self) -> Any:
         """Return identifier for the object."""
         self.ensure_loaded(self.ID)
         return getattr(self, self.ID)
@@ -148,9 +158,8 @@ class LazyObject(dict):
 class RepoMixin(LazyObject):
     """Repository mixin providing generic repository wide operations."""
 
-    def _get_repo_url(self):
-        self.ensure_loaded("repository_url")
-        return self._attribs["repository_url"]
+    def _get_repo_url(self) -> str:
+        return self._get_stored("repository_url")
 
     def commit(self):
         """Commit Weblate changes."""

@@ -27,7 +27,7 @@ from .http_debug import log_failure_debug, log_request_debug, log_response_debug
 from .models import Category, Change, Component, Language, Project, Translation, Unit
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Mapping
+    from collections.abc import Collection, Iterator, Mapping
 
 
 class Weblate:
@@ -278,10 +278,19 @@ class Weblate:
         """Perform GET request on the API."""
         return self.request("get", path, params=params)
 
-    def list_factory(self, path, parser, params=None):
+    def list_factory(
+        self,
+        path: str,
+        parser: Any,
+        params: Mapping[str, Any] | None = None,
+    ) -> Iterator[Any]:
         """Listing object wrapper."""
         while path is not None:
             data = self.get(path, params=params)
+            if isinstance(data, list):
+                for item in data:
+                    yield parser(weblate=self, **item)
+                break
             for item in data["results"]:
                 yield parser(weblate=self, **item)
 
