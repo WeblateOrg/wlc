@@ -430,6 +430,14 @@ class LazyObject(dict):
         """Construct object for given Weblate instance."""
         super().__init__()
 
+        self.weblate = weblate
+        self._url = url
+        self._data: dict[str, Any] = {}
+        self._loaded = False
+        self._attribs: dict[str, Any] = {}
+        self._load_params(**kwargs)
+        self._load_params(url=url)
+        
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LazyObject):
             return (
@@ -443,15 +451,7 @@ class LazyObject(dict):
         if isinstance(other, dict):
             return dict(self) == other
         return NotImplemented
-
-        self.weblate = weblate
-        self._url = url
-        self._data: dict[str, Any] = {}
-        self._loaded = False
-        self._attribs: dict[str, Any] = {}
-        self._load_params(**kwargs)
-        self._load_params(url=url)
-
+    
     def get_data(self):
         return copy(self._data)
 
