@@ -7,9 +7,7 @@
 from __future__ import annotations
 
 import csv
-import http.client
 import json
-import logging
 import sys
 from argparse import ArgumentParser
 from datetime import datetime
@@ -20,6 +18,7 @@ from requests.exceptions import RequestException
 
 import wlc
 from wlc.config import NoOptionError, WeblateConfig, WLCConfigurationError
+from wlc.http_debug import disable_debug_logging, enable_debug_logging
 
 from .utils import sanitize_slug
 
@@ -898,13 +897,13 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
         args = sys.argv[1:]
     args = parser.parse_args(args)
 
+    debug_handler = None
+    previous_wlc_level = None
+    previous_wlc_propagate = None
     if args.debug:
-        http.client.HTTPConnection.debuglevel = 1
-        logging.basicConfig()
-        logging.getLogger().setLevel(logging.DEBUG)
-        requests_log = logging.getLogger("urllib3")
-        requests_log.setLevel(logging.DEBUG)
-        requests_log.propagate = True
+        debug_handler, previous_wlc_level, previous_wlc_propagate = (
+            enable_debug_logging()
+        )
 
     try:
         config = parse_settings(args, settings)
@@ -937,8 +936,7 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     else:
         return 0
     finally:
-        if args.debug:
-            http.client.HTTPConnection.debuglevel = 0
-            logging.getLogger().setLevel(logging.DEBUG)
-            requests_log = logging.getLogger("urllib3")
-            requests_log.setLevel(logging.DEBUG)
+        if debug_handler is not None:
+            disable_debug_logging(
+                debug_handler, previous_wlc_level, previous_wlc_propagate
+            )

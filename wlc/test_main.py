@@ -69,7 +69,18 @@ class TestSettings(CLITestBase):
     def test_debug(self) -> None:
         """Debug mode."""
         output = self.execute(["--debug", "list-projects"], stdout=True)
+        self.assertIn("HTTP request", output)
         self.assertIn("api/projects", output)
+
+    def test_debug_redacts_authorization(self) -> None:
+        """Debug mode should not leak API tokens."""
+        try:
+            os.environ["WLC_KEY"] = "KEY"
+            output = self.execute(["--debug", "show", "acl"], stdout=True)
+            self.assertIn('"Authorization": "<redacted>"', output)
+            self.assertNotIn("Token KEY", output)
+        finally:
+            del os.environ["WLC_KEY"]
 
     def test_settings(self) -> None:
         """Configuration using settings param."""
