@@ -82,33 +82,33 @@ class WeblateConfigTestCase(TestCase):
             del os.environ["WLC_URL"]
             del os.environ["WLC_KEY"]
 
-    def test_default_method_whitelist_splits_newlines(self) -> None:
-        """Default method whitelist parses newline-separated methods."""
+    def test_default_allowed_methods_splits_newlines(self) -> None:
+        """Default allowed methods parse newline-separated methods."""
         config = WeblateConfig()
         (
             _retries,
             _status_forcelist,
-            method_whitelist,
+            allowed_methods,
             _backoff_factor,
             _timeout,
         ) = config.get_request_options()
         self.assertEqual(
-            method_whitelist,
+            allowed_methods,
             ["HEAD", "TRACE", "DELETE", "OPTIONS", "PUT", "GET"],
         )
 
-    def test_method_whitelist_strips_comma_separated_values(self) -> None:
-        """Method whitelist strips surrounding whitespace for comma-separated values."""
+    def test_allowed_methods_strip_comma_separated_values(self) -> None:
+        """Allowed methods strip surrounding whitespace for comma-separated values."""
         config = WeblateConfig()
-        config.set("weblate", "method_whitelist", " PUT , POST,GET ")
+        config.set("weblate", "allowed_methods", " PUT , POST,GET ")
         (
             _retries,
             _status_forcelist,
-            method_whitelist,
+            allowed_methods,
             _backoff_factor,
             _timeout,
         ) = config.get_request_options()
-        self.assertEqual(method_whitelist, ["PUT", "POST", "GET"])
+        self.assertEqual(allowed_methods, ["PUT", "POST", "GET"])
 
     def test_explicit_path_ignores_project_config(self) -> None:
         """Explicit config does not load project config from cwd or parents."""

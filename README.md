@@ -52,7 +52,7 @@ Configuration is loaded from `--config` when provided. Otherwise `wlc` reads the
 user configuration from XDG paths such as `~/.config/weblate` and then the
 nearest project configuration file (`.weblate`, `.weblate.ini`, or
 `weblate.ini`) from the current directory or its parents. The key/values
-(`retries`, `timeout`, `method_whitelist`, `backoff_factor`,
+(`retries`, `timeout`, `allowed_methods`, `backoff_factor`,
 `status_forcelist`) are closely coupled with the
 [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html)
 and allows the user to configure request parameters.
@@ -61,7 +61,7 @@ and allows the user to configure request parameters.
 [weblate]
 url = https://hosted.weblate.org/api/
 retries = 3
-method_whitelist = PUT,POST,GET
+allowed_methods = PUT,POST,GET
 backoff_factor = 0.2
 status_forcelist = 429,500,502,503,504
 timeout = 30

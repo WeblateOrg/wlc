@@ -44,7 +44,7 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "timeout", "300")
         self.set(self.section, "status_forcelist", None)
         self.set(
-            self.section, "method_whitelist", "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET"
+            self.section, "allowed_methods", "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET"
         )
         self.set(self.section, "backoff_factor", "0")
 
@@ -118,10 +118,10 @@ class WeblateConfig(RawConfigParser):
         status_forcelist = self.get(self.section, "status_forcelist")
         if status_forcelist is not None:
             status_forcelist = [int(option) for option in status_forcelist.split(",")]
-        method_whitelist = [
+        allowed_methods = [
             method
-            for chunk in self.get(self.section, "method_whitelist").split(",")
+            for chunk in self.get(self.section, "allowed_methods").split(",")
             for method in chunk.split()
         ]
         backoff_factor = float(self.get(self.section, "backoff_factor"))
-        return retries, status_forcelist, method_whitelist, backoff_factor, timeout
+        return retries, status_forcelist, allowed_methods, backoff_factor, timeout
