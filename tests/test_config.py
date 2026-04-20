@@ -142,6 +142,18 @@ class WeblateConfigTestCase(TestCase):
             config.get("weblate", "url"), "https://explicit.example.com/api/"
         )
 
+    def test_explicit_path_must_be_read(self) -> None:
+        """Explicit config path should fail fast when the file is missing."""
+        with TemporaryDirectory() as tmpdirname:
+            missing = Path(tmpdirname) / "missing.ini"
+            config = WeblateConfig()
+
+            with self.assertRaisesRegex(
+                WLCConfigurationError,
+                rf"Could not read configuration file: .*{missing.name}",
+            ):
+                config.load(missing)
+
     def test_default_load_uses_nearest_project_config(self) -> None:
         """Default discovery loads global config and the nearest project config."""
         with TemporaryDirectory() as tmpdirname:
