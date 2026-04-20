@@ -88,8 +88,11 @@ class Weblate:
     @staticmethod
     def get_effective_port(url) -> int | None:
         """Return explicit port or the default for the URL scheme."""
-        if url.port is not None:
-            return url.port
+        try:
+            if url.port is not None:
+                return url.port
+        except ValueError as error:
+            raise WeblateException("Server returned an invalid URL.") from error
         if url.scheme == "https":
             return 443
         if url.scheme == "http":
