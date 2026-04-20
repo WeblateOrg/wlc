@@ -18,10 +18,10 @@ from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from .http_debug import log_failure_debug, log_request_debug, log_response_debug
+
 if TYPE_CHECKING:
     from collections.abc import Collection
-
-log = logging.getLogger("wlc")
 
 __version__ = "1.17.2"
 
@@ -236,6 +236,15 @@ class Weblate:
             # JSON params to handle complex structures
             json_data = data
             data = None
+        log_request_debug(
+            method,
+            path,
+            headers,
+            params=params,
+            json_data=json_data,
+            data=data,
+            files=files,
+        )
         try:
             self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
             response = self.session.request(
@@ -250,10 +259,12 @@ class Weblate:
                 allow_redirects=False,
                 timeout=self.timeout,
             )
+            log_response_debug(response)
             response.raise_for_status()
             if 300 <= response.status_code < 400:
                 raise requests.HTTPError("Server redirected", response=response)
         except requests.exceptions.RequestException as error:
+            log_failure_debug(method, path, error)
             self.process_error(error)
             raise
         return response
