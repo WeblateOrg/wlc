@@ -593,7 +593,7 @@ class Cleanup(ObjectCommand):
 
     name = "cleanup"
     description = (
-        "Cleanups all untracked changes in Weblate repository "
+        "Cleans up all untracked changes in Weblate repository "
         "in translation, component or project"
     )
 
