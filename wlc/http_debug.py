@@ -91,7 +91,9 @@ def enable_debug_logging():
     return handler, previous_level, previous_propagate
 
 
-def disable_debug_logging(handler, previous_level, previous_propagate) -> None:
+def disable_debug_logging(
+    handler: logging.Handler, previous_level: int, previous_propagate: bool
+) -> None:
     """Remove the temporary debug handler."""
     log.removeHandler(handler)
     handler.close()
