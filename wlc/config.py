@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING, TypeAlias, cast
 
 from xdg.BaseDirectory import load_first_config
 
@@ -18,6 +18,8 @@ if TYPE_CHECKING:
     from pathlib import Path
 
 __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
+
+RequestOptions: TypeAlias = tuple[int, list[int] | None, list[str], float, int]
 
 
 class WLCConfigurationError(Exception):
@@ -112,7 +114,7 @@ class WeblateConfig(RawConfigParser):
         )
         return url, key
 
-    def get_request_options(self):
+    def get_request_options(self) -> RequestOptions:
         retries = int(self.get(self.section, "retries"))
         timeout = int(self.get(self.section, "timeout"))
         status_forcelist = self.get(self.section, "status_forcelist")
