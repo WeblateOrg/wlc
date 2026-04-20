@@ -441,15 +441,14 @@ class LazyObject(dict):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LazyObject):
             return (
-                self.as_dict() == other.as_dict()
-                and self.weblate == other.weblate
+                self.weblate == other.weblate
                 and self._url == other._url
                 and self._data == other._data
                 and self._loaded == other._loaded
                 and self._attribs == other._attribs
             )
         if isinstance(other, dict):
-            return self.as_dict() == other
+            return self._data == other
         return NotImplemented
 
     def __ne__(self, other: object) -> bool:
@@ -458,12 +457,7 @@ class LazyObject(dict):
             return NotImplemented
         return not result
 
-    def __hash__(self) -> int:
-        return hash((self.weblate, self._url))
-
-    def as_dict(self) -> dict[str, Any]:
-        """Return the object data using the lazy attribute mapping."""
-        return dict(self.items())
+    __hash__ = None
 
     def get_data(self):
         return copy(self._data)
