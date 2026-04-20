@@ -6,22 +6,32 @@
 
 from __future__ import annotations
 
+import csv
 import json
 import os
 import sys
 from abc import ABC
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile, TemporaryDirectory
+from types import SimpleNamespace
 
 import wlc
 from wlc.config import WeblateConfig
-from wlc.main import Version, main
+from wlc.main import Command, Version, main
 
 from .test_base import APITest
 
 TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
 TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
 TEST_SECTION = os.path.join(TEST_DATA, "section")
+
+
+class AttributeDict(dict):
+    """Dictionary exposing keys as attributes."""
+
+    def __getattr__(self, key):
+        """Provide attribute-style access."""
+        return self[key]
 
 
 class CLITestBase(APITest, ABC):
@@ -220,6 +230,15 @@ class TestSettings(CLITestBase):
 class TestOutput(CLITestBase):
     """Test output formatting."""
 
+    @staticmethod
+    def create_csv_command(output: StringIO) -> Command:
+        """Create command instance for direct CSV rendering tests."""
+        return Command(
+            args=SimpleNamespace(format="csv"),
+            config=WeblateConfig(),
+            stdout=output,
+        )
+
     def test_version_text(self) -> None:
         """Test version printing."""
         output = self.execute(["--format", "text", "version"])
@@ -256,6 +275,35 @@ class TestOutput(CLITestBase):
         """Test projects printing."""
         output = self.execute(["--format", "csv", "list-projects"])
         self.assertIn("Hello", output)
+
+    def test_csv_escapes_formula_values(self) -> None:
+        """CSV output should neutralize spreadsheet formulas."""
+        output = StringIO()
+        cmd = self.create_csv_command(output)
+
+        cmd.print(
+            {
+                "plain": "Hello",
+                "formula": "=1+1",
+                "spaced": " \t@SUM(A1:A2)",
+            }
+        )
+
+        rows = dict(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows["plain"], "Hello")
+        self.assertEqual(rows["formula"], "'=1+1")
+        self.assertEqual(rows["spaced"], "' \t@SUM(A1:A2)")
+
+    def test_csv_escapes_formula_headers(self) -> None:
+        """CSV headers should also be hardened."""
+        output = StringIO()
+        cmd = self.create_csv_command(output)
+
+        cmd.print_csv([AttributeDict({"=name": "=Hello"})], ["=name"])
+
+        rows = list(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows[0], ["'=name"])
+        self.assertEqual(rows[1], ["'=Hello"])
 
     def test_projects_html(self) -> None:
         """Test projects printing."""
