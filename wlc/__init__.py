@@ -441,7 +441,7 @@ class LazyObject(dict):
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LazyObject):
             return (
-                dict(self) == dict(other)
+                self.as_dict() == other.as_dict()
                 and self.weblate == other.weblate
                 and self._url == other._url
                 and self._data == other._data
@@ -449,8 +449,21 @@ class LazyObject(dict):
                 and self._attribs == other._attribs
             )
         if isinstance(other, dict):
-            return dict(self) == other
+            return self.as_dict() == other
         return NotImplemented
+
+    def __ne__(self, other: object) -> bool:
+        result = self.__eq__(other)
+        if result is NotImplemented:
+            return NotImplemented
+        return not result
+
+    def __hash__(self) -> int:
+        return hash((self.weblate, self._url))
+
+    def as_dict(self) -> dict[str, Any]:
+        """Return the object data using the lazy attribute mapping."""
+        return dict(self.items())
 
     def get_data(self):
         return copy(self._data)

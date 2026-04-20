@@ -421,6 +421,82 @@ class ObjectTest(ObjectTestBaseClass, ABC):
         self.assertIsNone(obj.delete())
 
 
+class LazyObjectEqualityTest(APITest):
+    """Tests for equality and hashing on lazy objects."""
+
+    def test_equality_uses_additional_attributes(self) -> None:
+        """Objects with different deferred attributes should not compare equal."""
+        weblate = Weblate()
+        first = Project(
+            weblate,
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+            components_list_url="projects/hello/components/",
+        )
+        second = Project(
+            weblate,
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+            categories_url="projects/hello/categories/",
+        )
+
+        self.assertNotEqual(first, second)
+
+    def test_hash_matches_equality(self) -> None:
+        """Equal lazy objects should produce the same hash value."""
+        weblate = Weblate()
+        first = Project(
+            weblate,
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+            components_list_url="projects/hello/components/",
+        )
+        second = Project(
+            weblate,
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+            components_list_url="projects/hello/components/",
+        )
+
+        self.assertEqual(first, second)
+        self.assertEqual(hash(first), hash(second))
+        self.assertEqual(len({first, second}), 1)
+
+    def test_can_compare_to_dict(self) -> None:
+        """Lazy objects should still compare equal to matching dict values."""
+        obj = Project(
+            Weblate(),
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+        )
+
+        self.assertEqual(
+            obj,
+            {
+                "name": "Hello",
+                "slug": "hello",
+                "url": "projects/hello/",
+                "web": "https://weblate.org/",
+                "web_url": "https://weblate.org/projects/hello/",
+            },
+        )
+
+
 class ProjectTest(ObjectTest):
     """Project object tests."""
 
