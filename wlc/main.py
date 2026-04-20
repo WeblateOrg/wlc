@@ -312,7 +312,7 @@ class ProjectCommand(ObjectCommand):
         """Return component object."""
         obj = super().get_object(blank=blank)
         if not isinstance(obj, Project):
-            raise CommandError("Not supported")
+            raise CommandError("This command is supported only at project level")
         return obj
 
     def run(self) -> None:
