@@ -26,6 +26,8 @@ from .utils import sanitize_slug
 COMMANDS: dict[str, type[Command]] = {}
 
 SORT_ORDER: list[str] = []
+CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
+CSV_DANGEROUS_LEADING = " \t\r\n"
 
 
 def register_command(command: type[Command]) -> type[Command]:
@@ -159,17 +161,33 @@ class Command:
             return value.to_value()
         return value
 
+    @classmethod
+    def format_csv_value(cls, value):
+        """Format value for CSV output and harden dangerous spreadsheet cells."""
+        formatted = cls.format_value(value)
+        if not isinstance(formatted, str):
+            return formatted
+
+        stripped = formatted.lstrip(CSV_DANGEROUS_LEADING)
+        if stripped and stripped[0] in CSV_FORMULA_PREFIXES:
+            return f"'{formatted}"
+
+        return formatted
+
     def print_csv(self, value, header) -> None:
         """CSV print."""
+        writer = csv.writer(self.stdout)
         if header is not None:
-            dict_writer = csv.DictWriter(self.stdout, header)
-            dict_writer.writeheader()
+            writer.writerow([self.format_csv_value(key) for key in header])
             for row in value:
-                dict_writer.writerow({k: self.format_value(v) for k, v in row.items()})
+                writer.writerow(
+                    [self.format_csv_value(getattr(row, key)) for key in header]
+                )
         else:
-            writer = csv.writer(self.stdout)
             for key, data in sorted_items(value):
-                writer.writerow((key, self.format_value(data)))
+                writer.writerow(
+                    (self.format_csv_value(key), self.format_csv_value(data))
+                )
 
     def print_html(self, value, header) -> None:
         """HTML print."""
