@@ -690,6 +690,59 @@ class ProjectTest(ObjectTest):
         obj = self.get()
         self.assertEqual(2, len(list(obj.languages())))
 
+    def test_languages_paginated(self) -> None:
+        """Project languages should accept paginated responses."""
+        page1 = "http://127.0.0.1:8000/api/projects/paged/languages/"
+        page2 = f"{page1}?page=2"
+        responses.add(
+            responses.GET,
+            page1,
+            json={
+                "next": page2,
+                "results": [
+                    {
+                        "code": "cs",
+                        "language": "Czech",
+                        "total": 8,
+                        "translated": 5,
+                        "translated_percent": 62.5,
+                        "total_words": 30,
+                        "translated_words": 19,
+                        "url": "http://127.0.0.1:8000/projects/paged/-/cs/",
+                        "words_percent": 63.3,
+                    }
+                ],
+            },
+        )
+        responses.add(
+            responses.GET,
+            page2,
+            json={
+                "next": None,
+                "results": [
+                    {
+                        "code": "en",
+                        "language": "English",
+                        "total": 8,
+                        "translated": 4,
+                        "translated_percent": 50.0,
+                        "total_words": 30,
+                        "translated_words": 15,
+                        "url": "http://127.0.0.1:8000/projects/paged/-/en/",
+                        "words_percent": 50.0,
+                    }
+                ],
+            },
+        )
+
+        obj = Project(
+            Weblate(),
+            "http://127.0.0.1:8000/api/projects/paged/",
+            languages_url=page1,
+        )
+
+        self.assertEqual(["cs", "en"], [item.code for item in obj.languages()])
+
     def test_statistics(self) -> None:
         """Component statistics test."""
         obj = self.get()
@@ -791,14 +844,19 @@ class ComponentTest(ObjectTest):
                 "is_glossary",
                 "license",
                 "license_url",
+                "lock_url",
                 "name",
                 "new_base",
                 "priority",
                 "project",
                 "repo",
+                "repository_url",
+                "changes_list_url",
                 "slug",
                 "source_language",
+                "statistics_url",
                 "template",
+                "translations_url",
                 "url",
                 "vcs",
                 "web_url",
@@ -843,13 +901,18 @@ class ComponentCompatibilityTest(ObjectTest):
                 "git_export",
                 "license",
                 "license_url",
+                "lock_url",
                 "name",
                 "new_base",
                 "priority",
                 "project",
                 "repo",
+                "repository_url",
+                "changes_list_url",
                 "slug",
+                "statistics_url",
                 "template",
+                "translations_url",
                 "url",
                 "vcs",
                 "web_url",
@@ -924,6 +987,15 @@ class TranslationTest(ObjectTest):
         self.assertIsInstance(units[0], Unit)
         self.assertEqual(units[0].id, 117)
 
+    def test_exposes_hidden_fields(self) -> None:
+        obj = self.get()
+        self.assertEqual("cs", obj.language_code)
+        self.assertTrue(obj.repository_url.endswith("/repository/"))
+        self.assertTrue(obj.file_url.endswith("/file/"))
+        self.assertTrue(obj.statistics_url.endswith("/statistics/"))
+        self.assertTrue(obj.changes_list_url.endswith("/changes/"))
+        self.assertTrue(obj.units_list_url.endswith("/units/"))
+
 
 class UnitTest(ObjectTestBaseClass):
     """Unit model testing."""
@@ -953,10 +1025,60 @@ class UnitTest(ObjectTestBaseClass):
         resp = obj.put(**self.patch_data)
         self.assertIn("--put--", resp.decode())
 
+    def test_units_put_uses_loaded_defaults(self) -> None:
+        obj = Unit(
+            Weblate(),
+            "http://127.0.0.1:8000/api/units/987/",
+            target=["hello"],
+            labels=[{"id": 1, "name": "important"}],
+        )
+        with patch.object(obj.weblate, "raw_request", return_value=b"") as raw_request:
+            obj.put(state=30)
+
+        raw_request.assert_called_once_with(
+            "put",
+            "http://127.0.0.1:8000/api/units/987/",
+            data={
+                "state": 30,
+                "target": ["hello"],
+                "labels": [{"id": 1, "name": "important"}],
+            },
+        )
+
     def test_units_delete(self) -> None:
         obj = self.get()
         resp = obj.delete()
         self.assertIn("--deleted--", resp.decode())
+
+    def test_exposes_hidden_fields(self) -> None:
+        obj = Unit(
+            Weblate(),
+            "http://127.0.0.1:8000/api/units/987/",
+            labels=[{"id": 1, "name": "important"}],
+            language_code="cs",
+            pending=False,
+            timestamp="2024-01-01T00:00:00Z",
+            last_updated="2024-01-02T00:00:00Z",
+        )
+
+        self.assertEqual("cs", obj.language_code)
+        self.assertEqual("important", obj.labels[0]["name"])
+        self.assertFalse(obj.pending)
+        self.assertIsNotNone(obj.timestamp)
+        self.assertIsNotNone(obj.last_updated)
+
+
+class ChangeTest(APITest):
+    """Change model testing."""
+
+    def test_exposes_identifiers(self) -> None:
+        changes = list(Weblate().list_changes())
+
+        self.assertEqual(353, changes[0].id)
+        self.assertIsNone(changes[0].user)
+        self.assertEqual(350, changes[1].id)
+        self.assertEqual(2, changes[1].user)
+        self.assertEqual(2, changes[1].author)
 
 
 class CategoryTest(APITest):
