@@ -86,7 +86,7 @@ class CLITestBase(APITest, ABC):
         finally:
             sys.stdout = backup
             sys.stderr = backup_err
-        result = output.buffer.getvalue()  # ty:ignore[unresolved-attribute]
+        result = output.buffer.getvalue()
         if result:
             return result
         return output.getvalue()
