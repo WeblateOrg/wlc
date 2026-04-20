@@ -563,7 +563,7 @@ class TestCommands(CLITestBase):
         self.assertIn("/hello/weblate", output)
 
         output = self.execute(["list-components", "hello/weblate"], expected=1)
-        self.assertIn("Not supported", output)
+        self.assertIn("This command is supported only at project level", output)
 
     def test_list_translations(self) -> None:
         """Translations listing."""
