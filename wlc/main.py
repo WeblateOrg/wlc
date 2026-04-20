@@ -312,7 +312,7 @@ class ProjectCommand(ObjectCommand):
         """Return component object."""
         obj = super().get_object(blank=blank)
         if not isinstance(obj, Project):
-            raise CommandError("Not supported")
+            raise CommandError("This command is supported only at project level")
         return obj
 
     def run(self) -> None:
@@ -668,7 +668,7 @@ class Lock(ComponentCommand):
     """Lock component for translation."""
 
     name = "lock"
-    description = "Locks components from translations"
+    description = "Locks component to prevent translation"
 
     def run(self) -> None:
         """Executor."""
@@ -681,7 +681,7 @@ class Unlock(ComponentCommand):
     """Unlock component for translation."""
 
     name = "unlock"
-    description = "Unlocks components from translations"
+    description = "Unlocks component for translation"
 
     def run(self) -> None:
         """Executor."""
@@ -798,7 +798,7 @@ class Upload(TranslationCommand):
         parser.add_argument(
             "--overwrite",
             action="store_true",
-            help="Overwrite existing translations (defaults to none)",
+            help="Overwrite existing translations",
         )
         parser.add_argument(
             "--conflicts",
