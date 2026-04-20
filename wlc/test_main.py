@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import csv
+import html
 import json
 import os
 import sys
@@ -55,7 +56,10 @@ class AttributeDict(dict):
 
     def __getattr__(self, key):
         """Provide attribute-style access."""
-        return self[key]
+        try:
+            return self[key]
+        except KeyError as exc:
+            raise AttributeError(key) from exc
 
 
 class CLITestBase(APITest, ABC):
@@ -402,6 +406,33 @@ class TestOutput(CLITestBase):
         rendered = output.getvalue()
         self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
         self.assertNotIn("\x1b", rendered)
+
+    def test_html_escapes_list_output(self) -> None:
+        """HTML list output escapes headers and values."""
+        payload_key = '<script>alert("key")</script>'
+        payload_value = '<img src=x onerror=alert("value")>'
+        output = StringIO()
+        cmd = self.create_command(output, "html")
+
+        cmd.print([AttributeDict({payload_key: payload_value})])
+
+        rendered = output.getvalue()
+        self.assertIn(html.escape(payload_key), rendered)
+        self.assertIn(html.escape(payload_value), rendered)
+        self.assertNotIn(payload_key, rendered)
+        self.assertNotIn(payload_value, rendered)
+
+    def test_html_escapes_detail_output(self) -> None:
+        """HTML detail output escapes keys and values."""
+        payload_value = '<svg onload=alert("value")>'
+        output = StringIO()
+        cmd = self.create_command(output, "html")
+
+        cmd.print({"name": payload_value})
+
+        rendered = output.getvalue()
+        self.assertIn(html.escape(payload_value), rendered)
+        self.assertNotIn(payload_value, rendered)
 
     def test_json_encoder(self) -> None:
         """Test JSON encoder."""
