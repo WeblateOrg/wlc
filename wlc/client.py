@@ -8,14 +8,16 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import TYPE_CHECKING, Any
-from urllib.parse import urljoin, urlparse
+from collections.abc import Collection, Iterator, Mapping
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+from urllib.parse import ParseResult, urljoin, urlparse
 
 import requests
 from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+from .base import LazyObject
 from .const import API_URL, LOCALHOST_ADDRESSES, USER_AGENT
 from .exceptions import (
     WeblateDeniedError,
@@ -27,7 +29,13 @@ from .http_debug import log_failure_debug, log_request_debug, log_response_debug
 from .models import Category, Change, Component, Language, Project, Translation, Unit
 
 if TYPE_CHECKING:
-    from collections.abc import Collection, Iterator, Mapping
+    from .config import WeblateConfig
+
+Origin: TypeAlias = tuple[str, str | None, int | None]
+JSONDict: TypeAlias = dict[str, Any]
+RequestPayload: TypeAlias = Mapping[str, Any]
+WeblateObject: TypeAlias = Project | Component | Translation | Unit
+LazyObjectT = TypeVar("LazyObjectT", bound=LazyObject)
 
 
 class Weblate:
@@ -37,7 +45,7 @@ class Weblate:
         self,
         key: str = "",
         url: str = API_URL,
-        config=None,
+        config: WeblateConfig | None = None,
         retries: int = 0,
         status_forcelist: Collection[int] | None = None,
         allowed_methods: Collection[str] | None = None,
@@ -46,6 +54,11 @@ class Weblate:
     ) -> None:
         """Create the object, storing key, API url and requests retry args."""
         self.session = requests.Session()
+        self.retry_total: int
+        self.status_forcelist: Collection[int] | None
+        self.allowed_methods: Collection[str]
+        self.backoff_factor: float
+        self.timeout: int
         if config is not None:
             self.url, self.key = config.get_url_key()
             (
@@ -86,7 +99,7 @@ class Weblate:
         self.api_origin = self.get_origin(urlparse(self.url))
 
     @staticmethod
-    def get_effective_port(url) -> int | None:
+    def get_effective_port(url: ParseResult) -> int | None:
         """Return explicit port or the default for the URL scheme."""
         try:
             if url.port is not None:
@@ -100,7 +113,7 @@ class Weblate:
         return None
 
     @classmethod
-    def get_origin(cls, url) -> tuple[str, str | None, int | None]:
+    def get_origin(cls, url: ParseResult) -> Origin:
         """Return normalized origin tuple for a parsed URL."""
         return (url.scheme, url.hostname, cls.get_effective_port(url))
 
@@ -114,8 +127,11 @@ class Weblate:
         return url.geturl()
 
     @staticmethod
-    def permission_error_message(error):
+    def permission_error_message(error: requests.HTTPError) -> str | None:
         """Get detail from serialized DRF PermissionDenied exception."""
+        if error.response is None:
+            return None
+
         try:
             response_json = error.response.json()
         except json.JSONDecodeError:
@@ -131,9 +147,13 @@ class Weblate:
 
         return None
 
-    def process_error(self, error) -> None:
+    def process_error(self, error: requests.RequestException) -> None:
         """Raise WeblateException for known HTTP errors."""
         if isinstance(error, requests.HTTPError):
+            if error.response is None:
+                raise WeblateException(
+                    "Server returned an invalid response."
+                ) from error
             status_code = error.response.status_code
 
             match status_code:
@@ -174,9 +194,9 @@ class Weblate:
         self,
         method: str,
         path: str,
-        data: Mapping[str, Any] | None = None,
-        files: Mapping[str, Any] | None = None,
-        params: Mapping[str, Any] | None = None,
+        data: RequestPayload | None = None,
+        files: RequestPayload | None = None,
+        params: RequestPayload | None = None,
     ) -> bytes:
         """Construct request object and returns raw content."""
         response = self.invoke_request(
@@ -189,10 +209,10 @@ class Weblate:
         self,
         method: str,
         path: str,
-        data: Mapping[str, Any] | None = None,
-        files: Mapping[str, Any] | None = None,
-        params: Mapping[str, Any] | None = None,
-    ) -> dict:
+        data: RequestPayload | None = None,
+        files: RequestPayload | None = None,
+        params: RequestPayload | None = None,
+    ) -> Any:
         """Construct request object and returns json response."""
         response = self.invoke_request(
             method, path, data=data, files=files, params=params
@@ -207,9 +227,9 @@ class Weblate:
         self,
         method: str,
         path: str,
-        data: Mapping[str, Any] | None = None,
-        files: Mapping[str, Any] | None = None,
-        params: Mapping[str, Any] | None = None,
+        data: RequestPayload | None = None,
+        files: RequestPayload | None = None,
+        params: RequestPayload | None = None,
     ) -> Response:
         """Construct request object."""
         try:
@@ -225,7 +245,7 @@ class Weblate:
         # Disable insecure warnings for localhost
         if not verify_ssl:
             logging.captureWarnings(True)
-        json_data: Mapping[str, Any] | None
+        json_data: RequestPayload | None
         if files:
             # multipart/form upload
             json_data = None
@@ -266,24 +286,30 @@ class Weblate:
             raise
         return response
 
-    def post(self, path, files=None, params=None, **kwargs):
+    def post(
+        self,
+        path: str,
+        files: RequestPayload | None = None,
+        params: RequestPayload | None = None,
+        **kwargs: Any,
+    ) -> JSONDict:
         """Perform POST request on the API."""
         return self.request("post", path, data=kwargs, files=files, params=params)
 
-    def _post_factory(self, prefix, path, kwargs):
+    def _post_factory(self, prefix: str, path: str, kwargs: RequestPayload) -> JSONDict:
         """Wrapper for posting objects."""
         return self.post(f"{prefix}/{path}/", **kwargs)
 
-    def get(self, path, params=None):
+    def get(self, path: str, params: RequestPayload | None = None) -> Any:
         """Perform GET request on the API."""
         return self.request("get", path, params=params)
 
     def list_factory(
         self,
         path: str,
-        parser: Any,
-        params: Mapping[str, Any] | None = None,
-    ) -> Iterator[Any]:
+        parser: type[LazyObjectT],
+        params: RequestPayload | None = None,
+    ) -> Iterator[LazyObjectT]:
         """Listing object wrapper."""
         while path is not None:
             data = self.get(path, params=params)
@@ -296,12 +322,14 @@ class Weblate:
 
             path = data["next"]
 
-    def _get_factory(self, prefix, path, parser):
+    def _get_factory(
+        self, prefix: str, path: str, parser: type[LazyObjectT]
+    ) -> LazyObjectT:
         """Wrapper for getting objects."""
         data = self.get(f"{prefix}/{path}/")
         return parser(weblate=self, **data)
 
-    def get_object(self, path):
+    def get_object(self, path: str) -> WeblateObject:
         """
         Return object based on path.
 
@@ -322,53 +350,60 @@ class Weblate:
                 return self.get_project(path)
         raise ValueError(f"Not supported path: {path}")
 
-    def get_project(self, path):
+    def get_project(self, path: str) -> Project:
         """Return project of given path."""
         return self._get_factory("projects", path, Project)
 
-    def get_component(self, path):
+    def get_component(self, path: str) -> Component:
         """Return component of given path."""
         return self._get_factory("components", path, Component)
 
-    def get_translation(self, path):
+    def get_translation(self, path: str) -> Translation:
         """Return translation of given path."""
         return self._get_factory("translations", path, Translation)
 
-    def get_unit(self, path):
+    def get_unit(self, path: str) -> Unit:
         """Return unit of given path."""
         return self._get_factory("units", path, Unit)
 
-    def list_projects(self, path="projects/"):
+    def list_projects(self, path: str = "projects/") -> Iterator[Project]:
         """List projects in the instance."""
         return self.list_factory(path, Project)
 
-    def list_components(self, path="components/"):
+    def list_components(self, path: str = "components/") -> Iterator[Component]:
         """List components in the instance."""
         return self.list_factory(path, Component)
 
-    def list_changes(self, path="changes/"):
+    def list_changes(self, path: str = "changes/") -> Iterator[Change]:
         """List changes in the instance."""
         return self.list_factory(path, Change)
 
-    def list_units(self, path, params=None):
+    def list_units(
+        self, path: str, params: RequestPayload | None = None
+    ) -> Iterator[Unit]:
         """List units in the instance."""
         return self.list_factory(path, Unit, params=params)
 
-    def list_translations(self, path="translations/"):
+    def list_translations(self, path: str = "translations/") -> Iterator[Translation]:
         """List translations in the instance."""
         return self.list_factory(path, Translation)
 
-    def list_languages(self):
+    def list_languages(self) -> Iterator[Language]:
         """List languages in the instance."""
         return self.list_factory("languages/", Language)
 
-    def list_categories(self, path="categories/"):
+    def list_categories(self, path: str = "categories/") -> Iterator[Category]:
         """List categories in the instance."""
         return self.list_factory(path, Category)
 
     def add_source_string(
-        self, project, component, msgid, msgstr, source_language=None
-    ):
+        self,
+        project: str,
+        component: str,
+        msgid: str,
+        msgstr: str | list[str],
+        source_language: str | None = None,
+    ) -> JSONDict:
         """Adds a source string to a monolingual base file."""
         if not source_language:
             component_obj = self.get_component(f"{project}/{component}")
@@ -380,10 +415,15 @@ class Weblate:
         return self._post_factory("translations", path, payload)
 
     def create_project(
-        self, name, slug, website, source_language_name=None, source_language_code=None
-    ):
+        self,
+        name: str,
+        slug: str,
+        website: str,
+        source_language_name: str | None = None,
+        source_language_code: str | None = None,
+    ) -> JSONDict:
         """Create a new project in the instance."""
-        data = {
+        data: JSONDict = {
             "name": name,
             "slug": slug,
             "web": website,
@@ -396,9 +436,9 @@ class Weblate:
 
         return self.post("projects/", **data)
 
-    def create_component(self, project, **kwargs):
+    def create_component(self, project: str, **kwargs: Any) -> JSONDict:
         """Create a new component for project in the instance."""
-        files = {}
+        files: JSONDict = {}
         for fileattr in ("docfile", "zipfile"):
             if fileattr in kwargs:
                 files[fileattr] = kwargs.pop(fileattr)
@@ -410,10 +450,21 @@ class Weblate:
 
         return self.post(f"projects/{project}/components/", files=files, **kwargs)
 
-    def create_language(self, code, name, direction="ltr", plural=None):
+    def create_language(
+        self,
+        code: str,
+        name: str,
+        direction: str = "ltr",
+        plural: JSONDict | None = None,
+    ) -> JSONDict:
         """Create a new language."""
         plural = plural or {"number": 2, "formula": "n != 1"}
-        data = {"code": code, "name": name, "direction": direction, "plural": plural}
+        data: JSONDict = {
+            "code": code,
+            "name": name,
+            "direction": direction,
+            "plural": plural,
+        }
         return self.post("languages/", **data)
 
     @staticmethod

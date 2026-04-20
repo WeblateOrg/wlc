@@ -8,6 +8,10 @@ from __future__ import annotations
 
 import json
 from datetime import datetime
+from typing import TYPE_CHECKING, TypeVar, overload
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator, Mapping
 
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
 CSV_DANGEROUS_LEADING = " \t\r\n"
@@ -21,8 +25,10 @@ TERMINAL_CONTROL_REPLACEMENTS = {
     "\r": r"\r",
 }
 
+ValueT = TypeVar("ValueT")
 
-def sorted_items(value):
+
+def sorted_items(value: Mapping[str, object]) -> Iterator[tuple[str, object]]:
     """Sorted items iterator."""
     for key in sorted(value.keys()):
         yield key, value[key]
@@ -31,14 +37,14 @@ def sorted_items(value):
 class DateTimeEncoder(json.JSONEncoder):
     """JSON encoder with datetime support."""
 
-    def default(self, o):
+    def default(self, o: object) -> object:
         if isinstance(o, datetime):
             return o.isoformat()
 
         return super().default(o)
 
 
-def stream_isatty(stream) -> bool:
+def stream_isatty(stream: object) -> bool:
     """Check whether the given stream is an interactive terminal."""
     isatty = getattr(stream, "isatty", None)
     if callable(isatty):
@@ -63,7 +69,15 @@ def escape_terminal_text(value: str) -> str:
     return "".join(escaped)
 
 
-def format_for_stream(value, stream):
+@overload
+def format_for_stream(value: str, stream: object) -> str: ...
+
+
+@overload
+def format_for_stream(value: ValueT, stream: object) -> ValueT: ...
+
+
+def format_for_stream(value: ValueT | str, stream: object) -> ValueT | str:
     """Format output for a stream, escaping control characters on terminals."""
     if isinstance(value, str) and stream_isatty(stream):
         return escape_terminal_text(value)

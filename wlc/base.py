@@ -7,14 +7,17 @@
 from __future__ import annotations
 
 from copy import copy
-from typing import Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import dateutil.parser
 
 from .const import TIMESTAMPS
 
+if TYPE_CHECKING:
+    from .client import Weblate
 
-class LazyObject(dict):
+
+class LazyObject(dict[str, Any]):
     """Object which supports deferred loading."""
 
     PARAMS: ClassVar[tuple[str, ...]] = ()
@@ -23,7 +26,7 @@ class LazyObject(dict):
     MAPPINGS: ClassVar[dict[str, Any]] = {}
     ID: ClassVar[str] = "url"
 
-    def __init__(self, weblate, url, **kwargs) -> None:
+    def __init__(self, weblate: Weblate, url: str, **kwargs: Any) -> None:
         """Construct object for given Weblate instance."""
         super().__init__()
 
@@ -56,7 +59,7 @@ class LazyObject(dict):
 
     __hash__ = None
 
-    def get_data(self):
+    def get_data(self) -> dict[str, Any]:
         return copy(self._data)
 
     def __str__(self) -> str:
@@ -65,7 +68,7 @@ class LazyObject(dict):
     def __repr__(self) -> str:
         return repr(self._data)
 
-    def _load_params(self, **kwargs) -> None:
+    def _load_params(self, **kwargs: Any) -> None:
         for param in self.PARAMS:
             if param in kwargs:
                 value = kwargs[param]
@@ -131,7 +134,7 @@ class LazyObject(dict):
     def __len__(self) -> int:
         return len(list(self.keys()))
 
-    def keys(self):
+    def keys(self) -> Any:
         """Return list of attributes."""
         # There is always at least url present
         if len(self._data) <= 1:
@@ -144,7 +147,7 @@ class LazyObject(dict):
             ):
                 yield param
 
-    def items(self):
+    def items(self) -> Any:
         """Iterator over attributes."""
         for key in self.keys():
             yield key, getattr(self, key)
@@ -161,23 +164,23 @@ class RepoMixin(LazyObject):
     def _get_repo_url(self) -> str:
         return self._get_stored("repository_url")
 
-    def commit(self):
+    def commit(self) -> dict[str, Any]:
         """Commit Weblate changes."""
         return self.weblate.post(self._get_repo_url(), operation="commit")
 
-    def push(self):
+    def push(self) -> dict[str, Any]:
         """Push Weblate changes upstream."""
         return self.weblate.post(self._get_repo_url(), operation="push")
 
-    def pull(self):
+    def pull(self) -> dict[str, Any]:
         """Pull upstream changes into Weblate."""
         return self.weblate.post(self._get_repo_url(), operation="pull")
 
-    def reset(self):
+    def reset(self) -> dict[str, Any]:
         """Reset Weblate repository to upstream."""
         return self.weblate.post(self._get_repo_url(), operation="reset")
 
-    def cleanup(self):
+    def cleanup(self) -> dict[str, Any]:
         """Cleanup Weblate repository from untracked files."""
         return self.weblate.post(self._get_repo_url(), operation="cleanup")
 
@@ -185,9 +188,9 @@ class RepoMixin(LazyObject):
 class RepoObjectMixin(RepoMixin):
     """Repository mixin."""
 
-    REPOSITORY_CLASS = LazyObject
+    REPOSITORY_CLASS: ClassVar[type[LazyObject]] = LazyObject
 
-    def repository(self):
+    def repository(self) -> LazyObject:
         """Return repository object."""
         data = self.weblate.get(self._get_repo_url())
         return self.REPOSITORY_CLASS(weblate=self.weblate, **data)

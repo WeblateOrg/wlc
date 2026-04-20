@@ -9,7 +9,7 @@ from __future__ import annotations
 import io
 import os
 from abc import ABC
-from typing import Any, ClassVar
+from typing import ClassVar
 from unittest.mock import patch
 
 import responses
@@ -252,7 +252,7 @@ class ObjectTestBaseClass(APITest, ABC):
     """Base class for objects testing."""
 
     _name: str | None = None
-    _cls: Any = None
+    _cls: type[object] | None = None
 
     def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
@@ -260,12 +260,18 @@ class ObjectTestBaseClass(APITest, ABC):
 
     def get(self):
         """Return remote object."""
-        return Weblate().get_object(self._name)
+        name = self._name
+        if name is None:
+            self.fail("_name must be configured in object test cases")
+        return Weblate().get_object(name)
 
     def test_get(self) -> None:
         """Test getting project."""
         obj = self.get()
-        self.assertIsInstance(obj, self._cls)
+        expected_cls = self._cls
+        if expected_cls is None:
+            self.fail("_cls must be configured in object test cases")
+        self.assertIsInstance(obj, expected_cls)
         self.check_object(obj)
 
     def check_list(self, obj) -> None:
@@ -285,7 +291,10 @@ class ObjectTest(ObjectTestBaseClass, ABC):
         """Object refreshing test."""
         obj = self.get()
         obj.refresh()
-        self.assertIsInstance(obj, self._cls)
+        expected_cls = self._cls
+        if expected_cls is None:
+            self.fail("_cls must be configured in object test cases")
+        self.assertIsInstance(obj, expected_cls)
         self.check_object(obj)
 
     def test_changes(self) -> None:
@@ -760,7 +769,7 @@ class UnitTest(ObjectTestBaseClass):
 
     _name = "123"
     _cls = Unit
-    patch_data: ClassVar[dict[str, Any]] = {
+    patch_data: ClassVar[dict[str, object]] = {
         "target": ["foo"],
         "state": 30,
     }
