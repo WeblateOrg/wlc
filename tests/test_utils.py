@@ -6,7 +6,7 @@
 
 from unittest import TestCase
 
-from .utils import sanitize_slug
+from wlc.utils import sanitize_slug
 
 
 class UtilsTestCase(TestCase):

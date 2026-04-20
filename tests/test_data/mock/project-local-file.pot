@@ -14,5 +14,5 @@ msgstr ""
 
 #: src/pages/about/impact.tsx:28
 msgctxt "Title"
-msgid "Community informations"
+msgid "Community information"
 msgstr ""

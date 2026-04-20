@@ -6,8 +6,7 @@ recursive-include LICENSES *
 include CHANGES.rst
 include MANIFEST.in
 include completion/wlc
-include requirements.txt
-include requirements-test.txt
-recursive-include .reuse *
 include wlc/*.py
-recursive-include wlc/test_data *
+include wlc/py.typed
+graft tests
+prune tests/__pycache__
