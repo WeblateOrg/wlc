@@ -969,6 +969,35 @@ class CategoryTest(APITest):
         self.assertEqual(obj.name, "Hi")
         self.assertEqual(obj.slug, "hi")
 
+    def test_full_slug_with_parent_category_url(self) -> None:
+        """Category parents returned as URLs should still build full slugs."""
+        parent_url = "http://127.0.0.1:8000/api/categories/10/"
+        responses.add(
+            responses.GET,
+            parent_url,
+            json={
+                "category": None,
+                "name": "Parent",
+                "project": "http://127.0.0.1:8000/api/projects/hello/",
+                "slug": "parent",
+                "url": parent_url,
+            },
+        )
+
+        obj = Category(
+            Weblate(),
+            "http://127.0.0.1:8000/api/categories/11/",
+            category=parent_url,
+            name="Child",
+            project={
+                "url": "http://127.0.0.1:8000/api/projects/hello/",
+                "slug": "hello",
+            },
+            slug="child",
+        )
+
+        self.assertEqual(obj.full_slug(), "hello/parent/child")
+
 
 # Delete the reference, so that the abstract class is not discovered
 # when running tests
