@@ -35,4 +35,4 @@ jobs:
     - name: Install deps
       run: uv sync --all-extras --group pylint
     - name: Run pylint
-      run: uv run --no-sync pylint --output-format=github wlc/
+      run: uv run --no-sync pylint --output-format=github wlc/ tests/
