@@ -46,7 +46,7 @@ jobs:
     - name: Install pip dependencies
       run: uv sync --all-extras --dev
     - name: Test
-      run: uv run py.test --cov=wlc wlc
+      run: uv run py.test --cov=wlc tests
     - name: Coverage
       run: uv run coverage xml
     - uses: codecov/codecov-action@57e3a136b779b570ffcdbf80b3bdc90e7fab3de2 # v6.0.0

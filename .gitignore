@@ -52,6 +52,7 @@ coverage.xml
 # Translations
 *.mo
 *.pot
+!tests/test_data/mock/*.pot
 
 # Django stuff:
 *.log
