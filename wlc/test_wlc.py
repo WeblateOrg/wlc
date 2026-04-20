@@ -85,17 +85,17 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("io")
 
     def test_bug(self) -> None:
-        """Test listing projects."""
+        """Test handling of a FileNotFoundError when listing projects."""
         with self.assertRaises(FileNotFoundError):
             Weblate().get_object("bug")
 
     def test_invalid(self) -> None:
-        """Test listing projects."""
+        """Test handling of invalid JSON responses."""
         with self.assertRaisesRegex(WeblateException, "invalid JSON"):
             Weblate().get_object("invalid")
 
     def test_too_long(self) -> None:
-        """Test listing projects."""
+        """Test that too-long object paths raise ValueError."""
         with self.assertRaises(ValueError):
             Weblate().get_object("a/b/c/d")
 
@@ -145,7 +145,7 @@ class WeblateTest(APITest):
         self.assertEqual(len(list(Weblate().list_translations())), 50)
 
     def test_categories(self) -> None:
-        """Test listing translations."""
+        """Test listing categories."""
         self.assertEqual(len(list(Weblate().list_categories())), 2)
 
     def test_authentication(self) -> None:
