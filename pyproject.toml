@@ -53,8 +53,8 @@ dependencies = [
   "argcomplete",
   "python-dateutil",
   "pyxdg",
-  "requests>=2.25.0",
-  "urllib3>=1.26"
+  "requests>=2.32.0",
+  "urllib3>=2.0"
 ]
 description = "A command-line utility for Weblate, translation tool with tight version control integration"
 dynamic = ["version"]

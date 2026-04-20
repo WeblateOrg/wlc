@@ -40,7 +40,7 @@ class Weblate:
         config=None,
         retries: int = 0,
         status_forcelist: Collection[int] | None = None,
-        method_whitelist: Collection[str] | None = None,
+        allowed_methods: Collection[str] | None = None,
         backoff_factor: float = 0,
         timeout: int = 300,
     ) -> None:
@@ -51,7 +51,7 @@ class Weblate:
             (
                 self.retry_total,
                 self.status_forcelist,
-                self.method_whitelist,
+                self.allowed_methods,
                 self.backoff_factor,
                 self.timeout,
             ) = config.get_request_options()
@@ -61,7 +61,7 @@ class Weblate:
             self.retry_total = retries
             self.status_forcelist = status_forcelist
             self.timeout = timeout
-            self.method_whitelist = method_whitelist or [
+            self.allowed_methods = allowed_methods or [
                 "HEAD",
                 "GET",
                 "PUT",
@@ -76,7 +76,7 @@ class Weblate:
             total=self.retry_total,
             backoff_factor=self.backoff_factor,
             status_forcelist=self.status_forcelist,
-            allowed_methods=self.method_whitelist,
+            allowed_methods=self.allowed_methods,
             raise_on_status=False,
         )
         self.adapter = HTTPAdapter(pool_connections=1, max_retries=retry_config)

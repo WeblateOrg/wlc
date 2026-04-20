@@ -238,7 +238,7 @@ class TestSettings(CLITestBase):
         self.assertEqual(config.get("weblate", "retries"), "0")
         self.assertEqual(config.get("weblate", "timeout"), "300")
         self.assertEqual(
-            config.get("weblate", "method_whitelist"),
+            config.get("weblate", "allowed_methods"),
             "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
         )
         self.assertEqual(config.get("weblate", "backoff_factor"), "0")
@@ -252,7 +252,7 @@ class TestSettings(CLITestBase):
         config.load(TEST_CONFIG)
         self.assertEqual(config.get("weblate", "url"), "https://example.net/")
         self.assertEqual(config.get("weblate", "retries"), "999")
-        self.assertEqual(config.get("weblate", "method_whitelist"), "PUT,POST")
+        self.assertEqual(config.get("weblate", "allowed_methods"), "PUT,POST")
         self.assertEqual(config.get("weblate", "backoff_factor"), "0.2")
         self.assertEqual(
             config.get("weblate", "status_forcelist"), "429,500,502,503,504"
@@ -266,13 +266,13 @@ class TestSettings(CLITestBase):
         (
             retries,
             status_forcelist,
-            method_whitelist,
+            allowed_methods,
             backoff_factor,
             _timeout,
         ) = config.get_request_options()
         self.assertEqual(retries, 999)
         self.assertEqual(status_forcelist, [429, 500, 502, 503, 504])
-        self.assertEqual(method_whitelist, ["PUT", "POST"])
+        self.assertEqual(allowed_methods, ["PUT", "POST"])
         self.assertEqual(backoff_factor, 0.2)
 
     def test_default_request_options(self) -> None:
@@ -281,14 +281,14 @@ class TestSettings(CLITestBase):
         (
             retries,
             status_forcelist,
-            method_whitelist,
+            allowed_methods,
             backoff_factor,
             timeout,
         ) = config.get_request_options()
         self.assertEqual(retries, 0)
         self.assertIsNone(status_forcelist)
         self.assertEqual(
-            method_whitelist,
+            allowed_methods,
             ["HEAD", "TRACE", "DELETE", "OPTIONS", "PUT", "GET"],
         )
         self.assertEqual(backoff_factor, 0.0)

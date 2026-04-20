@@ -1,7 +1,7 @@
 [weblate]
 url = https://example.net/
 retries = 999
-method_whitelist = PUT,POST
+allowed_methods = PUT,POST
 backoff_factor = 0.2
 status_forcelist = 429,500,502,503,504
 timeout = 30
