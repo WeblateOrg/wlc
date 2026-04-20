@@ -38,21 +38,11 @@ repos:
     args: [--autofix, --indent, '2']
   - id: pretty-format-toml
     args: [--autofix]
-- repo: https://github.com/executablebooks/mdformat
-  rev: 1.0.0
-  hooks:
-  - id: mdformat
-    additional_dependencies:
-    - mdformat-gfm==1.0.0
 - repo: https://github.com/scop/pre-commit-shfmt
   rev: v3.13.1-1
   hooks:
   - id: shfmt
     args: [--write]
-- repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.48.0
-  hooks:
-  - id: markdownlint
 - repo: https://github.com/fsfe/reuse-tool
   rev: v6.2.0
   hooks:
@@ -81,6 +71,11 @@ repos:
   rev: v1.95.0
   hooks:
   - id: kingfisher-auto
+- repo: https://github.com/rvben/rumdl-pre-commit
+  rev: v0.1.62
+  hooks:
+  - id: rumdl
+  - id: rumdl-fmt
 ci:
   autoupdate_schedule: quarterly
   skip:
