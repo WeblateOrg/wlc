@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from typing import TYPE_CHECKING
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 
 import requests
 from requests import Response
@@ -83,6 +83,32 @@ class Weblate:
 
         if not self.url.endswith("/"):
             self.url += "/"
+        self.api_origin = self.get_origin(urlparse(self.url))
+
+    @staticmethod
+    def get_effective_port(url) -> int | None:
+        """Return explicit port or the default for the URL scheme."""
+        if url.port is not None:
+            return url.port
+        if url.scheme == "https":
+            return 443
+        if url.scheme == "http":
+            return 80
+        return None
+
+    @classmethod
+    def get_origin(cls, url) -> tuple[str, str | None, int | None]:
+        """Return normalized origin tuple for a parsed URL."""
+        return (url.scheme, url.hostname, cls.get_effective_port(url))
+
+    def normalize_request_url(self, path: str) -> str:
+        """Resolve a request path and reject cross-origin targets."""
+        url = urlparse(urljoin(self.url, path))
+        if self.get_origin(url) != self.api_origin:
+            raise WeblateException(
+                "Server returned a URL outside the configured API origin."
+            )
+        return url.geturl()
 
     @staticmethod
     def permission_error_message(error):
@@ -183,8 +209,11 @@ class Weblate:
         params: dict[str, str] | None = None,
     ) -> Response:
         """Construct request object."""
-        if not path.startswith("http"):
-            path = f"{self.url}{path}"
+        try:
+            path = self.normalize_request_url(path)
+        except WeblateException as error:
+            log_failure_debug(method, path, error)
+            raise
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
             headers["Authorization"] = f"Token {self.key}"
