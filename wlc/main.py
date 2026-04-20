@@ -668,7 +668,7 @@ class Lock(ComponentCommand):
     """Lock component for translation."""
 
     name = "lock"
-    description = "Locks components from translations"
+    description = "Locks component to prevent translation"
 
     def run(self) -> None:
         """Executor."""
