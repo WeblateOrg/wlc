@@ -10,8 +10,9 @@ import re
 # This matches Django's SlugField validation minus dash which is
 # excluded by Weblate's validate_slug
 NON_SLUG_RE = re.compile(r"[^a-zA-Z0-9_]")
+SLUG_REPLACEMENT_CHAR = "-"
 
 
 def sanitize_slug(slug: str) -> str:
     """Sanitize slug for safe use as a filename component."""
-    return NON_SLUG_RE.sub("-", slug)
+    return NON_SLUG_RE.sub(SLUG_REPLACEMENT_CHAR, slug)
