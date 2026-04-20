@@ -79,7 +79,7 @@ def log_failure_debug(method: str, path: str, error: Exception) -> None:
     log.debug("HTTP failure %s %s -> %s", method.upper(), path, error)
 
 
-def enable_debug_logging():
+def enable_debug_logging() -> tuple[logging.Handler, int, bool]:
     """Install a temporary debug handler for sanitized HTTP logs."""
     handler = logging.StreamHandler()
     handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
