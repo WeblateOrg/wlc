@@ -64,24 +64,30 @@ class WeblateConfig(RawConfigParser):
 
         return None
 
-    def load(self, path: Path | str | None = None) -> None:
-        """Load configuration from XDG paths and current directory."""
-        if path is None:
-            path = self.find_config()
-        if path:
-            self.read(path)
-
-        # Try reading from current dir
+    @staticmethod
+    def find_project_config() -> str | None:
+        """Find the nearest project configuration file."""
         cwd = os.path.abspath(".")
         prev = None
         while cwd != prev:
             for name in (".weblate", ".weblate.ini", "weblate.ini"):
                 conf_name = os.path.join(cwd, name)
-                if os.path.exists(conf_name):
-                    self.read(conf_name)
-                    break
+                if os.path.isfile(conf_name):
+                    return conf_name
             prev = cwd
             cwd = os.path.dirname(cwd)
+
+        return None
+
+    def load(self, path: Path | str | None = None) -> None:
+        """Load configuration from an explicit path or discovered locations."""
+        if path:
+            self.read(path)
+        else:
+            if config := self.find_config():
+                self.read(config)
+            if config := self.find_project_config():
+                self.read(config)
 
         if self.has_option(self.section, "key"):
             raise WLCConfigurationError(

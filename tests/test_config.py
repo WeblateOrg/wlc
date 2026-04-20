@@ -6,7 +6,9 @@
 
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest import TestCase
+from unittest.mock import patch
 
 import wlc
 from wlc.config import WeblateConfig, WLCConfigurationError
@@ -107,3 +109,155 @@ class WeblateConfigTestCase(TestCase):
             _timeout,
         ) = config.get_request_options()
         self.assertEqual(method_whitelist, ["PUT", "POST", "GET"])
+
+    def test_explicit_path_ignores_project_config(self) -> None:
+        """Explicit config does not load project config from cwd or parents."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            explicit = root / "explicit.ini"
+            explicit.write_text(
+                "[weblate]\nurl = https://explicit.example.com/api/\n",
+                encoding="utf-8",
+            )
+            repo = root / "repo"
+            nested = repo / "nested"
+            nested.mkdir(parents=True)
+            (repo / ".weblate").write_text(
+                "[weblate]\nurl = http://denied.example.com/\n",
+                encoding="utf-8",
+            )
+            (root / ".weblate").write_text(
+                "[weblate]\nurl = http://ancestor.example.com/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                config.load(explicit)
+            finally:
+                os.chdir(current)
+
+        self.assertEqual(
+            config.get("weblate", "url"), "https://explicit.example.com/api/"
+        )
+
+    def test_default_load_uses_nearest_project_config(self) -> None:
+        """Default discovery loads global config and the nearest project config."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            global_config = root / "global.ini"
+            global_config.write_text(
+                "[weblate]\nurl = https://global.example.com/api/\ntimeout = 45\n",
+                encoding="utf-8",
+            )
+            repo = root / "repo"
+            nested = repo / "nested"
+            nested.mkdir(parents=True)
+            (repo / ".weblate").write_text(
+                "[weblate]\nurl = http://127.0.0.1:8000/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(global_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertEqual(config.get("weblate", "url"), "http://127.0.0.1:8000/api/")
+        self.assertEqual(config.get("weblate", "timeout"), "45")
+
+    def test_default_load_stops_after_nearest_project_config(self) -> None:
+        """Default discovery does not merge project configs from farther parents."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            global_config = root / "global.ini"
+            global_config.write_text(
+                "[weblate]\ntimeout = 45\n",
+                encoding="utf-8",
+            )
+            repo = root / "repo"
+            nested = repo / "nested"
+            deep = nested / "deep"
+            deep.mkdir(parents=True)
+            (repo / ".weblate").write_text(
+                "[weblate]\nretries = 99\n",
+                encoding="utf-8",
+            )
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://nearest.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(deep)
+                config = WeblateConfig()
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(global_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertEqual(
+            config.get("weblate", "url"), "https://nearest.example.com/api/"
+        )
+        self.assertEqual(config.get("weblate", "timeout"), "45")
+        self.assertEqual(config.get("weblate", "retries"), "0")
+
+    def test_default_load_skips_project_config_directories(self) -> None:
+        """Discovery ignores directory names that only look like config files."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            repo = root / "repo"
+            nested = repo / "nested"
+            deep = nested / "deep"
+            deep.mkdir(parents=True)
+            (repo / ".weblate").write_text(
+                "[weblate]\nurl = https://parent.example.com/api/\n",
+                encoding="utf-8",
+            )
+            (nested / ".weblate").mkdir()
+            current = os.getcwd()
+            try:
+                os.chdir(deep)
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertEqual(
+            config.get("weblate", "url"), "https://parent.example.com/api/"
+        )
+
+    def test_default_discovery_supports_repo_config_with_env_key(self) -> None:
+        """Project config can provide URL while WLC_KEY provides the secret."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                os.environ["WLC_KEY"] = "env-api-key"
+                url, key = config.get_url_key()
+            finally:
+                os.chdir(current)
+                if "WLC_KEY" in os.environ:
+                    del os.environ["WLC_KEY"]
+
+        self.assertEqual(url, "https://repo.example.com/api/")
+        self.assertEqual(key, "env-api-key")

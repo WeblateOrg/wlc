@@ -48,10 +48,14 @@ wlc download
 wlc upload
 ```
 
-Configuration is stored in `~/.config/weblate`. The key/values (`retries`,
-`timeout`, `method_whitelist`, `backoff_factor`, `status_forcelist`) are closely
-coupled with the [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html) and allows the user to configure request
-parameters.
+Configuration is loaded from `--config` when provided. Otherwise `wlc` reads the
+user configuration from XDG paths such as `~/.config/weblate` and then the
+nearest project configuration file (`.weblate`, `.weblate.ini`, or
+`weblate.ini`) from the current directory or its parents. The key/values
+(`retries`, `timeout`, `method_whitelist`, `backoff_factor`,
+`status_forcelist`) are closely coupled with the
+[urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html)
+and allows the user to configure request parameters.
 
 ```ini
 [weblate]
@@ -69,7 +73,8 @@ https://hosted.weblate.org/api/ = APIKEY
 ## Environment variables
 
 The API URL and key can also be configured using environment variables. This is
-especially useful for CI workflows:
+especially useful for CI workflows where the repository provides the project
+configuration and `WLC_KEY` is injected as a secret:
 
 - `WLC_URL` — API URL
 - `WLC_KEY` — API key
@@ -78,7 +83,8 @@ The configuration precedence (highest to lowest) is:
 
 1. Command-line arguments (`--url`, `--key`)
 1. Environment variables (`WLC_URL`, `WLC_KEY`)
-1. Configuration file
+1. Configuration loaded from `--config`, or from XDG/user config plus the
+   nearest project config when `--config` is not used
 
 ## Docker image
 

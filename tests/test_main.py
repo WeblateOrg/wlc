@@ -135,6 +135,33 @@ class TestSettings(CLITestBase):
         )
         self.assertIn("Hello", output)
 
+    def test_explicit_config_is_authoritative(self) -> None:
+        """Explicit config is not overridden by repo config in cwd."""
+        current = os.path.abspath(".")
+        with TemporaryDirectory() as tmpdirname:
+            explicit = os.path.join(tmpdirname, "explicit.ini")
+            with open(explicit, "w", encoding="utf-8") as handle:
+                handle.write("[weblate]\nurl = http://127.0.0.1:8000/api/\n")
+
+            repo = os.path.join(tmpdirname, "repo")
+            nested = os.path.join(repo, "nested")
+            os.makedirs(nested)
+            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
+                handle.write("[weblate]\nurl = http://denied.example.com/\n")
+
+            try:
+                os.environ["WLC_KEY"] = "KEY"
+                os.chdir(nested)
+                output = self.execute(
+                    ["--config", explicit, "show", "acl"], settings=False
+                )
+            finally:
+                os.chdir(current)
+                if "WLC_KEY" in os.environ:
+                    del os.environ["WLC_KEY"]
+
+        self.assertIn("ACL", output)
+
     def test_config_section(self) -> None:
         """Configuration using custom config file section."""
         output = self.execute(
