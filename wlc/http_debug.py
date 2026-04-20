@@ -11,6 +11,8 @@ import logging
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from collections.abc import Mapping
+
     from requests import Response
 
 log = logging.getLogger("wlc")
@@ -30,10 +32,10 @@ def log_request_debug(
     method: str,
     path: str,
     headers: dict[str, str],
-    params: dict[str, str] | None = None,
-    json_data: dict[str, str] | None = None,
-    data: dict[str, str] | None = None,
-    files: dict[str, str] | None = None,
+    params: Mapping[str, Any] | None = None,
+    json_data: Mapping[str, Any] | None = None,
+    data: Mapping[str, Any] | None = None,
+    files: Mapping[str, Any] | None = None,
 ) -> None:
     """Emit a sanitized debug log for an outgoing HTTP request."""
     if not log.isEnabledFor(logging.DEBUG):

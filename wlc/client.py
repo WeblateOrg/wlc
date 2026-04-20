@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin, urlparse
 
 import requests
@@ -27,7 +27,7 @@ from .http_debug import log_failure_debug, log_request_debug, log_response_debug
 from .models import Category, Change, Component, Language, Project, Translation, Unit
 
 if TYPE_CHECKING:
-    from collections.abc import Collection
+    from collections.abc import Collection, Mapping
 
 
 class Weblate:
@@ -171,9 +171,9 @@ class Weblate:
         self,
         method: str,
         path: str,
-        data: dict[str, str] | None = None,
-        files: dict[str, str] | None = None,
-        params: dict[str, str] | None = None,
+        data: Mapping[str, Any] | None = None,
+        files: Mapping[str, Any] | None = None,
+        params: Mapping[str, Any] | None = None,
     ) -> bytes:
         """Construct request object and returns raw content."""
         response = self.invoke_request(
@@ -186,9 +186,9 @@ class Weblate:
         self,
         method: str,
         path: str,
-        data: dict[str, str] | None = None,
-        files: dict[str, str] | None = None,
-        params: dict[str, str] | None = None,
+        data: Mapping[str, Any] | None = None,
+        files: Mapping[str, Any] | None = None,
+        params: Mapping[str, Any] | None = None,
     ) -> dict:
         """Construct request object and returns json response."""
         response = self.invoke_request(
@@ -204,9 +204,9 @@ class Weblate:
         self,
         method: str,
         path: str,
-        data: dict[str, str] | None = None,
-        files: dict[str, str] | None = None,
-        params: dict[str, str] | None = None,
+        data: Mapping[str, Any] | None = None,
+        files: Mapping[str, Any] | None = None,
+        params: Mapping[str, Any] | None = None,
     ) -> Response:
         """Construct request object."""
         try:
@@ -222,7 +222,7 @@ class Weblate:
         # Disable insecure warnings for localhost
         if not verify_ssl:
             logging.captureWarnings(True)
-        json_data: dict[str, str] | None
+        json_data: Mapping[str, Any] | None
         if files:
             # multipart/form upload
             json_data = None
