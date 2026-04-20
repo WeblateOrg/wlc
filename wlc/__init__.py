@@ -437,7 +437,7 @@ class LazyObject(dict):
         self._attribs: dict[str, Any] = {}
         self._load_params(**kwargs)
         self._load_params(url=url)
-        
+
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LazyObject):
             return (
@@ -451,7 +451,7 @@ class LazyObject(dict):
         if isinstance(other, dict):
             return dict(self) == other
         return NotImplemented
-    
+
     def get_data(self):
         return copy(self._data)
 
