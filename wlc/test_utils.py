@@ -19,3 +19,14 @@ class UtilsTestCase(TestCase):
         self.assertEqual(sanitize_slug("../\\slug"), "----slug")
         self.assertEqual(sanitize_slug("slug/other"), "slug-other")
         self.assertEqual(sanitize_slug("slug/"), "slug-")
+
+    def test_sanitize_slug_empty(self):
+        self.assertEqual(sanitize_slug(""), "")
+
+    def test_sanitize_slug_only_invalid(self):
+        self.assertEqual(sanitize_slug("../\\"), "----")
+
+    def test_sanitize_slug_very_long(self):
+        long_slug = "a" * 300 + "/b\\c"
+        expected = "a" * 300 + "-b-c"
+        self.assertEqual(sanitize_slug(long_slug), expected)
