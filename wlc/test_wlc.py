@@ -10,6 +10,7 @@ import io
 import os
 from abc import ABC
 from typing import Any, ClassVar
+from unittest.mock import patch
 
 from requests.exceptions import RequestException
 from urllib3.util.retry import Retry
@@ -419,6 +420,89 @@ class ObjectTest(ObjectTestBaseClass, ABC):
     def test_delete(self) -> None:
         obj = self.get()
         self.assertIsNone(obj.delete())
+
+
+class LazyObjectEqualityTest(APITest):
+    """Tests for equality behavior on lazy objects."""
+
+    def test_equality_uses_additional_attributes(self) -> None:
+        """Objects with different deferred attributes should not compare equal."""
+        weblate = Weblate()
+        first = Project(
+            weblate,
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+            components_list_url="projects/hello/components/",
+        )
+        second = Project(
+            weblate,
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+            categories_url="projects/hello/categories/",
+        )
+
+        self.assertNotEqual(first, second)
+
+    def test_equality_does_not_refresh_unloaded_objects(self) -> None:
+        """Comparing unloaded objects should not trigger a refresh."""
+        weblate = Weblate()
+        first = Project(weblate, "projects/hello/")
+        second = Project(weblate, "projects/hello/")
+        with (
+            patch.object(
+                first, "refresh", side_effect=AssertionError("refresh should not run")
+            ) as first_refresh,
+            patch.object(
+                second, "refresh", side_effect=AssertionError("refresh should not run")
+            ) as second_refresh,
+        ):
+            self.assertEqual(first, second)
+            first_refresh.assert_not_called()
+            second_refresh.assert_not_called()
+
+    def test_lazy_objects_are_not_hashable(self) -> None:
+        """Lazy objects should stay unhashable because equality is mutable."""
+        obj = Project(Weblate(), "projects/hello/")
+
+        with self.assertRaises(TypeError):
+            hash(obj)
+
+    def test_dict_comparison_does_not_refresh_unloaded_objects(self) -> None:
+        """Comparing unloaded objects to dicts should stay local."""
+        obj = Project(Weblate(), "projects/hello/")
+        with patch.object(
+            obj, "refresh", side_effect=AssertionError("refresh should not run")
+        ) as refresh:
+            self.assertEqual(obj, {"url": "projects/hello/"})
+            refresh.assert_not_called()
+
+    def test_dict_comparison_uses_lazy_data(self) -> None:
+        """Dict comparison should use lazy object data, not dict base storage."""
+        obj = Project(
+            Weblate(),
+            "projects/hello/",
+            name="Hello",
+            slug="hello",
+            web="https://weblate.org/",
+            web_url="https://weblate.org/projects/hello/",
+        )
+
+        self.assertEqual(
+            obj,
+            {
+                "url": "projects/hello/",
+                "name": "Hello",
+                "slug": "hello",
+                "web": "https://weblate.org/",
+                "web_url": "https://weblate.org/projects/hello/",
+            },
+        )
 
 
 class ProjectTest(ObjectTest):
