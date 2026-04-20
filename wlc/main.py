@@ -63,7 +63,7 @@ def get_parser():
         "--version", "-v", action="version", version=f"wlc {__version__}"
     )
     parser.add_argument(
-        "--debug", "-D", action="store_true", help="Print verbosely http communication"
+        "--debug", "-D", action="store_true", help="Print verbose HTTP communication"
     )
     parser.add_argument("--config", "-c", help="Path to configuration file")
     parser.add_argument(
@@ -593,7 +593,7 @@ class Cleanup(ObjectCommand):
 
     name = "cleanup"
     description = (
-        "Cleanups all untracked changes in Weblate repository "
+        "Cleans up all untracked changes in Weblate repository "
         "in translation, component or project"
     )
 
