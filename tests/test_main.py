@@ -368,6 +368,27 @@ class TestOutput(CLITestBase):
         self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
         self.assertNotIn("\x1b", rendered)
 
+    def test_text_output_sorts_detail_keys_lexically(self) -> None:
+        """Text detail output should render keys in lexical order."""
+        output = StringIO()
+        cmd = self.create_command(output, "text")
+
+        cmd.print({"zeta": "last", "alpha": "first", "middle": "mid"})
+
+        self.assertEqual(
+            output.getvalue().splitlines(),
+            ["alpha: first", "middle: mid", "zeta: last"],
+        )
+
+    def test_text_output_sorts_list_headers_lexically(self) -> None:
+        """Text list output should render fields in lexical order."""
+        output = StringIO()
+        cmd = self.create_command(output, "text")
+
+        cmd.print([AttributeDict({"zeta": "last", "alpha": "first"})])
+
+        self.assertEqual(output.getvalue(), "alpha: first\nzeta: last\n\n")
+
     def test_csv_output_escapes_terminal_control_characters(self) -> None:
         """CSV output should not emit raw terminal control characters to a tty."""
         output = TTYStringIO()
@@ -396,6 +417,17 @@ class TestOutput(CLITestBase):
         self.assertEqual(rows[1], ["Hello", "en"])
         self.assertEqual(rows[2], ["World", ""])
 
+    def test_csv_output_sorts_list_headers_lexically(self) -> None:
+        """CSV list output should render headers in lexical order."""
+        output = StringIO()
+        cmd = self.create_command(output, "csv")
+
+        cmd.print([AttributeDict({"zeta": "last", "alpha": "first"})])
+
+        rows = list(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows[0], ["alpha", "zeta"])
+        self.assertEqual(rows[1], ["first", "last"])
+
     def test_html_output_escapes_terminal_control_characters(self) -> None:
         """HTML output should not emit raw terminal control characters to a tty."""
         output = TTYStringIO()
@@ -421,6 +453,21 @@ class TestOutput(CLITestBase):
         self.assertIn(html.escape(payload_value), rendered)
         self.assertNotIn(payload_key, rendered)
         self.assertNotIn(payload_value, rendered)
+
+    def test_html_output_sorts_list_headers_lexically(self) -> None:
+        """HTML list output should render headers in lexical order."""
+        output = StringIO()
+        cmd = self.create_command(output, "html")
+
+        cmd.print([AttributeDict({"zeta": "last", "alpha": "first"})])
+
+        rendered = output.getvalue()
+        self.assertLess(
+            rendered.index("<th>alpha</th>"), rendered.index("<th>zeta</th>")
+        )
+        self.assertLess(
+            rendered.index("<td>first</td>"), rendered.index("<td>last</td>")
+        )
 
     def test_html_escapes_detail_output(self) -> None:
         """HTML detail output escapes keys and values."""

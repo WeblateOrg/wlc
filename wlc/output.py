@@ -9,7 +9,6 @@ from __future__ import annotations
 import json
 from datetime import datetime
 
-SORT_ORDER: list[str] = []
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
 CSV_DANGEROUS_LEADING = " \t\r\n"
 TERMINAL_CONTROL_REPLACEMENTS = {
@@ -23,6 +22,12 @@ TERMINAL_CONTROL_REPLACEMENTS = {
 }
 
 
+def sorted_items(value):
+    """Sorted items iterator."""
+    for key in sorted(value.keys()):
+        yield key, value[key]
+
+
 class DateTimeEncoder(json.JSONEncoder):
     """JSON encoder with datetime support."""
 
@@ -31,20 +36,6 @@ class DateTimeEncoder(json.JSONEncoder):
             return o.isoformat()
 
         return super().default(o)
-
-
-def sort_key(value):
-    """Key getter for sorting."""
-    try:
-        return f"{SORT_ORDER.index(value):02d}"
-    except ValueError:
-        return value
-
-
-def sorted_items(value):
-    """Sorted items iterator."""
-    for key in sorted(value.keys(), key=sort_key):
-        yield key, value[key]
 
 
 def stream_isatty(stream) -> bool:

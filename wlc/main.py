@@ -28,7 +28,6 @@ from .output import (
     CSV_FORMULA_PREFIXES,
     DateTimeEncoder,
     format_for_stream,
-    sort_key,
     sorted_items,
     stream_isatty,
 )
@@ -241,7 +240,7 @@ class Command:
         if isinstance(value, list):
             if len(value) == 0:
                 return
-            header = sorted(value[0].keys(), key=sort_key)
+            header = sorted(value[0].keys())
 
         match self.args.format:
             case "json":
