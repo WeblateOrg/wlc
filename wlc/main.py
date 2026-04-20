@@ -9,6 +9,7 @@
 from __future__ import annotations
 
 import csv
+import html
 import json
 import sys
 from argparse import ArgumentParser
@@ -224,6 +225,11 @@ class Command:
         """Format a value for human-readable output."""
         return format_for_stream(self.format_value(value), self.stdout)
 
+    @classmethod
+    def format_html_value(cls, value) -> str:
+        """Format value for safe HTML rendering."""
+        return html.escape(str(cls.format_value(value)), quote=True)
+
     def print_csv(self, value, header) -> None:
         """CSV print."""
         writer = csv.writer(self.stdout)
@@ -247,7 +253,7 @@ class Command:
             self.println("  <thead>")
             self.println("    <tr>")
             for key in header:
-                self.println(f"      <th>{self.format_output_value(key)}</th>")
+                self.println(f"      <th>{self.format_html_value(key)}</th>")
             self.println("    </tr>")
             self.println("  </thead>")
             self.println("  <tbody>")
@@ -256,7 +262,7 @@ class Command:
                 self.println("    <tr>")
                 for key in header:
                     self.println(
-                        f"      <td>{self.format_output_value(getattr(item, key))}</td>"
+                        f"      <td>{self.format_html_value(getattr(item, key))}</td>"
                     )
                 self.println("    </tr>")
             self.println("  </tbody>")
@@ -266,8 +272,9 @@ class Command:
             for key, data in sorted_items(value):
                 self.println("  <tr>")
                 self.println(
-                    f"    <th>{self.format_output_value(key)}</th>"
-                    f"<td>{self.format_output_value(data)}</td>"
+                    "    "
+                    f"<th>{self.format_html_value(key)}</th>"
+                    f"<td>{self.format_html_value(data)}</td>"
                 )
                 self.println("  </tr>")
             self.println("</table>")
