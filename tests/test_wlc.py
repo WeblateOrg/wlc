@@ -252,6 +252,25 @@ class WeblateURLValidationTest(APITest):
             method=responses.POST,
         )
 
+    def test_rejects_invalid_port_in_server_url(self) -> None:
+        """Malformed absolute URLs should raise a WeblateException."""
+        attacker_url = "http://evil.example.com:99999/api/projects/"
+        responses.add(
+            responses.GET,
+            "http://127.0.0.1:8000/api/hostile-projects/",
+            json={"next": attacker_url, "results": []},
+        )
+
+        with self.assertRaisesRegex(WeblateException, "invalid URL"):
+            list(Weblate(key="KEY").list_projects("hostile-projects/"))
+
+        self.assertFalse(
+            any(
+                call.request.url is not None and ":99999/" in call.request.url
+                for call in responses.calls
+            )
+        )
+
 
 class WeblateTest(APITest):
     """Testing of Weblate class."""
