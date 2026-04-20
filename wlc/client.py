@@ -224,7 +224,7 @@ class Weblate:
             logging.captureWarnings(True)
         json_data: dict[str, str] | None
         if files:
-            # mulitpart/form upload
+            # multipart/form upload
             json_data = None
         else:
             # JSON params to handle complex structures
