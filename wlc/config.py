@@ -82,7 +82,11 @@ class WeblateConfig(RawConfigParser):
     def load(self, path: Path | str | None = None) -> None:
         """Load configuration from an explicit path or discovered locations."""
         if path:
-            self.read(path)
+            loaded = self.read(path)
+            if not loaded:
+                raise WLCConfigurationError(
+                    f"Could not read configuration file: {os.path.abspath(path)}"
+                )
         else:
             if config := self.find_config():
                 self.read(config)

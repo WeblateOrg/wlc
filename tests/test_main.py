@@ -162,6 +162,17 @@ class TestSettings(CLITestBase):
 
         self.assertIn("ACL", output)
 
+    def test_missing_explicit_config_reports_error(self) -> None:
+        """Missing explicit config path should be reported to the user."""
+        with TemporaryDirectory() as tmpdirname:
+            missing = os.path.join(tmpdirname, "missing.ini")
+            output = self.execute(
+                ["--config", missing, "list-projects"], settings=False, expected=1
+            )
+
+        self.assertIn("Error: Could not read configuration file:", output)
+        self.assertIn("missing.ini", output)
+
     def test_config_section(self) -> None:
         """Configuration using custom config file section."""
         output = self.execute(
