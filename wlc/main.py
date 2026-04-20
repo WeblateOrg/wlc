@@ -681,7 +681,7 @@ class Unlock(ComponentCommand):
     """Unlock component for translation."""
 
     name = "unlock"
-    description = "Unlocks components from translations"
+    description = "Unlocks component for translation"
 
     def run(self) -> None:
         """Executor."""
