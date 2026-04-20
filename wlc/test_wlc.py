@@ -85,7 +85,7 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("io")
 
     def test_bug(self) -> None:
-        """Test listing projects."""
+        """Test handling of a FileNotFoundError when listing projects."""
         with self.assertRaises(FileNotFoundError):
             Weblate().get_object("bug")
 
