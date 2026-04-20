@@ -4,6 +4,8 @@
 
 """Command-line interface for Weblate."""
 
+# pylint: disable=too-many-lines
+
 from __future__ import annotations
 
 import csv
@@ -27,6 +29,15 @@ COMMANDS: dict[str, type[Command]] = {}
 SORT_ORDER: list[str] = []
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
 CSV_DANGEROUS_LEADING = " \t\r\n"
+TERMINAL_CONTROL_REPLACEMENTS = {
+    "\a": r"\a",
+    "\b": r"\b",
+    "\t": r"\t",
+    "\n": r"\n",
+    "\v": r"\v",
+    "\f": r"\f",
+    "\r": r"\r",
+}
 
 
 def register_command(command: type[Command]) -> type[Command]:
@@ -112,6 +123,43 @@ def sorted_items(value):
         yield key, value[key]
 
 
+def stream_isatty(stream) -> bool:
+    """Check whether the given stream is an interactive terminal."""
+    isatty = getattr(stream, "isatty", None)
+    if callable(isatty):
+        return isatty()
+    return False
+
+
+def escape_terminal_text(value: str) -> str:
+    """Render terminal control characters visibly instead of executing them."""
+    escaped: list[str] = []
+    for char in value:
+        if char in TERMINAL_CONTROL_REPLACEMENTS:
+            escaped.append(TERMINAL_CONTROL_REPLACEMENTS[char])
+            continue
+
+        code = ord(char)
+        if code == 0x7F or 0x00 <= code < 0x20 or 0x80 <= code < 0xA0:
+            escaped.append(f"\\x{code:02x}")
+            continue
+
+        escaped.append(char)
+    return "".join(escaped)
+
+
+def format_for_stream(value, stream):
+    """Format output for a stream, escaping control characters on terminals."""
+    if isinstance(value, str) and stream_isatty(stream):
+        return escape_terminal_text(value)
+    return value
+
+
+def print_stderr(message: str) -> None:
+    """Print a terminal-safe error message to stderr."""
+    print(format_for_stream(message, sys.stderr), file=sys.stderr)
+
+
 class Command:
     """Basic command object."""
 
@@ -141,7 +189,7 @@ class Command:
 
     def println(self, line) -> None:
         """Print single line to output."""
-        print(line, file=self.stdout)
+        print(format_for_stream(line, self.stdout), file=self.stdout)
 
     def print_json(self, value) -> None:
         """JSON print."""
@@ -160,18 +208,21 @@ class Command:
             return value.to_value()
         return value
 
-    @classmethod
-    def format_csv_value(cls, value):
+    def format_csv_value(self, value):
         """Format value for CSV output and harden dangerous spreadsheet cells."""
-        formatted = cls.format_value(value)
+        formatted = self.format_value(value)
         if not isinstance(formatted, str):
             return formatted
 
         stripped = formatted.lstrip(CSV_DANGEROUS_LEADING)
         if stripped and stripped[0] in CSV_FORMULA_PREFIXES:
-            return f"'{formatted}"
+            formatted = f"'{formatted}"
 
-        return formatted
+        return format_for_stream(formatted, self.stdout)
+
+    def format_output_value(self, value):
+        """Format a value for human-readable output."""
+        return format_for_stream(self.format_value(value), self.stdout)
 
     def print_csv(self, value, header) -> None:
         """CSV print."""
@@ -179,9 +230,10 @@ class Command:
         if header is not None:
             writer.writerow([self.format_csv_value(key) for key in header])
             for row in value:
-                writer.writerow(
-                    [self.format_csv_value(getattr(row, key)) for key in header]
-                )
+                formatted_row = {
+                    key: self.format_csv_value(data) for key, data in row.items()
+                }
+                writer.writerow([formatted_row.get(key, "") for key in header])
         else:
             for key, data in sorted_items(value):
                 writer.writerow(
@@ -195,7 +247,7 @@ class Command:
             self.println("  <thead>")
             self.println("    <tr>")
             for key in header:
-                self.println(f"      <th>{key}</th>")
+                self.println(f"      <th>{self.format_output_value(key)}</th>")
             self.println("    </tr>")
             self.println("  </thead>")
             self.println("  <tbody>")
@@ -204,7 +256,7 @@ class Command:
                 self.println("    <tr>")
                 for key in header:
                     self.println(
-                        f"      <td>{self.format_value(getattr(item, key))}</td>"
+                        f"      <td>{self.format_output_value(getattr(item, key))}</td>"
                     )
                 self.println("    </tr>")
             self.println("  </tbody>")
@@ -213,7 +265,10 @@ class Command:
             self.println("<table>")
             for key, data in sorted_items(value):
                 self.println("  <tr>")
-                self.println(f"    <th>{key}</th><td>{self.format_value(data)}</td>")
+                self.println(
+                    f"    <th>{self.format_output_value(key)}</th>"
+                    f"<td>{self.format_output_value(data)}</td>"
+                )
                 self.println("  </tr>")
             self.println("</table>")
 
@@ -222,11 +277,16 @@ class Command:
         if header is not None:
             for item in value:
                 for key in header:
-                    self.println(f"{key}: {self.format_value(getattr(item, key))}")
+                    self.println(
+                        f"{self.format_output_value(key)}: "
+                        f"{self.format_output_value(getattr(item, key))}"
+                    )
                 self.println("")
         else:
             for key, data in sorted_items(value):
-                self.println(f"{key}: {self.format_value(data)}")
+                self.println(
+                    f"{self.format_output_value(key)}: {self.format_output_value(data)}"
+                )
 
     def print(self, value) -> None:
         """Print value."""
@@ -744,6 +804,11 @@ class Download(ObjectCommand):
                 with open(self.args.output, "wb") as handle:
                     handle.write(content)
             else:
+                if stream_isatty(self.stdout):
+                    raise CommandError(
+                        "Refusing to write downloaded file to terminal. "
+                        "Use --output or redirect stdout."
+                    )
                 self.stdout.buffer.write(content)
             return
 
@@ -926,7 +991,7 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     try:
         config = parse_settings(args, settings)
     except WLCConfigurationError as error:
-        print(f"Error: {error}", file=sys.stderr)
+        print_stderr(f"Error: {error}")
         return 1
 
     command = COMMANDS[args.command](args, config, stdout, stdin)
@@ -935,21 +1000,18 @@ def main(settings=None, stdout=None, stdin=None, args=None) -> int:
     except wlc.WeblateDeniedError:
         url, key = config.get_url_key()
         if key:
-            print(
-                f"API key configured for {url} was rejected by server.", file=sys.stderr
-            )
+            print_stderr(f"API key configured for {url} was rejected by server.")
         else:
-            print(f"Missing API key for {url}.", file=sys.stderr)
-            print(
-                "The API key can be specified by --key or in the configuration file.",
-                file=sys.stderr,
+            print_stderr(f"Missing API key for {url}.")
+            print_stderr(
+                "The API key can be specified by --key or in the configuration file."
             )
         return 1
     except RequestException as error:
-        print(f"Request failed: {error}", file=sys.stderr)
+        print_stderr(f"Request failed: {error}")
         return 10
     except (CommandError, wlc.WeblateException) as error:
-        print(f"Error: {error}", file=sys.stderr)
+        print_stderr(f"Error: {error}")
         return 1
     else:
         return 0

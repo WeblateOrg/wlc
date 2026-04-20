@@ -17,13 +17,37 @@ from types import SimpleNamespace
 
 import wlc
 from wlc.config import WeblateConfig
-from wlc.main import Command, Version, main
+from wlc.main import Command, Version, format_for_stream, main
 
 from .test_base import APITest
 
 TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
 TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
 TEST_SECTION = os.path.join(TEST_DATA, "section")
+
+
+class BufferedStringIO(StringIO):
+    """StringIO with a writable binary buffer for CLI tests."""
+
+    def __init__(self, tty: bool = False) -> None:
+        super().__init__()
+        self._buffer = BytesIO()
+        self._tty = tty
+
+    @property
+    def buffer(self) -> BytesIO:
+        """Expose a binary buffer like sys.stdout.buffer."""
+        return self._buffer
+
+    def isatty(self) -> bool:
+        return self._tty
+
+
+class TTYStringIO(BufferedStringIO):
+    """Buffered StringIO behaving like a terminal."""
+
+    def __init__(self) -> None:
+        super().__init__(tty=True)
 
 
 class AttributeDict(dict):
@@ -37,14 +61,15 @@ class AttributeDict(dict):
 class CLITestBase(APITest, ABC):
     """Base class for CLI testing."""
 
-    def execute(self, args, settings=None, stdout=None, stdin=None, expected=0):
+    def execute(
+        self, args, settings=None, stdout=None, stdin=None, expected=0, tty=False
+    ):
         """Execute command and return output."""
         if settings is None:
             settings = ()
         elif not settings:
             settings = None
-        output = StringIO()
-        output.buffer = BytesIO()  # ty:ignore[invalid-assignment]
+        output = TTYStringIO() if tty else BufferedStringIO()
         backup = sys.stdout
         backup_err = sys.stderr
         try:
@@ -242,10 +267,10 @@ class TestOutput(CLITestBase):
     """Test output formatting."""
 
     @staticmethod
-    def create_csv_command(output: StringIO) -> Command:
-        """Create command instance for direct CSV rendering tests."""
+    def create_command(output: StringIO, format_name: str) -> Command:
+        """Create command instance for direct rendering tests."""
         return Command(
-            args=SimpleNamespace(format="csv"),
+            args=SimpleNamespace(format=format_name),
             config=WeblateConfig(),
             stdout=output,
         )
@@ -290,7 +315,7 @@ class TestOutput(CLITestBase):
     def test_csv_escapes_formula_values(self) -> None:
         """CSV output should neutralize spreadsheet formulas."""
         output = StringIO()
-        cmd = self.create_csv_command(output)
+        cmd = self.create_command(output, "csv")
 
         cmd.print(
             {
@@ -308,7 +333,7 @@ class TestOutput(CLITestBase):
     def test_csv_escapes_formula_headers(self) -> None:
         """CSV headers should also be hardened."""
         output = StringIO()
-        cmd = self.create_csv_command(output)
+        cmd = self.create_command(output, "csv")
 
         cmd.print_csv([AttributeDict({"=name": "=Hello"})], ["=name"])
 
@@ -320,6 +345,63 @@ class TestOutput(CLITestBase):
         """Test projects printing."""
         output = self.execute(["--format", "html", "list-projects"])
         self.assertIn("Hello", output)
+
+    def test_format_for_stream_escapes_terminal_control_characters(self) -> None:
+        """Terminal output should render control characters visibly."""
+        self.assertEqual(
+            format_for_stream("hello\x1b[31m\r\nworld", TTYStringIO()),
+            r"hello\x1b[31m\r\nworld",
+        )
+
+    def test_text_output_escapes_terminal_control_characters(self) -> None:
+        """Text output should not emit raw terminal control characters."""
+        output = TTYStringIO()
+        cmd = self.create_command(output, "text")
+
+        cmd.print({"name": "hello\x1b[31m\r\nworld"})
+
+        rendered = output.getvalue()
+        self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
+        self.assertNotIn("\x1b", rendered)
+
+    def test_csv_output_escapes_terminal_control_characters(self) -> None:
+        """CSV output should not emit raw terminal control characters to a tty."""
+        output = TTYStringIO()
+        cmd = self.create_command(output, "csv")
+
+        cmd.print_csv([AttributeDict({"name": "hello\x1b[31m\r\nworld"})], ["name"])
+
+        rendered = output.getvalue()
+        self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
+        self.assertNotIn("\x1b", rendered)
+
+    def test_csv_output_allows_missing_optional_fields(self) -> None:
+        """CSV output should leave blank cells for missing optional fields."""
+        output = StringIO()
+        cmd = self.create_command(output, "csv")
+
+        cmd.print(
+            [
+                AttributeDict({"name": "Hello", "source_language": "en"}),
+                AttributeDict({"name": "World"}),
+            ]
+        )
+
+        rows = list(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows[0], ["name", "source_language"])
+        self.assertEqual(rows[1], ["Hello", "en"])
+        self.assertEqual(rows[2], ["World", ""])
+
+    def test_html_output_escapes_terminal_control_characters(self) -> None:
+        """HTML output should not emit raw terminal control characters to a tty."""
+        output = TTYStringIO()
+        cmd = self.create_command(output, "html")
+
+        cmd.print({"name": "hello\x1b[31m\r\nworld"})
+
+        rendered = output.getvalue()
+        self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
+        self.assertNotIn("\x1b", rendered)
 
     def test_json_encoder(self) -> None:
         """Test JSON encoder."""
@@ -524,6 +606,11 @@ class TestCommands(CLITestBase):
 
         output = self.execute(["download", "hello/weblate/cs"])
         self.assertIn(b"Plural-Forms:", output)
+
+        output = self.execute(
+            ["download", "hello/weblate/cs"], stdout=True, expected=1, tty=True
+        )
+        self.assertIn("Refusing to write downloaded file to terminal", output)
 
         output = self.execute(["download", "hello/weblate/cs", "--convert", "csv"])
         self.assertIn(b'"location"', output)
