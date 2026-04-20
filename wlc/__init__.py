@@ -429,6 +429,7 @@ class LazyObject(dict):
     def __init__(self, weblate, url, **kwargs) -> None:
         """Construct object for given Weblate instance."""
         super().__init__()
+
     def __eq__(self, other: object) -> bool:
         if isinstance(other, LazyObject):
             return (
