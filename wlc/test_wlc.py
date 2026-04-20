@@ -90,7 +90,7 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("bug")
 
     def test_invalid(self) -> None:
-        """Test listing projects."""
+        """Test handling of invalid JSON responses."""
         with self.assertRaisesRegex(WeblateException, "invalid JSON"):
             Weblate().get_object("invalid")
 
