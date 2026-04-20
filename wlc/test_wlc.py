@@ -145,7 +145,7 @@ class WeblateTest(APITest):
         self.assertEqual(len(list(Weblate().list_translations())), 50)
 
     def test_categories(self) -> None:
-        """Test listing translations."""
+        """Test listing categories."""
         self.assertEqual(len(list(Weblate().list_categories())), 2)
 
     def test_authentication(self) -> None:
