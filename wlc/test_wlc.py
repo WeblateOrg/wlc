@@ -95,7 +95,7 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("invalid")
 
     def test_too_long(self) -> None:
-        """Test listing projects."""
+        """Test that too-long object paths raise ValueError."""
         with self.assertRaises(ValueError):
             Weblate().get_object("a/b/c/d")
 
