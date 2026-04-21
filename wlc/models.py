@@ -80,41 +80,35 @@ class Statistics(LazyObject):
         "translate_url",
         "url_translate",
     )
-    OPTIONALS: ClassVar[set[str]] = {
-        "total_chars",
-        "translated_words_percent",
-        "translated_chars",
-        "translated_chars_percent",
-        "fuzzy_words",
-        "fuzzy_words_percent",
-        "fuzzy_chars",
-        "fuzzy_chars_percent",
-        "approved",
-        "approved_percent",
-        "approved_words",
-        "approved_words_percent",
-        "approved_chars",
-        "approved_chars_percent",
-        "readonly",
-        "readonly_percent",
-        "readonly_words",
-        "readonly_words_percent",
-        "readonly_chars",
-        "readonly_chars_percent",
-        "suggestions",
-        "comments",
-        "code",
-        "name",
-        "url",
-        "translate_url",
-        "url_translate",
-    }
+    OPTIONALS: ClassVar[set[str]] = set(PARAMS)
 
     def __init__(self, weblate: Weblate, url: str = "", **kwargs: Any) -> None:
-        """Construct statistics, allowing API responses without a URL."""
-        super().__init__(weblate, url=url, **kwargs)
-        if not url:
+        """Construct statistics, preserving response URLs as data."""
+        super().__init__(weblate, url="" if kwargs else url, **kwargs)
+        if kwargs or not url:
             self._data.pop("url", None)
+            if url:
+                self._load_params(url=url)
+
+    def refresh(self) -> None:
+        """Refresh statistics when a backing API URL is available."""
+        if not self._url:
+            raise AttributeError("url")
+        super().refresh()
+
+    def __getattr__(self, name: str) -> Any:
+        if name in self.PARAMS and not self._url and name not in self._data:
+            raise AttributeError(name)
+        return super().__getattr__(name)
+
+    def keys(self) -> Any:
+        """Return present statistics fields without fetching URL-less objects."""
+        if not self._url:
+            for param in self.PARAMS:
+                if param in self._data or param in self.NULLS:
+                    yield param
+            return
+        yield from super().keys()
 
 
 class LanguageStats(Statistics):
