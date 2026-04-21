@@ -16,6 +16,8 @@ if TYPE_CHECKING:
     import builtins
     from collections.abc import Iterator
 
+    from .client import Weblate
+
 
 class Language(LazyObject):
     """Language object."""
@@ -35,19 +37,98 @@ class Language(LazyObject):
     ID: ClassVar[str] = "code"
 
 
-class LanguageStats(LazyObject):
-    """Language object."""
+class Statistics(LazyObject):
+    """Statistics object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "total",
+        "total_words",
+        "total_chars",
+        "last_change",
+        "recent_changes",
+        "translated",
         "code",
         "translated_words",
-        "language",
-        "translated",
         "translated_percent",
-        "total_words",
+        "translated_words_percent",
+        "translated_chars",
+        "translated_chars_percent",
+        "fuzzy",
+        "fuzzy_percent",
+        "fuzzy_words",
+        "fuzzy_words_percent",
+        "fuzzy_chars",
+        "fuzzy_chars_percent",
+        "failing",
+        "failing_percent",
+        "approved",
+        "approved_percent",
+        "approved_words",
+        "approved_words_percent",
+        "approved_chars",
+        "approved_chars_percent",
+        "readonly",
+        "readonly_percent",
+        "readonly_words",
+        "readonly_words_percent",
+        "readonly_chars",
+        "readonly_chars_percent",
+        "suggestions",
+        "comments",
+        "name",
+        "url",
+        "translate_url",
+        "url_translate",
+    )
+    OPTIONALS: ClassVar[set[str]] = {
+        "total_chars",
+        "translated_words_percent",
+        "translated_chars",
+        "translated_chars_percent",
+        "fuzzy_words",
+        "fuzzy_words_percent",
+        "fuzzy_chars",
+        "fuzzy_chars_percent",
+        "approved",
+        "approved_percent",
+        "approved_words",
+        "approved_words_percent",
+        "approved_chars",
+        "approved_chars_percent",
+        "readonly",
+        "readonly_percent",
+        "readonly_words",
+        "readonly_words_percent",
+        "readonly_chars",
+        "readonly_chars_percent",
+        "suggestions",
+        "comments",
+        "code",
+        "name",
+        "url",
+        "translate_url",
+        "url_translate",
+    }
+
+    def __init__(self, weblate: Weblate, url: str = "", **kwargs: Any) -> None:
+        """Construct statistics, allowing API responses without a URL."""
+        super().__init__(weblate, url=url, **kwargs)
+        if not url:
+            self._data.pop("url", None)
+
+
+class LanguageStats(Statistics):
+    """Language statistics object."""
+
+    PARAMS: ClassVar[tuple[str, ...]] = (
+        *Statistics.PARAMS,
+        "language",
         "words_percent",
     )
+    OPTIONALS: ClassVar[set[str]] = Statistics.OPTIONALS | {
+        "language",
+        "words_percent",
+    }
     ID: ClassVar[str] = "code"
 
 
@@ -117,7 +198,7 @@ class Project(RepoObjectMixin, LazyObject):
         return self.weblate.list_components(self._get_stored("components_list_url"))
 
     def statistics(self) -> Statistics:
-        """Return statistics for translation."""
+        """Return statistics for the project."""
         data = self.weblate.get(self._get_stored("statistics_url"))
         return Statistics(weblate=self.weblate, **data)
 
@@ -251,11 +332,11 @@ class Component(RepoObjectMixin, LazyObject):
 
     def lock(self) -> dict[str, Any]:
         """Lock component from translations."""
-        return self.weblate.post(self._get_lock_url(), lock=1)
+        return self.weblate.post(self._get_lock_url(), lock=True)
 
     def unlock(self) -> dict[str, Any]:
         """Unlock component from translations."""
-        return self.weblate.post(self._get_lock_url(), lock=0)
+        return self.weblate.post(self._get_lock_url(), lock=False)
 
     def lock_status(self) -> dict[str, Any]:
         """Return component lock status."""
@@ -392,30 +473,11 @@ class Translation(RepoObjectMixin, LazyObject):
         )
 
 
-class Statistics(LazyObject):
-    """Statistics object."""
-
-    PARAMS: ClassVar[tuple[str, ...]] = (
-        "failing_percent",
-        "translated_percent",
-        "total_words",
-        "failing",
-        "translated_words",
-        "fuzzy_percent",
-        "recent_changes",
-        "translated",
-        "fuzzy",
-        "total",
-        "last_change",
-        "name",
-        "url",
-    )
-
-
 class TranslationStatistics(Statistics):
     """Translation statistics."""
 
-    PARAMS: ClassVar[tuple[str, ...]] = (*Statistics.PARAMS, "code", "last_author")
+    PARAMS: ClassVar[tuple[str, ...]] = (*Statistics.PARAMS, "last_author")
+    OPTIONALS: ClassVar[set[str]] = Statistics.OPTIONALS | {"last_author"}
 
 
 class Change(LazyObject):
