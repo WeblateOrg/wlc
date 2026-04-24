@@ -239,7 +239,7 @@ class TestSettings(CLITestBase):
         self.assertEqual(config.get("weblate", "timeout"), "300")
         self.assertEqual(
             config.get("weblate", "allowed_methods"),
-            "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET",
+            "HEAD\nDELETE\nOPTIONS\nPUT\nGET",
         )
         self.assertEqual(config.get("weblate", "backoff_factor"), "0")
         self.assertIsNone(config.get("weblate", "status_forcelist"))
@@ -289,7 +289,7 @@ class TestSettings(CLITestBase):
         self.assertIsNone(status_forcelist)
         self.assertEqual(
             allowed_methods,
-            ["HEAD", "TRACE", "DELETE", "OPTIONS", "PUT", "GET"],
+            ["HEAD", "DELETE", "OPTIONS", "PUT", "GET"],
         )
         self.assertEqual(backoff_factor, 0.0)
         self.assertEqual(timeout, 300)

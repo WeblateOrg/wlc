@@ -81,7 +81,6 @@ class Weblate:
                 "PATCH",
                 "DELETE",
                 "OPTIONS",
-                "TRACE",
             ]
             self.backoff_factor = backoff_factor
 
