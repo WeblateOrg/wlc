@@ -94,7 +94,7 @@ class WeblateConfigTestCase(TestCase):
         ) = config.get_request_options()
         self.assertEqual(
             allowed_methods,
-            ["HEAD", "TRACE", "DELETE", "OPTIONS", "PUT", "GET"],
+            ["HEAD", "DELETE", "OPTIONS", "PUT", "GET"],
         )
 
     def test_allowed_methods_strip_comma_separated_values(self) -> None:

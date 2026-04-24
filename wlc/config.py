@@ -46,7 +46,7 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "timeout", "300")
         self.set(self.section, "status_forcelist", None)
         self.set(
-            self.section, "allowed_methods", "HEAD\nTRACE\nDELETE\nOPTIONS\nPUT\nGET"
+            self.section, "allowed_methods", "HEAD\nDELETE\nOPTIONS\nPUT\nGET"
         )
         self.set(self.section, "backoff_factor", "0")
 
