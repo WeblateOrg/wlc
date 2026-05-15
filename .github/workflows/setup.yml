@@ -41,11 +41,11 @@ jobs:
     - name: pydistcheck
       run: uvx pydistcheck --inspect dist/*
     - name: pyroma
-      run: uvx --with pip pyroma dist/*.tar.gz
+      run: uvx pyroma dist/*.tar.gz
     - name: check-wheel-contents
       run: uvx check-wheel-contents dist/*.whl
     - name: check-manifest
-      run: uvx --with pip check-manifest -v
+      run: uvx check-manifest -v
 
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
