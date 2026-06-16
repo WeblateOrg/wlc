@@ -25,6 +25,10 @@ if [ "$1" != "publish" ]; then
     echo --cache-to "type=local,dest=/tmp/.buildx-cache/$MATRIX_ARCHITECTURE,mode=max"
 fi
 
+if [ -n "$BUILDX_METADATA_FILE" ]; then
+    echo --metadata-file "$BUILDX_METADATA_FILE"
+fi
+
 if [ "$1" = "load" ]; then
     # Ommit list of platforms loading, see https://github.com/docker/buildx/issues/59
     echo --output=type=docker
@@ -44,6 +48,8 @@ else
     elif [ "$1" = "publish" ]; then
         # Publishing normal image
         echo --output "type=image,push=true"
+        echo --provenance=mode=max
+        echo --sbom=true
 
         # Generate tags
         case "$GITHUB_REF" in

@@ -20,6 +20,10 @@ jobs:
   setup:
     name: Build packages
     runs-on: ubuntu-24.04
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
     steps:
     - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       with:
@@ -46,10 +50,48 @@ jobs:
       run: uvx check-wheel-contents dist/*.whl
     - name: check-manifest
       run: uvx check-manifest -v
+    - name: Package version
+      id: package
+      run: python -c "from wlc.const import __version__; print(f'version={__version__}')" >> "$GITHUB_OUTPUT"
+    - name: Install Syft
+      id: syft
+      uses: anchore/sbom-action/download-syft@f8bdd1d8ac5e901a77a92f111440fdb1b593736b # v0.20.6
+      with:
+        syft-version: v1.38.0
+    - name: Generate package SBOMs
+      env:
+        SYFT: ${{ steps.syft.outputs.cmd }}
+        VERSION: ${{ steps.package.outputs.version }}
+      run: |
+        mkdir -p dist/sboms
+        "$SYFT" "dist/wlc-$VERSION.tar.gz" -o "cyclonedx-json=dist/sboms/wlc-$VERSION.tar.gz.cdx.json"
+        "$SYFT" "dist/wlc-$VERSION-py3-none-any.whl" -o "cyclonedx-json=dist/sboms/wlc-$VERSION-py3-none-any.whl.cdx.json"
+    - name: Attest package provenance
+      if: startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      with:
+        subject-path: |
+          dist/wlc-${{ steps.package.outputs.version }}.tar.gz
+          dist/wlc-${{ steps.package.outputs.version }}-py3-none-any.whl
+    - name: Attest source package SBOM
+      if: startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      with:
+        subject-path: dist/wlc-${{ steps.package.outputs.version }}.tar.gz
+        sbom-path: dist/sboms/wlc-${{ steps.package.outputs.version }}.tar.gz.cdx.json
+    - name: Attest wheel SBOM
+      if: startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
+      uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
+      with:
+        subject-path: dist/wlc-${{ steps.package.outputs.version }}-py3-none-any.whl
+        sbom-path: dist/sboms/wlc-${{ steps.package.outputs.version }}-py3-none-any.whl.cdx.json
 
     - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
       with:
-        path: dist/*
+        path: |
+          dist/*.tar.gz
+          dist/*.whl
+          dist/sboms/*.json
         name: dist
 
   release_pypi:
@@ -57,21 +99,24 @@ jobs:
     runs-on: ubuntu-24.04
     name: Publish release to PyPI
     permissions:
+      contents: read
       # this permission is mandatory for trusted publishing
       id-token: write
     needs:
     - setup
     steps:
-    - uses: astral-sh/setup-uv@fac544c07dec837d0ccb6301d7b5580bf5edae39 # v8.2.0
-      with:
-        version: 0.11.21
-        enable-cache: false
     - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
       with:
         name: dist
         path: dist
+    - name: Prepare packages
+      run: |
+        mkdir packages
+        cp dist/*.tar.gz dist/*.whl packages/
     - name: Publish package
-      run: uv publish --trusted-publishing always
+      uses: pypa/gh-action-pypi-publish@cef221092ed1bacb1cc03d23a2d87d1d172e277b # release/v1
+      with:
+        packages-dir: packages
 
   release_github:
     runs-on: ubuntu-24.04
@@ -93,4 +138,4 @@ jobs:
         VERSION: ${{ github.ref_name }}
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh release create "$VERSION" --verify-tag --generate-notes dist/*
+        gh release create "$VERSION" --verify-tag --generate-notes dist/*.tar.gz dist/*.whl dist/sboms/*.json
