@@ -55,7 +55,7 @@ jobs:
       run: python -c "from wlc.const import __version__; print(f'version={__version__}')" >> "$GITHUB_OUTPUT"
     - name: Install Syft
       id: syft
-      uses: anchore/sbom-action/download-syft@f8bdd1d8ac5e901a77a92f111440fdb1b593736b # v0.20.6
+      uses: anchore/sbom-action/download-syft@e22c389904149dbc22b58101806040fa8d37a610 # v0.24.0
       with:
         syft-version: v1.38.0
     - name: Generate package SBOMs
