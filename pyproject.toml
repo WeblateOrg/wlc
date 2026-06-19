@@ -20,7 +20,7 @@ pylint = [
 ]
 test = [
   "pytest-cov==7.1.0",
-  "pytest-github-actions-annotate-failures==0.4.1",
+  "pytest-github-actions-annotate-failures==0.4.2",
   "pytest==9.1.1",
   "responses==0.26.1"
 ]
