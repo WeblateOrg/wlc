@@ -13,7 +13,12 @@ from typing import TYPE_CHECKING, TypeVar, overload
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
 
+# CSV injection mitigation: spreadsheet tools can interpret cells starting with
+# these characters as formulas. Use this allowlist/denylist marker set when
+# deciding whether to neutralize a cell value before CSV export.
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
+# Leading whitespace/control characters can be used to obscure a formula prefix
+# in some CSV consumers; treat these as dangerous when checking cell content.
 CSV_DANGEROUS_LEADING = " \t\r\n"
 TERMINAL_CONTROL_REPLACEMENTS = {
     "\a": r"\a",
@@ -24,6 +29,11 @@ TERMINAL_CONTROL_REPLACEMENTS = {
     "\f": r"\f",
     "\r": r"\r",
 }
+TERMINAL_DEL_CODEPOINT = 0x7F
+TERMINAL_C0_START = 0x00
+TERMINAL_C0_END_EXCLUSIVE = 0x20
+TERMINAL_C1_START = 0x80
+TERMINAL_C1_END_EXCLUSIVE = 0xA0
 
 ValueT = TypeVar("ValueT")
 
@@ -61,7 +71,11 @@ def escape_terminal_text(value: str) -> str:
             continue
 
         code = ord(char)
-        if code == 0x7F or 0x00 <= code < 0x20 or 0x80 <= code < 0xA0:
+        if (
+            code == TERMINAL_DEL_CODEPOINT
+            or TERMINAL_C0_START <= code < TERMINAL_C0_END_EXCLUSIVE
+            or TERMINAL_C1_START <= code < TERMINAL_C1_END_EXCLUSIVE
+        ):
             escaped.append(f"\\x{code:02x}")
             continue
 
