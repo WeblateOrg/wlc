@@ -73,11 +73,16 @@ https://hosted.weblate.org/api/ = APIKEY
 ## Environment variables
 
 The API URL and key can also be configured using environment variables. This is
-especially useful for CI workflows where the repository provides the project
-configuration and `WLC_KEY` is injected as a secret:
+especially useful for CI workflows where `WLC_KEY` is injected as a secret:
 
 - `WLC_URL` — API URL
 - `WLC_KEY` — API key
+
+When the API URL comes from automatically discovered project configuration
+(`.weblate`, `.weblate.ini`, or `weblate.ini` in the current directory or a
+parent directory), unscoped secrets must pin the destination explicitly:
+`WLC_KEY` requires `WLC_URL`, and `--key` requires `--url`. URL-scoped keys in
+the `[keys]` section continue to work with project configuration.
 
 The configuration precedence (highest to lowest) is:
 

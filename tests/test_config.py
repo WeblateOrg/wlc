@@ -248,8 +248,8 @@ class WeblateConfigTestCase(TestCase):
             config.get("weblate", "url"), "https://parent.example.com/api/"
         )
 
-    def test_default_discovery_supports_repo_config_with_env_key(self) -> None:
-        """Project config can provide URL while WLC_KEY provides the secret."""
+    def test_project_config_with_env_key_requires_env_url(self) -> None:
+        """Project config URL can not be paired with unscoped WLC_KEY."""
         with TemporaryDirectory() as tmpdirname:
             root = Path(tmpdirname)
             nested = root / "repo"
@@ -264,12 +264,138 @@ class WeblateConfigTestCase(TestCase):
                 config = WeblateConfig()
                 with patch.object(WeblateConfig, "find_config", return_value=None):
                     config.load()
-                os.environ["WLC_KEY"] = "env-api-key"
+                with (
+                    patch.dict(os.environ, {"WLC_KEY": "env-api-key"}, clear=True),
+                    self.assertRaisesRegex(
+                        WLCConfigurationError,
+                        "Using WLC_KEY with project configuration requires WLC_URL",
+                    ),
+                ):
+                    config.get_url_key()
+            finally:
+                os.chdir(current)
+
+    def test_project_config_with_env_key_allows_env_url(self) -> None:
+        """WLC_KEY can be used when WLC_URL pins the destination."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                with patch.dict(
+                    os.environ,
+                    {
+                        "WLC_KEY": "env-api-key",
+                        "WLC_URL": "https://env.example.com/api/",
+                    },
+                    clear=True,
+                ):
+                    url, key = config.get_url_key()
+            finally:
+                os.chdir(current)
+
+        self.assertEqual(url, "https://env.example.com/api/")
+        self.assertEqual(key, "env-api-key")
+
+    def test_project_config_with_cli_key_requires_cli_url(self) -> None:
+        """Project config URL can not be paired with unscoped --key."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                config.cli_key = "cli-api-key"
+
+                with self.assertRaisesRegex(
+                    WLCConfigurationError,
+                    "Using --key with project configuration requires --url",
+                ):
+                    config.get_url_key()
+            finally:
+                os.chdir(current)
+
+    def test_project_config_with_cli_key_allows_cli_url(self) -> None:
+        """--key can be used when --url pins the destination."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                config.cli_key = "cli-api-key"
+                config.cli_url = "https://cli.example.com/api/"
                 url, key = config.get_url_key()
             finally:
                 os.chdir(current)
-                if "WLC_KEY" in os.environ:
-                    del os.environ["WLC_KEY"]
+
+        self.assertEqual(url, "https://cli.example.com/api/")
+        self.assertEqual(key, "cli-api-key")
+
+    def test_project_config_allows_scoped_keys(self) -> None:
+        """Project config URL can use matching URL-scoped keys."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n"
+                "\n"
+                "[keys]\nhttps://repo.example.com/api/ = scoped-api-key\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                url, key = config.get_url_key()
+            finally:
+                os.chdir(current)
 
         self.assertEqual(url, "https://repo.example.com/api/")
+        self.assertEqual(key, "scoped-api-key")
+
+    def test_explicit_config_with_env_key_remains_supported(self) -> None:
+        """Explicit config URL can still be paired with WLC_KEY."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            explicit = root / "explicit.ini"
+            explicit.write_text(
+                "[weblate]\nurl = https://explicit.example.com/api/\n",
+                encoding="utf-8",
+            )
+            config = WeblateConfig()
+            config.load(explicit)
+
+            with patch.dict(os.environ, {"WLC_KEY": "env-api-key"}, clear=True):
+                url, key = config.get_url_key()
+
+        self.assertEqual(url, "https://explicit.example.com/api/")
         self.assertEqual(key, "env-api-key")

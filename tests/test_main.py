@@ -15,6 +15,7 @@ from abc import ABC
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
+from unittest.mock import patch
 
 import wlc
 from wlc.config import WeblateConfig
@@ -221,6 +222,117 @@ class TestSettings(CLITestBase):
             self.assertIn("Hello", output)
         finally:
             del os.environ["WLC_URL"]
+
+    def test_project_config_with_env_key_reports_error(self) -> None:
+        """WLC_KEY can not use a URL from discovered project config."""
+        current = os.path.abspath(".")
+        with TemporaryDirectory() as tmpdirname:
+            repo = os.path.join(tmpdirname, "repo")
+            os.makedirs(repo)
+            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
+                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+
+            try:
+                os.chdir(repo)
+                with (
+                    patch.object(WeblateConfig, "find_config", return_value=None),
+                    patch.dict(os.environ, {"WLC_KEY": "KEY"}, clear=True),
+                ):
+                    output = self.execute(["show", "acl"], settings=False, expected=1)
+            finally:
+                os.chdir(current)
+
+        self.assertIn(
+            "Error: Using WLC_KEY with project configuration requires WLC_URL.",
+            output,
+        )
+
+    def test_project_config_with_env_key_allows_env_url(self) -> None:
+        """WLC_KEY can use WLC_URL even when project config is present."""
+        current = os.path.abspath(".")
+        with TemporaryDirectory() as tmpdirname:
+            repo = os.path.join(tmpdirname, "repo")
+            os.makedirs(repo)
+            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
+                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+
+            try:
+                os.chdir(repo)
+                with (
+                    patch.object(WeblateConfig, "find_config", return_value=None),
+                    patch.dict(
+                        os.environ,
+                        {
+                            "WLC_KEY": "KEY",
+                            "WLC_URL": "http://127.0.0.1:8000/api/",
+                        },
+                        clear=True,
+                    ),
+                ):
+                    output = self.execute(["show", "acl"], settings=False)
+            finally:
+                os.chdir(current)
+
+        self.assertIn("ACL", output)
+
+    def test_project_config_with_cli_key_reports_error(self) -> None:
+        """--key can not use a URL from discovered project config."""
+        current = os.path.abspath(".")
+        with TemporaryDirectory() as tmpdirname:
+            repo = os.path.join(tmpdirname, "repo")
+            os.makedirs(repo)
+            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
+                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+
+            try:
+                os.chdir(repo)
+                with (
+                    patch.object(WeblateConfig, "find_config", return_value=None),
+                    patch.dict(os.environ, {}, clear=True),
+                ):
+                    output = self.execute(
+                        ["--key", "KEY", "show", "acl"],
+                        settings=False,
+                        expected=1,
+                    )
+            finally:
+                os.chdir(current)
+
+        self.assertIn(
+            "Error: Using --key with project configuration requires --url.",
+            output,
+        )
+
+    def test_project_config_with_cli_key_allows_cli_url(self) -> None:
+        """--key can use --url even when project config is present."""
+        current = os.path.abspath(".")
+        with TemporaryDirectory() as tmpdirname:
+            repo = os.path.join(tmpdirname, "repo")
+            os.makedirs(repo)
+            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
+                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+
+            try:
+                os.chdir(repo)
+                with (
+                    patch.object(WeblateConfig, "find_config", return_value=None),
+                    patch.dict(os.environ, {}, clear=True),
+                ):
+                    output = self.execute(
+                        [
+                            "--key",
+                            "KEY",
+                            "--url",
+                            "http://127.0.0.1:8000/api/",
+                            "show",
+                            "acl",
+                        ],
+                        settings=False,
+                    )
+            finally:
+                os.chdir(current)
+
+        self.assertIn("ACL", output)
 
     def test_config_cwd(self) -> None:
         """Test loading settings from current dir."""
