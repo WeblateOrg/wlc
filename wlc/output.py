@@ -24,6 +24,11 @@ TERMINAL_CONTROL_REPLACEMENTS = {
     "\f": r"\f",
     "\r": r"\r",
 }
+TERMINAL_DEL_CODEPOINT = 0x7F
+TERMINAL_C0_START = 0x00
+TERMINAL_C0_END_EXCLUSIVE = 0x20
+TERMINAL_C1_START = 0x80
+TERMINAL_C1_END_EXCLUSIVE = 0xA0
 
 ValueT = TypeVar("ValueT")
 
@@ -61,7 +66,11 @@ def escape_terminal_text(value: str) -> str:
             continue
 
         code = ord(char)
-        if code == 0x7F or 0x00 <= code < 0x20 or 0x80 <= code < 0xA0:
+        if (
+            code == TERMINAL_DEL_CODEPOINT
+            or TERMINAL_C0_START <= code < TERMINAL_C0_END_EXCLUSIVE
+            or TERMINAL_C1_START <= code < TERMINAL_C1_END_EXCLUSIVE
+        ):
             escaped.append(f"\\x{code:02x}")
             continue
 
