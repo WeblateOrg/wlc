@@ -13,7 +13,12 @@ from typing import TYPE_CHECKING, TypeVar, overload
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
 
+# CSV injection mitigation: spreadsheet tools can interpret cells starting with
+# these characters as formulas. Use this allowlist/denylist marker set when
+# deciding whether to neutralize a cell value before CSV export.
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
+# Leading whitespace/control characters can be used to obscure a formula prefix
+# in some CSV consumers; treat these as dangerous when checking cell content.
 CSV_DANGEROUS_LEADING = " \t\r\n"
 TERMINAL_CONTROL_REPLACEMENTS = {
     "\a": r"\a",
