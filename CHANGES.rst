@@ -5,6 +5,10 @@
 * Require explicit URL pinning for unscoped API keys when the API URL comes
   from automatically discovered project configuration: ``WLC_KEY`` requires
   ``WLC_URL`` and ``--key`` requires ``--url``.
+* Removed ``TRACE`` from the default retryable HTTP methods.
+* Added package and container provenance attestations and SBOM publishing for
+  release artifacts.
+* Updated development dependencies, CI actions, and Docker base images.
 
 2.0.0
 -----
