@@ -1,3 +1,11 @@
+2.0.1
+-----
+
+* Released on 26th June 2026.
+* Require explicit URL pinning for unscoped API keys when the API URL comes
+  from automatically discovered project configuration: ``WLC_KEY`` requires
+  ``WLC_URL`` and ``--key`` requires ``--url``.
+
 2.0.0
 -----
 

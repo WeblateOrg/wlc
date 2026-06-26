@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
-from typing import TYPE_CHECKING, TypeAlias, cast
+from typing import TYPE_CHECKING, Literal, TypeAlias, cast
 
 from xdg.BaseDirectory import load_first_config
 
@@ -20,6 +20,8 @@ if TYPE_CHECKING:
 __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
 
 RequestOptions: TypeAlias = tuple[int, list[int] | None, list[str], float, int]
+URLSource: TypeAlias = Literal["default", "cli", "env", "explicit", "user", "project"]
+KeySource: TypeAlias = Literal["none", "cli", "env", "keys"]
 
 
 class WLCConfigurationError(Exception):
@@ -35,6 +37,7 @@ class WeblateConfig(RawConfigParser):
         self.section: str = section
         self.cli_key: str | None = None
         self.cli_url: str | None = None
+        self._config_url_source: URLSource = "default"
         self.set_defaults()
 
     def set_defaults(self) -> None:
@@ -79,37 +82,79 @@ class WeblateConfig(RawConfigParser):
 
         return None
 
+    def _read_config(self, path: Path | str, url_source: URLSource) -> list[str]:
+        """Read configuration and remember whether it supplied the API URL."""
+        parser = RawConfigParser(delimiters=("=",))
+        loaded = parser.read(path)
+        if not loaded:
+            return loaded
+
+        self.read(path)
+        if parser.has_option(self.section, "url"):
+            self._config_url_source = url_source
+
+        return loaded
+
     def load(self, path: Path | str | None = None) -> None:
         """Load configuration from an explicit path or discovered locations."""
         if path:
-            loaded = self.read(path)
+            loaded = self._read_config(path, "explicit")
             if not loaded:
                 raise WLCConfigurationError(
                     f"Could not read configuration file: {os.path.abspath(path)}"
                 )
         else:
             if config := self.find_config():
-                self.read(config)
+                self._read_config(config, "user")
             if config := self.find_project_config():
-                self.read(config)
+                self._read_config(config, "project")
 
         if self.has_option(self.section, "key"):
             raise WLCConfigurationError(
                 "Using 'key' in settings is insecure, use [keys] section instead."
             )
 
+    def _get_url_key_sources(self) -> tuple[str, URLSource, str, KeySource]:
+        """Get API URL, key, and their sources."""
+        if self.cli_url:
+            url = self.cli_url
+            url_source: URLSource = "cli"
+        elif env_url := os.environ.get("WLC_URL", ""):
+            url = env_url
+            url_source = "env"
+        else:
+            url = cast("str", self.get(self.section, "url"))
+            url_source = self._config_url_source
+
+        if self.cli_key:
+            key = self.cli_key
+            key_source: KeySource = "cli"
+        elif env_key := os.environ.get("WLC_KEY", ""):
+            key = env_key
+            key_source = "env"
+        else:
+            key = cast("str", self.get("keys", url, fallback=""))
+            key_source = "keys" if key else "none"
+
+        if url_source == "project":
+            if key_source == "cli":
+                raise WLCConfigurationError(
+                    "Using --key with project configuration requires --url."
+                )
+            if key_source == "env":
+                raise WLCConfigurationError(
+                    "Using WLC_KEY with project configuration requires WLC_URL."
+                )
+
+        return url, url_source, key, key_source
+
+    def validate_url_key(self) -> None:
+        """Validate URL and key source combination."""
+        self._get_url_key_sources()
+
     def get_url_key(self) -> tuple[str, str]:
         """Get API URL and key."""
-        url = (
-            self.cli_url
-            or os.environ.get("WLC_URL", "")
-            or cast("str", self.get(self.section, "url"))
-        )
-        key = (
-            self.cli_key
-            or os.environ.get("WLC_KEY", "")
-            or cast("str", self.get("keys", url, fallback=""))
-        )
+        url, _url_source, key, _key_source = self._get_url_key_sources()
         return url, key
 
     def get_request_options(self) -> RequestOptions:

@@ -937,6 +937,8 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
     if args.url:
         config.cli_url = args.url
 
+    config.validate_url_key()
+
     return config
 
 
