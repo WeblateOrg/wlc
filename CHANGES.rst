@@ -1,3 +1,17 @@
+2.1.0
+-----
+
+* Released on 30th June 2026.
+* Refuse sending API keys over non-local ``http://`` URLs by default, while
+  keeping loopback HTTP supported for local development and adding explicit
+  opt-in via ``--allow-insecure-http``, ``WLC_ALLOW_INSECURE_HTTP``, or trusted
+  configuration.
+* Fixed paginated listings with query parameters to avoid duplicating
+  parameters from API-provided ``next`` URLs.
+* Updated minimum supported ``requests`` and ``urllib3`` versions.
+* Improved inline API documentation and output handling internals.
+* Updated development dependencies, CI actions, and Docker base images.
+
 2.0.1
 -----
 
