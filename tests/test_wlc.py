@@ -11,6 +11,7 @@ import os
 from abc import ABC
 from typing import ClassVar
 from unittest.mock import patch
+from urllib.parse import urlencode
 
 import responses
 from urllib3.util.retry import Retry
@@ -246,6 +247,35 @@ class WeblateTest(APITest):
             Weblate.should_verify_ssl("https://localhost.example.com/api/"), True
         )
         self.assertEqual(Weblate.should_verify_ssl("http://example.com/api/"), True)
+
+    def test_paginated_listing_uses_params_only_for_first_request(self) -> None:
+        """The API-provided next URL already includes query parameters."""
+        query = "language:en AND state:<translated"
+        page1 = "http://127.0.0.1:8000/api/filtered-units/"
+        page2 = f"{page1}?{urlencode({'page': 2, 'q': query})}"
+        pages = (
+            ({"q": query}, page2, 1),
+            ({"page": "2", "q": query}, None, 2),
+        )
+        for params, next_url, unit_id in pages:
+            responses.add(
+                responses.GET,
+                page1,
+                json={
+                    "next": next_url,
+                    "results": [
+                        {
+                            "id": unit_id,
+                            "url": f"http://127.0.0.1:8000/api/units/{unit_id}/",
+                        }
+                    ],
+                },
+                match=[responses.matchers.query_param_matcher(params)],
+            )
+
+        units = list(Weblate().list_units("filtered-units/", params={"q": query}))
+
+        self.assertEqual([1, 2], [unit.id for unit in units])
 
 
 class ObjectTestBaseClass(APITest, ABC):
