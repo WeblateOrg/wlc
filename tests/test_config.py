@@ -274,6 +274,71 @@ class WeblateConfigTestCase(TestCase):
             config.get("weblate", "url"), "https://parent.example.com/api/"
         )
 
+    def test_project_config_cannot_allow_insecure_http(self) -> None:
+        """Project config can not opt users into insecure token transport."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            global_config = root / "global.ini"
+            global_config.write_text(
+                "[keys]\nhttp://repo.example.com/api/ = scoped-api-key\n",
+                encoding="utf-8",
+            )
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\n"
+                "url = http://repo.example.com/api/\n"
+                "allow_insecure_http = yes\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(global_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertFalse(config.get_allow_insecure_http())
+        self.assertEqual(config.get_url_key()[1], "scoped-api-key")
+        with self.assertRaisesRegex(wlc.WeblateException, "insecure HTTP"):
+            wlc.Weblate(config=config)
+
+    def test_user_config_can_allow_insecure_http_with_project_url(self) -> None:
+        """User config can opt into insecure transport for project URLs."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            global_config = root / "global.ini"
+            global_config.write_text(
+                "[weblate]\nallow_insecure_http = yes\n"
+                "\n"
+                "[keys]\nhttp://repo.example.com/api/ = scoped-api-key\n",
+                encoding="utf-8",
+            )
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = http://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(global_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertTrue(config.get_allow_insecure_http())
+        client = wlc.Weblate(config=config)
+        self.assertTrue(client.allow_insecure_http)
+
     def test_project_config_with_env_key_requires_env_url(self) -> None:
         """Project config URL can not be paired with unscoped WLC_KEY."""
         with TemporaryDirectory() as tmpdirname:

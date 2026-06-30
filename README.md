@@ -97,6 +97,9 @@ The configuration precedence (highest to lowest) is:
 API keys are rejected over non-local `http://` URLs by default. Use HTTPS, a
 loopback HTTP URL for local development, or explicitly opt in with
 `--allow-insecure-http`, `WLC_ALLOW_INSECURE_HTTP`, or `allow_insecure_http`.
+Automatically discovered project configuration can not enable
+`allow_insecure_http`; set it in user configuration or pass an explicit
+`--config` file instead.
 
 ## Docker image
 

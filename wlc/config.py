@@ -91,7 +91,14 @@ class WeblateConfig(RawConfigParser):
         if not loaded:
             return loaded
 
-        self.read(path)
+        if url_source == "project":
+            parser.remove_option(self.section, "allow_insecure_http")
+        self.read_dict(
+            {
+                section: dict(parser.items(section, raw=True))
+                for section in parser.sections()
+            }
+        )
         if parser.has_option(self.section, "url"):
             self._config_url_source = url_source
 
