@@ -94,7 +94,8 @@ class WeblateConfig(RawConfigParser):
 
         if url_source == "project":
             parser.remove_option(parser.default_section, "allow_insecure_http")
-            parser.remove_option(self.section, "allow_insecure_http")
+            if parser.has_section(self.section):
+                parser.remove_option(self.section, "allow_insecure_http")
         config_data = StringIO()
         parser.write(config_data)
         config_data.seek(0)

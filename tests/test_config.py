@@ -342,6 +342,37 @@ class WeblateConfigTestCase(TestCase):
         client = wlc.Weblate(config=config)
         self.assertTrue(client.allow_insecure_http)
 
+    def test_project_config_without_selected_section_is_harmless(self) -> None:
+        """Project config without selected section should not crash loading."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            global_config = root / "global.ini"
+            global_config.write_text(
+                "[custom]\nurl = https://custom.example.com/api/\n",
+                encoding="utf-8",
+            )
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\n"
+                "url = http://repo.example.com/api/\n"
+                "allow_insecure_http = yes\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig(section="custom")
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(global_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertEqual(config.get("custom", "url"), "https://custom.example.com/api/")
+        self.assertFalse(config.get_allow_insecure_http())
+
     def test_project_config_with_env_key_requires_env_url(self) -> None:
         """Project config URL can not be paired with unscoped WLC_KEY."""
         with TemporaryDirectory() as tmpdirname:
