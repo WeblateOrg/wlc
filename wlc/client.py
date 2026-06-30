@@ -312,6 +312,7 @@ class Weblate:
         """Listing object wrapper."""
         while path is not None:
             data = self.get(path, params=params)
+            params = None
             if isinstance(data, list):
                 for item in data:
                     yield parser(weblate=self, **item)
