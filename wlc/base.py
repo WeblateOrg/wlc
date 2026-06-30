@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 
 
 class LazyObject(dict[str, Any]):
-    """Object which supports deferred loading."""
+    """Mapping object that supports deferred loading from the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = ()
     OPTIONALS: ClassVar[set[str]] = set()
@@ -60,6 +60,7 @@ class LazyObject(dict[str, Any]):
     __hash__ = None
 
     def get_data(self) -> dict[str, Any]:
+        """Return a copy of the currently loaded object data."""
         return copy(self._data)
 
     def __str__(self) -> str:
@@ -123,6 +124,7 @@ class LazyObject(dict[str, Any]):
             raise AttributeError(name) from error
 
     def setattrvalue(self, name: str, value: Any) -> None:
+        """Set a loaded API attribute value."""
         if name not in self.PARAMS:
             raise AttributeError(name)
 
