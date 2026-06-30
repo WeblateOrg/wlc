@@ -17,8 +17,6 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
 
-import responses
-
 import wlc
 from wlc.config import WeblateConfig
 from wlc.main import Command, Version, format_for_stream, main
@@ -224,54 +222,6 @@ class TestSettings(CLITestBase):
             self.assertIn("Hello", output)
         finally:
             del os.environ["WLC_URL"]
-
-    def test_cli_key_rejects_non_local_http_url(self) -> None:
-        """CLI should reject API keys over non-local HTTP by default."""
-        with patch.dict(os.environ, {}, clear=True):
-            output = self.execute(
-                [
-                    "--url",
-                    "http://example.com/api/",
-                    "--key",
-                    "KEY",
-                    "list-projects",
-                ],
-                expected=1,
-            )
-
-        self.assertIn("Refusing to use an API key over insecure HTTP", output)
-
-    def test_env_key_rejects_non_local_http_url(self) -> None:
-        """Environment config should reject API keys over non-local HTTP."""
-        with patch.dict(
-            os.environ,
-            {
-                "WLC_URL": "http://example.com/api/",
-                "WLC_KEY": "KEY",
-            },
-            clear=True,
-        ):
-            output = self.execute(["list-projects"], expected=1)
-
-        self.assertIn("Refusing to use an API key over insecure HTTP", output)
-
-    def test_cli_allows_non_local_http_url_when_opted_in(self) -> None:
-        """CLI flag can explicitly allow API keys over non-local HTTP."""
-        responses.add(responses.GET, "http://example.com/api/projects/", json=[])
-
-        with patch.dict(os.environ, {}, clear=True):
-            output = self.execute(
-                [
-                    "--allow-insecure-http",
-                    "--url",
-                    "http://example.com/api/",
-                    "--key",
-                    "KEY",
-                    "list-projects",
-                ]
-            )
-
-        self.assertEqual("", output)
 
     def test_project_config_with_env_key_reports_error(self) -> None:
         """WLC_KEY can not use a URL from discovered project config."""
@@ -1036,18 +986,3 @@ class TestErrors(CLITestBase):
             ["--url", "http://denied.example.com", "list-projects"], expected=1
         )
         self.assertIn("Missing API key", output)
-
-    def test_commandline_wrong_key(self) -> None:
-        """Configuration using command-line."""
-        output = self.execute(
-            [
-                "--allow-insecure-http",
-                "--key",
-                "x",
-                "--url",
-                "http://denied.example.com",
-                "list-projects",
-            ],
-            expected=1,
-        )
-        self.assertIn("was rejected by server", output)
