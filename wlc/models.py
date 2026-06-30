@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 
 
 class Language(LazyObject):
-    """Language object."""
+    """Language object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -38,7 +38,7 @@ class Language(LazyObject):
 
 
 class Statistics(LazyObject):
-    """Statistics object."""
+    """Statistics object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "total",
@@ -112,7 +112,7 @@ class Statistics(LazyObject):
 
 
 class LanguageStats(Statistics):
-    """Language statistics object."""
+    """Language statistics object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         *Statistics.PARAMS,
@@ -127,7 +127,7 @@ class LanguageStats(Statistics):
 
 
 class ProjectRepository(RepoMixin, LazyObject):
-    """Repository object."""
+    """Project repository status object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -142,7 +142,7 @@ class ProjectRepository(RepoMixin, LazyObject):
 
 
 class Repository(ProjectRepository):
-    """Repository object."""
+    """Component or translation repository status object."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -156,7 +156,7 @@ class Repository(ProjectRepository):
 
 
 class Project(RepoObjectMixin, LazyObject):
-    """Project object."""
+    """Project object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -211,17 +211,20 @@ class Project(RepoObjectMixin, LazyObject):
         return self.weblate.list_categories(self._get_stored("categories_url"))
 
     def delete(self) -> None:
+        """Delete the project."""
         self.weblate.raw_request("delete", self._url)
 
     def create_component(self, **kwargs: Any) -> dict[str, Any]:
+        """Create a new component in the project."""
         return self.weblate.create_component(self.slug, **kwargs)
 
     def full_slug(self) -> str:
+        """Return the project slug."""
         return self.slug
 
 
 class Category(LazyObject):
-    """Category object."""
+    """Category object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "category",
@@ -236,6 +239,7 @@ class Category(LazyObject):
     MAPPINGS: ClassVar[dict[str, Any]] = {"project": Project}
 
     def full_slug(self) -> str:
+        """Return the category slug including the project and parent categories."""
         current = self
         slugs = [self.project.slug, self.slug]
         while current.category:
@@ -248,7 +252,7 @@ Category.MAPPINGS["category"] = Category
 
 
 class Component(RepoObjectMixin, LazyObject):
-    """Component object."""
+    """Component object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -301,6 +305,7 @@ class Component(RepoObjectMixin, LazyObject):
     REPOSITORY_CLASS = Repository
 
     def full_slug(self) -> str:
+        """Return the component slug including project and category path."""
         if self.category:
             return f"{self.category.full_slug()}/{self.slug}"
         return f"{self.project.full_slug()}/{self.slug}"
@@ -341,6 +346,7 @@ class Component(RepoObjectMixin, LazyObject):
         return self.weblate.list_changes(self._get_stored("changes_list_url"))
 
     def delete(self) -> None:
+        """Delete the component."""
         self.weblate.raw_request("delete", self._url)
 
     def add_source_string(
@@ -364,11 +370,12 @@ class Component(RepoObjectMixin, LazyObject):
         return self.weblate.raw_request("get", url)
 
     def patch(self, **kwargs: Any) -> bytes:
+        """Update component fields."""
         return self.weblate.raw_request("patch", self._url, data=kwargs)
 
 
 class Translation(RepoObjectMixin, LazyObject):
-    """Translation object."""
+    """Translation object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -458,6 +465,7 @@ class Translation(RepoObjectMixin, LazyObject):
         return self.weblate.request("post", url, files=files, data=kwargs)
 
     def delete(self) -> None:
+        """Delete the translation."""
         self.weblate.raw_request("delete", self._url)
 
     def units(self, **kwargs: Any) -> Iterator[Unit]:
@@ -468,14 +476,14 @@ class Translation(RepoObjectMixin, LazyObject):
 
 
 class TranslationStatistics(Statistics):
-    """Translation statistics."""
+    """Translation statistics object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (*Statistics.PARAMS, "last_author")
     OPTIONALS: ClassVar[set[str]] = Statistics.OPTIONALS | {"last_author"}
 
 
 class Change(LazyObject):
-    """Change object."""
+    """Change object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "url",
@@ -501,7 +509,7 @@ class Change(LazyObject):
 
 
 class Unit(LazyObject):
-    """Unit object."""
+    """Translation unit object returned by the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = (
         "approved",
@@ -554,9 +562,11 @@ class Unit(LazyObject):
         return self
 
     def patch(self, **kwargs: Any) -> bytes:
+        """Update unit fields using HTTP PATCH."""
         return self.weblate.raw_request("patch", self._url, data=kwargs)
 
     def put(self, **kwargs: Any) -> bytes:
+        """Update unit fields using HTTP PUT."""
         if "target" not in kwargs:
             target = self.target
             kwargs["target"] = (
@@ -568,4 +578,5 @@ class Unit(LazyObject):
         return self.weblate.raw_request("put", self._url, data=kwargs)
 
     def delete(self) -> bytes:
+        """Delete the unit."""
         return self.weblate.raw_request("delete", self._url)

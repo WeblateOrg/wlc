@@ -26,11 +26,20 @@ KeySource: TypeAlias = Literal["none", "cli", "env", "keys"]
 
 
 class WLCConfigurationError(Exception):
-    """Error in the configuration file."""
+    """Configuration could not be loaded or combines unsafe option sources."""
 
 
 class WeblateConfig(RawConfigParser):
-    """Configuration parser wrapper with defaults."""
+    """
+    Configuration parser wrapper with defaults.
+
+    :param section: Configuration section to use.
+
+    The parser loads user configuration, optional project configuration, and
+    command-line or environment overrides. API keys in project configuration are
+    constrained so unscoped secrets can not be paired with a project-provided
+    API URL.
+    """
 
     def __init__(self, section: str = "weblate") -> None:
         """Construct WeblateConfig object."""
@@ -56,6 +65,7 @@ class WeblateConfig(RawConfigParser):
 
     @staticmethod
     def find_config() -> str | None:
+        """Find the first user configuration file."""
         # Handle Windows specifically
         for envname in ("APPDATA", "LOCALAPPDATA"):
             if path := os.environ.get(envname):
@@ -106,7 +116,13 @@ class WeblateConfig(RawConfigParser):
         return loaded
 
     def load(self, path: Path | str | None = None) -> None:
-        """Load configuration from an explicit path or discovered locations."""
+        """
+        Load configuration from an explicit path or discovered locations.
+
+        When ``path`` is specified, only that file is loaded. Otherwise the user
+        configuration is loaded first, followed by the nearest project
+        configuration file from the current directory or its parents.
+        """
         if path:
             loaded = self._read_config(path, "explicit")
             if not loaded:
@@ -159,15 +175,23 @@ class WeblateConfig(RawConfigParser):
         return url, url_source, key, key_source
 
     def validate_url_key(self) -> None:
-        """Validate URL and key source combination."""
+        """
+        Validate URL and key source combination.
+
+        When the API URL comes from automatically discovered project
+        configuration, unscoped keys must pin the destination explicitly:
+        ``WLC_KEY`` requires ``WLC_URL``, and a command-line key requires a
+        command-line URL.
+        """
         self._get_url_key_sources()
 
     def get_url_key(self) -> tuple[str, str]:
-        """Get API URL and key."""
+        """Get the resolved API URL and API key."""
         url, _url_source, key, _key_source = self._get_url_key_sources()
         return url, key
 
     def get_request_options(self) -> RequestOptions:
+        """Get request retry and timeout options."""
         retries = int(self.get(self.section, "retries"))
         timeout = int(self.get(self.section, "timeout"))
         status_forcelist = self.get(self.section, "status_forcelist")
@@ -182,7 +206,15 @@ class WeblateConfig(RawConfigParser):
         return retries, status_forcelist, allowed_methods, backoff_factor, timeout
 
     def get_allow_insecure_http(self) -> bool:
-        """Return whether authenticated non-local HTTP URLs are allowed."""
+        """
+        Return whether authenticated non-local HTTP URLs are allowed.
+
+        The insecure HTTP opt-in is enable-only: a command-line flag, a true
+        ``WLC_ALLOW_INSECURE_HTTP`` value, or trusted configuration can enable
+        it. False or unset command-line and environment sources do not disable a
+        configuration opt-in. Automatically discovered project configuration can
+        not enable it.
+        """
         if self.cli_allow_insecure_http:
             return True
         if os.environ.get("WLC_ALLOW_INSECURE_HTTP", "").lower() in {

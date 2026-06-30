@@ -40,7 +40,25 @@ LazyObjectT = TypeVar("LazyObjectT", bound=LazyObject)
 
 
 class Weblate:
-    """Weblate API wrapper object."""
+    """
+    Weblate API wrapper object.
+
+    :param key: API key used for authenticated requests.
+    :param url: API server URL. The URL should point to the Weblate API root.
+    :param config: Configuration object. When supplied, it overrides the other
+        connection and request options.
+    :param retries: Total number of HTTP retries.
+    :param status_forcelist: HTTP status codes that should trigger retries.
+    :param allowed_methods: HTTP methods that may be retried.
+    :param backoff_factor: Retry backoff factor passed to urllib3.
+    :param timeout: HTTP request timeout in seconds.
+    :param allow_insecure_http: Allow API keys over non-local ``http://`` URLs.
+
+    When an API key is configured, non-local ``http://`` URLs are rejected by
+    default. Use HTTPS, loopback HTTP for local development, or set
+    ``allow_insecure_http`` only for legacy deployments where HTTPS is not
+    available.
+    """
 
     def __init__(
         self,
@@ -54,7 +72,7 @@ class Weblate:
         timeout: int = 300,
         allow_insecure_http: bool = False,
     ) -> None:
-        """Create the object, storing key, API url and requests retry args."""
+        """Create the object, storing key, API URL, and request options."""
         self.session = requests.Session()
         self.retry_total: int
         self.status_forcelist: Collection[int] | None
