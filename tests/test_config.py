@@ -286,6 +286,9 @@ class WeblateConfigTestCase(TestCase):
             nested = root / "repo"
             nested.mkdir()
             (nested / ".weblate").write_text(
+                "[DEFAULT]\n"
+                "allow_insecure_http = yes\n"
+                "\n"
                 "[weblate]\n"
                 "url = http://repo.example.com/api/\n"
                 "allow_insecure_http = yes\n",

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import os.path
 from configparser import NoOptionError, RawConfigParser
+from io import StringIO
 from typing import TYPE_CHECKING, Literal, TypeAlias, cast
 
 from xdg.BaseDirectory import load_first_config
@@ -92,13 +93,12 @@ class WeblateConfig(RawConfigParser):
             return loaded
 
         if url_source == "project":
+            parser.remove_option(parser.default_section, "allow_insecure_http")
             parser.remove_option(self.section, "allow_insecure_http")
-        self.read_dict(
-            {
-                section: dict(parser.items(section, raw=True))
-                for section in parser.sections()
-            }
-        )
+        config_data = StringIO()
+        parser.write(config_data)
+        config_data.seek(0)
+        self.read_file(config_data)
         if parser.has_option(self.section, "url"):
             self._config_url_source = url_source
 
