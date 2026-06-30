@@ -23,6 +23,35 @@ class WeblateURLValidationTest(APITest):
 
     evil_domain = "http://evil.example.com/api"
 
+    def test_rejects_api_key_with_non_local_http_url(self) -> None:
+        """API keys should not be sent over cleartext non-local HTTP."""
+        with self.assertRaisesRegex(WeblateException, "insecure HTTP"):
+            Weblate(key="KEY", url="http://example.com/api/")
+
+        self.assertFalse(responses.calls)
+
+    def test_allows_api_key_with_loopback_http_url(self) -> None:
+        """Loopback HTTP remains supported for local development."""
+        projects = list(
+            Weblate(key="KEY", url="http://127.0.0.1:8000/api/").list_projects()
+        )
+
+        self.assertEqual(len(projects), 2)
+
+    def test_allows_api_key_with_non_local_http_url_when_opted_in(self) -> None:
+        """Non-local HTTP token transport requires an explicit opt-in."""
+        responses.add(responses.GET, "http://example.com/api/projects/", json=[])
+
+        projects = list(
+            Weblate(
+                key="KEY",
+                url="http://example.com/api/",
+                allow_insecure_http=True,
+            ).list_projects()
+        )
+
+        self.assertEqual(projects, [])
+
     def assert_origin_rejected(self, action, attacker_url, method=responses.GET):
         """Assert the client rejects a cross-origin URL before any request is sent."""
         attacker_requests = []

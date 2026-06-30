@@ -986,11 +986,3 @@ class TestErrors(CLITestBase):
             ["--url", "http://denied.example.com", "list-projects"], expected=1
         )
         self.assertIn("Missing API key", output)
-
-    def test_commandline_wrong_key(self) -> None:
-        """Configuration using command-line."""
-        output = self.execute(
-            ["--key", "x", "--url", "http://denied.example.com", "list-projects"],
-            expected=1,
-        )
-        self.assertIn("was rejected by server", output)

@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import logging
 from collections.abc import Collection, Iterator, Mapping
+from ipaddress import ip_address
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 from urllib.parse import ParseResult, urljoin, urlparse
 
@@ -51,6 +52,7 @@ class Weblate:
         allowed_methods: Collection[str] | None = None,
         backoff_factor: float = 0,
         timeout: int = 300,
+        allow_insecure_http: bool = False,
     ) -> None:
         """Create the object, storing key, API url and requests retry args."""
         self.session = requests.Session()
@@ -59,6 +61,7 @@ class Weblate:
         self.allowed_methods: Collection[str]
         self.backoff_factor: float
         self.timeout: int
+        self.allow_insecure_http: bool
         if config is not None:
             self.url, self.key = config.get_url_key()
             (
@@ -68,12 +71,14 @@ class Weblate:
                 self.backoff_factor,
                 self.timeout,
             ) = config.get_request_options()
+            self.allow_insecure_http = config.get_allow_insecure_http()
         else:
             self.key = key
             self.url = url
             self.retry_total = retries
             self.status_forcelist = status_forcelist
             self.timeout = timeout
+            self.allow_insecure_http = allow_insecure_http
             self.allowed_methods = allowed_methods or [
                 "HEAD",
                 "GET",
@@ -96,6 +101,33 @@ class Weblate:
         if not self.url.endswith("/"):
             self.url += "/"
         self.api_origin = self.get_origin(urlparse(self.url))
+        self.validate_authenticated_transport()
+
+    @staticmethod
+    def is_loopback_host(hostname: str | None) -> bool:
+        """Return whether a host resolves to a local loopback literal/name."""
+        if hostname is None:
+            return False
+        if hostname.lower() == "localhost":
+            return True
+        try:
+            return ip_address(hostname).is_loopback
+        except ValueError:
+            return False
+
+    def validate_authenticated_transport(self) -> None:
+        """Prevent sending API tokens over non-local cleartext HTTP."""
+        parsed_url = urlparse(self.url)
+        if (
+            self.key
+            and parsed_url.scheme == "http"
+            and not self.is_loopback_host(parsed_url.hostname)
+            and not self.allow_insecure_http
+        ):
+            raise WeblateException(
+                "Refusing to use an API key over insecure HTTP. "
+                "Use HTTPS or explicitly enable insecure HTTP."
+            )
 
     @staticmethod
     def get_effective_port(url: ParseResult) -> int | None:
