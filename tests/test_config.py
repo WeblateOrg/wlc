@@ -82,6 +82,32 @@ class WeblateConfigTestCase(TestCase):
             del os.environ["WLC_URL"]
             del os.environ["WLC_KEY"]
 
+    def test_allow_insecure_http_defaults_to_false(self) -> None:
+        """Non-local HTTP token transport is disabled by default."""
+        config = WeblateConfig()
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertFalse(config.get_allow_insecure_http())
+
+    def test_allow_insecure_http_from_config(self) -> None:
+        """Configuration can explicitly allow non-local HTTP token transport."""
+        config = WeblateConfig()
+        config.set("weblate", "allow_insecure_http", "yes")
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertTrue(config.get_allow_insecure_http())
+
+    def test_allow_insecure_http_from_env(self) -> None:
+        """Environment can explicitly allow non-local HTTP token transport."""
+        config = WeblateConfig()
+        with patch.dict(os.environ, {"WLC_ALLOW_INSECURE_HTTP": "1"}, clear=True):
+            self.assertTrue(config.get_allow_insecure_http())
+
+    def test_allow_insecure_http_from_cli(self) -> None:
+        """CLI can explicitly allow non-local HTTP token transport."""
+        config = WeblateConfig()
+        config.cli_allow_insecure_http = True
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertTrue(config.get_allow_insecure_http())
+
     def test_default_allowed_methods_splits_newlines(self) -> None:
         """Default allowed methods parse newline-separated methods."""
         config = WeblateConfig()

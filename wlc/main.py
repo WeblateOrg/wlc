@@ -80,6 +80,11 @@ def get_parser() -> ArgumentParser:
     )
     parser.add_argument("--key", "-k", help="API key")
     parser.add_argument("--url", "-u", help="API URL")
+    parser.add_argument(
+        "--allow-insecure-http",
+        action="store_true",
+        help="Allow sending API keys over non-local HTTP URLs",
+    )
     subparser = parser.add_subparsers(
         title="Command",
         description="""
@@ -936,6 +941,8 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
         config.cli_key = args.key
     if args.url:
         config.cli_url = args.url
+    if args.allow_insecure_http:
+        config.cli_allow_insecure_http = True
 
     config.validate_url_key()
 
@@ -967,8 +974,8 @@ def main(
         print_stderr(f"Error: {error}")
         return 1
 
-    command = COMMANDS[parsed_args.command](parsed_args, config, stdout, stdin)
     try:
+        command = COMMANDS[parsed_args.command](parsed_args, config, stdout, stdin)
         command.run()
     except WeblateDeniedError:
         url, key = config.get_url_key()

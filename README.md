@@ -65,6 +65,7 @@ allowed_methods = PUT,POST,GET
 backoff_factor = 0.2
 status_forcelist = 429,500,502,503,504
 timeout = 30
+allow_insecure_http = false
 
 [keys]
 https://hosted.weblate.org/api/ = APIKEY
@@ -77,6 +78,8 @@ especially useful for CI workflows where `WLC_KEY` is injected as a secret:
 
 - `WLC_URL` — API URL
 - `WLC_KEY` — API key
+- `WLC_ALLOW_INSECURE_HTTP` — set to `1`, `true`, `yes`, or `on` to allow
+  API keys over non-local HTTP URLs
 
 When the API URL comes from automatically discovered project configuration
 (`.weblate`, `.weblate.ini`, or `weblate.ini` in the current directory or a
@@ -90,6 +93,10 @@ The configuration precedence (highest to lowest) is:
 1. Environment variables (`WLC_URL`, `WLC_KEY`)
 1. Configuration loaded from `--config`, or from XDG/user config plus the
    nearest project config when `--config` is not used
+
+API keys are rejected over non-local `http://` URLs by default. Use HTTPS, a
+loopback HTTP URL for local development, or explicitly opt in with
+`--allow-insecure-http`, `WLC_ALLOW_INSECURE_HTTP`, or `allow_insecure_http`.
 
 ## Docker image
 

@@ -37,6 +37,7 @@ class WeblateConfig(RawConfigParser):
         self.section: str = section
         self.cli_key: str | None = None
         self.cli_url: str | None = None
+        self.cli_allow_insecure_http = False
         self._config_url_source: URLSource = "default"
         self.set_defaults()
 
@@ -50,6 +51,7 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "status_forcelist", None)
         self.set(self.section, "allowed_methods", "HEAD\nDELETE\nOPTIONS\nPUT\nGET")
         self.set(self.section, "backoff_factor", "0")
+        self.set(self.section, "allow_insecure_http", "false")
 
     @staticmethod
     def find_config() -> str | None:
@@ -170,3 +172,16 @@ class WeblateConfig(RawConfigParser):
         ]
         backoff_factor = float(self.get(self.section, "backoff_factor"))
         return retries, status_forcelist, allowed_methods, backoff_factor, timeout
+
+    def get_allow_insecure_http(self) -> bool:
+        """Return whether authenticated non-local HTTP URLs are allowed."""
+        if self.cli_allow_insecure_http:
+            return True
+        if os.environ.get("WLC_ALLOW_INSECURE_HTTP", "").lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }:
+            return True
+        return self.getboolean(self.section, "allow_insecure_http")
