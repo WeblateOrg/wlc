@@ -38,6 +38,12 @@ class WeblateURLValidationTest(APITest):
 
         self.assertEqual(len(projects), 2)
 
+    def test_allows_api_key_with_ipv6_loopback_http_url(self) -> None:
+        """Bracketed IPv6 loopback URLs should remain recognized as local."""
+        weblate = Weblate(key="KEY", url="http://[::1]:8000/api/")
+
+        self.assertFalse(weblate.should_verify_ssl(weblate.url))
+
     def test_allows_api_key_with_non_local_http_url_when_opted_in(self) -> None:
         """Non-local HTTP token transport requires an explicit opt-in."""
         responses.add(responses.GET, "http://example.com/api/projects/", json=[])
@@ -93,6 +99,43 @@ class WeblateURLValidationTest(APITest):
             lambda: list(Weblate(key="KEY").list_projects("hostile-projects/")),
             attacker_url,
         )
+
+    def test_rejects_parser_differential_pagination_url(self) -> None:
+        """Pagination should reject URLs parsed differently by stdlib and urllib3."""
+        attacker_url = "http://169.254.169.254\\@127.0.0.1:8000/latest/meta-data/"
+        responses.add(
+            responses.GET,
+            "http://127.0.0.1:8000/api/hostile-projects/",
+            json={"next": attacker_url, "results": []},
+        )
+
+        with self.assertRaisesRegex(
+            WeblateException, "outside the configured API origin"
+        ):
+            list(Weblate(key="KEY").list_projects("hostile-projects/"))
+
+        self.assertEqual(len(responses.calls), 1)
+
+    def test_allows_normalized_same_origin_urls(self) -> None:
+        """Same-origin URLs should support normal port and address variations."""
+        test_cases = (
+            (
+                "https://example.com/api/",
+                "https://example.com:443/api/projects/?page=2",
+                "https://example.com:443/api/projects/?page=2",
+            ),
+            (
+                "http://[::1]:8000/api/",
+                "projects/?page=2",
+                "http://[::1]:8000/api/projects/?page=2",
+            ),
+        )
+
+        for base_url, path, expected in test_cases:
+            with self.subTest(base_url=base_url, path=path):
+                self.assertEqual(
+                    Weblate(url=base_url).normalize_request_url(path), expected
+                )
 
     def test_rejects_cross_origin_refresh_url(self) -> None:
         """Lazy refresh should reject a hostile object URL from the API."""
@@ -199,7 +242,7 @@ class WeblateURLValidationTest(APITest):
             json={"next": attacker_url, "results": []},
         )
 
-        with self.assertRaisesRegex(WeblateException, "invalid URL"):
+        with self.assertRaisesRegex(WeblateException, "Invalid URL"):
             list(Weblate(key="KEY").list_projects("hostile-projects/"))
 
         self.assertFalse(

@@ -11,11 +11,13 @@ import logging
 from collections.abc import Collection, Iterator, Mapping
 from ipaddress import ip_address
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
-from urllib.parse import ParseResult, urljoin, urlparse
+from urllib.parse import urljoin
 
 import requests
 from requests import Response
 from requests.adapters import HTTPAdapter
+from urllib3.exceptions import LocationParseError
+from urllib3.util import Url, parse_url
 from urllib3.util.retry import Retry
 
 from .base import LazyObject
@@ -32,7 +34,7 @@ from .models import Category, Change, Component, Language, Project, Translation,
 if TYPE_CHECKING:
     from .config import WeblateConfig
 
-Origin: TypeAlias = tuple[str, str | None, int | None]
+Origin: TypeAlias = tuple[str | None, str | None, int | None]
 JSONDict: TypeAlias = dict[str, Any]
 RequestPayload: TypeAlias = Mapping[str, Any]
 WeblateObject: TypeAlias = Project | Component | Translation | Unit
@@ -119,7 +121,7 @@ class Weblate:
 
         if not self.url.endswith("/"):
             self.url += "/"
-        self.api_origin = self.get_origin(urlparse(self.url))
+        self.api_origin = self.get_origin(self.parse_request_url(self.url))
         self.validate_authenticated_transport()
 
     @staticmethod
@@ -127,20 +129,29 @@ class Weblate:
         """Return whether a host resolves to a local loopback literal/name."""
         if hostname is None:
             return False
-        if hostname.lower() == "localhost":
+        normalized_hostname = hostname.strip("[]")
+        if normalized_hostname.lower() == "localhost":
             return True
         try:
-            return ip_address(hostname).is_loopback
+            return ip_address(normalized_hostname).is_loopback
         except ValueError:
             return False
 
+    @staticmethod
+    def parse_request_url(url: str) -> Url:
+        """Parse a URL using the parser used by the HTTP transport."""
+        try:
+            return parse_url(url)
+        except LocationParseError as error:
+            raise WeblateException("Invalid URL.") from error
+
     def validate_authenticated_transport(self) -> None:
         """Prevent sending API tokens over non-local cleartext HTTP."""
-        parsed_url = urlparse(self.url)
+        parsed_url = self.parse_request_url(self.url)
         if (
             self.key
             and parsed_url.scheme == "http"
-            and not self.is_loopback_host(parsed_url.hostname)
+            and not self.is_loopback_host(parsed_url.host)
             and not self.allow_insecure_http
         ):
             raise WeblateException(
@@ -149,13 +160,10 @@ class Weblate:
             )
 
     @staticmethod
-    def get_effective_port(url: ParseResult) -> int | None:
+    def get_effective_port(url: Url) -> int | None:
         """Return explicit port or the default for the URL scheme."""
-        try:
-            if url.port is not None:
-                return url.port
-        except ValueError as error:
-            raise WeblateException("Server returned an invalid URL.") from error
+        if url.port is not None:
+            return url.port
         if url.scheme == "https":
             return 443
         if url.scheme == "http":
@@ -163,18 +171,18 @@ class Weblate:
         return None
 
     @classmethod
-    def get_origin(cls, url: ParseResult) -> Origin:
+    def get_origin(cls, url: Url) -> Origin:
         """Return normalized origin tuple for a parsed URL."""
-        return (url.scheme, url.hostname, cls.get_effective_port(url))
+        return (url.scheme, url.host, cls.get_effective_port(url))
 
     def normalize_request_url(self, path: str) -> str:
         """Resolve a request path and reject cross-origin targets."""
-        url = urlparse(urljoin(self.url, path))
+        url = self.parse_request_url(urljoin(self.url, path))
         if self.get_origin(url) != self.api_origin:
             raise WeblateException(
                 "Server returned a URL outside the configured API origin."
             )
-        return url.geturl()
+        return url.url
 
     @staticmethod
     def permission_error_message(error: requests.HTTPError) -> str | None:
@@ -313,7 +321,9 @@ class Weblate:
             files=files,
         )
         try:
-            self.session.mount(f"{urlparse(path).scheme}://", self.adapter)
+            self.session.mount(
+                f"{self.parse_request_url(path).scheme}://", self.adapter
+            )
             response = self.session.request(
                 method,
                 path,
@@ -518,8 +528,8 @@ class Weblate:
         }
         return self.post("languages/", **data)
 
-    @staticmethod
-    def should_verify_ssl(path: str) -> bool:
+    @classmethod
+    def should_verify_ssl(cls, path: str) -> bool:
         """Checks if it should verify ssl certificates."""
-        url = urlparse(path)
-        return url.hostname not in LOCALHOST_ADDRESSES
+        url = cls.parse_request_url(path)
+        return url.host not in LOCALHOST_ADDRESSES
