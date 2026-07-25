@@ -171,6 +171,11 @@ ignore = [
 ]
 select = ["ALL"]
 
+[tool.ruff.lint.flake8-copyright]
+min-file-size = 2
+# Copyright without a year, see https://github.com/astral-sh/ruff/issues/10062
+notice-rgx = "(?i)Copyright\\s+©\\s+"
+
 [tool.ruff.lint.mccabe]
 max-complexity = 16
 
