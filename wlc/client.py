@@ -65,6 +65,7 @@ class Weblate:
         key: str = "",
         url: str = API_URL,
         config: WeblateConfig | None = None,
+        *,
         retries: int = 0,
         status_forcelist: Collection[int] | None = None,
         allowed_methods: Collection[str] | None = None,

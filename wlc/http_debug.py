@@ -32,6 +32,7 @@ def log_request_debug(
     method: str,
     path: str,
     headers: dict[str, str],
+    *,
     params: Mapping[str, Any] | None = None,
     json_data: Mapping[str, Any] | None = None,
     data: Mapping[str, Any] | None = None,
