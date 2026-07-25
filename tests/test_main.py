@@ -15,11 +15,12 @@ from abc import ABC
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
+from typing import IO, Literal
 from unittest.mock import patch
 
 import wlc
 from wlc.config import WeblateConfig
-from wlc.main import Command, Version, format_for_stream, main
+from wlc.main import Command, SettingsSource, Version, format_for_stream, main
 
 from .test_base import APITest
 
@@ -67,7 +68,14 @@ class CLITestBase(APITest, ABC):
     """Base class for CLI testing."""
 
     def execute(
-        self, args, settings=None, stdout=None, stdin=None, expected=0, tty=False
+        self,
+        args: list[str] | None,
+        *,
+        settings: SettingsSource | Literal[False] | None = None,
+        stdout: Literal[True] | None = None,
+        stdin: IO[bytes] | None = None,
+        expected: int = 0,
+        tty: bool = False,
     ):
         """Execute command and return output."""
         if settings is None:
@@ -80,9 +88,12 @@ class CLITestBase(APITest, ABC):
         try:
             sys.stdout = output
             sys.stderr = output
-            if stdout:
-                stdout = output
-            result = main(args=args, settings=settings, stdout=stdout, stdin=stdin)
+            result = main(
+                args=args,
+                settings=settings,
+                stdout=output if stdout else None,
+                stdin=stdin,
+            )
             self.assertEqual(result, expected)
         finally:
             sys.stdout = backup
