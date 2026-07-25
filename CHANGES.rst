@@ -1,3 +1,12 @@
+2.1.1
+-----
+
+* Released on 25th July 2026.
+* Prevented URL parser differential SSRF in server-provided URLs by validating
+  request origins with the same parser used by the HTTP transport.
+* Improved type annotations.
+* Updated development dependencies, CI actions, and Docker base images.
+
 2.1.0
 -----
 
