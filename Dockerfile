@@ -28,6 +28,7 @@ RUN \
     uv pip install --no-cache-dir -e /app/src
 
 WORKDIR /home/weblate
-USER weblate
+# The user is defined in /etc/passwd as weblate, but UID is more reliable
+USER 1000
 
 ENTRYPOINT ["/app/venv/bin/wlc"]
