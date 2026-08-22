@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 import json
-import logging
 from collections.abc import Collection, Iterator, Mapping
 from ipaddress import ip_address
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
@@ -300,9 +299,6 @@ class Weblate:
             headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self.should_verify_ssl(path)
 
-        # Disable insecure warnings for localhost
-        if not verify_ssl:
-            logging.captureWarnings(True)
         json_data: RequestPayload | None
         if files:
             # multipart/form upload
