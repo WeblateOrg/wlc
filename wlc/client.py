@@ -7,8 +7,9 @@
 from __future__ import annotations
 
 import json
-import logging
+import warnings
 from collections.abc import Collection, Iterator, Mapping
+from contextlib import nullcontext
 from ipaddress import ip_address
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 from urllib.parse import urljoin
@@ -16,7 +17,7 @@ from urllib.parse import urljoin
 import requests
 from requests import Response
 from requests.adapters import HTTPAdapter
-from urllib3.exceptions import LocationParseError
+from urllib3.exceptions import InsecureRequestWarning, LocationParseError
 from urllib3.util import Url, parse_url
 from urllib3.util.retry import Retry
 
@@ -300,9 +301,6 @@ class Weblate:
             headers["Authorization"] = f"Token {self.key}"
         verify_ssl = self.should_verify_ssl(path)
 
-        # Disable insecure warnings for localhost
-        if not verify_ssl:
-            logging.captureWarnings(True)
         json_data: RequestPayload | None
         if files:
             # multipart/form upload
@@ -324,18 +322,24 @@ class Weblate:
             self.session.mount(
                 f"{self.parse_request_url(path).scheme}://", self.adapter
             )
-            response = self.session.request(
-                method,
-                path,
-                headers=headers,
-                params=params,
-                json=json_data,
-                data=data,
-                verify=verify_ssl,
-                files=files,
-                allow_redirects=False,
-                timeout=self.timeout,
+            warning_context = (
+                warnings.catch_warnings() if not verify_ssl else nullcontext()
             )
+            with warning_context:
+                if not verify_ssl:
+                    warnings.simplefilter("ignore", InsecureRequestWarning)
+                response = self.session.request(
+                    method,
+                    path,
+                    headers=headers,
+                    params=params,
+                    json=json_data,
+                    data=data,
+                    verify=verify_ssl,
+                    files=files,
+                    allow_redirects=False,
+                    timeout=self.timeout,
+                )
             log_response_debug(response)
             response.raise_for_status()
             if 300 <= response.status_code < 400:
