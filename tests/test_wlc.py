@@ -8,12 +8,15 @@ from __future__ import annotations
 
 import io
 import os
+import warnings
 from abc import ABC
 from typing import ClassVar
 from unittest.mock import patch
 from urllib.parse import urlencode
 
 import responses
+from requests import Response
+from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util.retry import Retry
 
 from wlc import (
@@ -247,6 +250,32 @@ class WeblateTest(APITest):
             Weblate.should_verify_ssl("https://localhost.example.com/api/"), True
         )
         self.assertEqual(Weblate.should_verify_ssl("http://example.com/api/"), True)
+
+    def test_insecure_warning_suppression_is_scoped(self) -> None:
+        response = Response()
+        response.status_code = 200
+        weblate = Weblate(url="https://localhost/api/")
+
+        def request(*_args: object, **_kwargs: object) -> Response:
+            warnings.warn("insecure", InsecureRequestWarning, stacklevel=2)
+            warnings.warn("unrelated", UserWarning, stacklevel=2)
+            return response
+
+        with (
+            patch.object(weblate.session, "request", side_effect=request),
+            warnings.catch_warnings(record=True) as caught,
+        ):
+            warnings.simplefilter("always")
+            weblate.invoke_request("GET", weblate.url)
+            warnings.warn("insecure afterward", InsecureRequestWarning, stacklevel=1)
+
+        self.assertEqual(
+            [(warning.category, str(warning.message)) for warning in caught],
+            [
+                (UserWarning, "unrelated"),
+                (InsecureRequestWarning, "insecure afterward"),
+            ],
+        )
 
     def test_paginated_listing_uses_params_only_for_first_request(self) -> None:
         """The API-provided next URL already includes query parameters."""
