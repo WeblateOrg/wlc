@@ -10,98 +10,25 @@ import csv
 import html
 import json
 import os
+import pathlib
 import sys
-from abc import ABC
 from io import BytesIO, StringIO, TextIOWrapper
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
-from typing import IO, Literal
 from unittest.mock import patch
 
 import wlc
 from wlc.config import WeblateConfig
-from wlc.main import Command, SettingsSource, Version, format_for_stream, main
+from wlc.main import Command, Version, format_for_stream
 
-from .test_base import APITest
-
-TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
-TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
-TEST_SECTION = os.path.join(TEST_DATA, "section")
-
-
-class BufferedStringIO(StringIO):
-    """StringIO with a writable binary buffer for CLI tests."""
-
-    def __init__(self, tty: bool = False) -> None:
-        super().__init__()
-        self._buffer = BytesIO()
-        self._tty = tty
-
-    @property
-    def buffer(self) -> BytesIO:
-        """Expose a binary buffer like sys.stdout.buffer."""
-        return self._buffer
-
-    def isatty(self) -> bool:
-        return self._tty
-
-
-class TTYStringIO(BufferedStringIO):
-    """Buffered StringIO behaving like a terminal."""
-
-    def __init__(self) -> None:
-        super().__init__(tty=True)
-
-
-class AttributeDict(dict):
-    """Dictionary exposing keys as attributes."""
-
-    def __getattr__(self, key):
-        """Provide attribute-style access."""
-        try:
-            return self[key]
-        except KeyError as exc:
-            raise AttributeError(key) from exc
-
-
-class CLITestBase(APITest, ABC):
-    """Base class for CLI testing."""
-
-    def execute(
-        self,
-        args: list[str] | None,
-        *,
-        settings: SettingsSource | Literal[False] | None = None,
-        stdout: Literal[True] | None = None,
-        stdin: IO[bytes] | None = None,
-        expected: int = 0,
-        tty: bool = False,
-    ):
-        """Execute command and return output."""
-        if settings is None:
-            settings = ()
-        elif not settings:
-            settings = None
-        output = TTYStringIO() if tty else BufferedStringIO()
-        backup = sys.stdout
-        backup_err = sys.stderr
-        try:
-            sys.stdout = output
-            sys.stderr = output
-            result = main(
-                args=args,
-                settings=settings,
-                stdout=output if stdout else None,
-                stdin=stdin,
-            )
-            self.assertEqual(result, expected)
-        finally:
-            sys.stdout = backup
-            sys.stderr = backup_err
-        result = output.buffer.getvalue()
-        if result:
-            return result
-        return output.getvalue()
+from .test_base import (
+    TEST_CONFIG,
+    TEST_DATA,
+    TEST_SECTION,
+    AttributeDict,
+    CLITestBase,
+    TTYStringIO,
+)
 
 
 class TestSettings(CLITestBase):
@@ -152,14 +79,16 @@ class TestSettings(CLITestBase):
         current = os.path.abspath(".")
         with TemporaryDirectory() as tmpdirname:
             explicit = os.path.join(tmpdirname, "explicit.ini")
-            with open(explicit, "w", encoding="utf-8") as handle:
-                handle.write("[weblate]\nurl = http://127.0.0.1:8000/api/\n")
+            pathlib.Path(explicit).write_text(
+                "[weblate]\nurl = http://127.0.0.1:8000/api/\n", encoding="utf-8"
+            )
 
             repo = os.path.join(tmpdirname, "repo")
             nested = os.path.join(repo, "nested")
             os.makedirs(nested)
-            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
-                handle.write("[weblate]\nurl = http://denied.example.com/\n")
+            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+                "[weblate]\nurl = http://denied.example.com/\n", encoding="utf-8"
+            )
 
             try:
                 os.environ["WLC_KEY"] = "KEY"
@@ -240,8 +169,9 @@ class TestSettings(CLITestBase):
         with TemporaryDirectory() as tmpdirname:
             repo = os.path.join(tmpdirname, "repo")
             os.makedirs(repo)
-            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
-                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+                "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
+            )
 
             try:
                 os.chdir(repo)
@@ -264,8 +194,9 @@ class TestSettings(CLITestBase):
         with TemporaryDirectory() as tmpdirname:
             repo = os.path.join(tmpdirname, "repo")
             os.makedirs(repo)
-            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
-                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+                "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
+            )
 
             try:
                 os.chdir(repo)
@@ -292,8 +223,9 @@ class TestSettings(CLITestBase):
         with TemporaryDirectory() as tmpdirname:
             repo = os.path.join(tmpdirname, "repo")
             os.makedirs(repo)
-            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
-                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+                "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
+            )
 
             try:
                 os.chdir(repo)
@@ -320,8 +252,9 @@ class TestSettings(CLITestBase):
         with TemporaryDirectory() as tmpdirname:
             repo = os.path.join(tmpdirname, "repo")
             os.makedirs(repo)
-            with open(os.path.join(repo, ".weblate"), "w", encoding="utf-8") as handle:
-                handle.write("[weblate]\nurl = http://denied.example.com/api/\n")
+            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+                "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
+            )
 
             try:
                 os.chdir(repo)
@@ -857,8 +790,7 @@ class TestCommands(CLITestBase):
         with NamedTemporaryFile() as handle:
             handle.close()
             self.execute(["download", "hello/weblate/cs", "-o", handle.name])
-            with open(handle.name, "rb") as tmp:
-                output = tmp.read()
+            output = pathlib.Path(handle.name).read_bytes()
             self.assertIn(b"Plural-Forms:", output)
 
         output = self.execute(["download", "hello/weblate"], expected=1)

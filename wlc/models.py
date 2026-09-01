@@ -453,7 +453,7 @@ class Translation(RepoObjectMixin, LazyObject):
         file: Any,
         overwrite: bool | None = None,
         # pylint: disable-next=redefined-builtin
-        format: str | None = None,  # noqa: A002
+        format: str | None = None,  # ruff: ignore[builtin-argument-shadowing]
         **kwargs: Any,
     ) -> dict[str, Any]:
         """Upload a translation file to server."""

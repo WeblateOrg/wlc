@@ -241,7 +241,7 @@ class Weblate:
                     try:
                         error_string = str(error.response.json())
                     # pylint: disable-next=broad-exception-caught
-                    except Exception:  # noqa: BLE001
+                    except Exception:  # ruff: ignore[blind-except]
                         error_string = ""
                     raise WeblateException(
                         f"HTTP error {status_code}: {reason} {error_string}"

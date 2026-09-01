@@ -7,16 +7,59 @@
 from __future__ import annotations
 
 import os
+import sys
+from abc import ABC
 from email import message_from_string
 from email.message import Message
 from hashlib import blake2b
-from typing import NoReturn
+from io import BytesIO, StringIO
+from typing import IO, Literal, NoReturn
 from unittest import TestCase
 
 import responses
 from requests.exceptions import RequestException
 
-DATA_TEST_BASE = os.path.join(os.path.dirname(__file__), "test_data", "api")
+from wlc.main import SettingsSource, main
+
+TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
+DATA_TEST_BASE = os.path.join(TEST_DATA, "api")
+TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
+TEST_SECTION = os.path.join(TEST_DATA, "section")
+
+
+class BufferedStringIO(StringIO):
+    """StringIO with a writable binary buffer for CLI tests."""
+
+    def __init__(self, tty: bool = False) -> None:
+        super().__init__()
+        self._buffer = BytesIO()
+        self._tty = tty
+
+    @property
+    def buffer(self) -> BytesIO:
+        """Expose a binary buffer like sys.stdout.buffer."""
+        return self._buffer
+
+    def isatty(self) -> bool:
+        return self._tty
+
+
+class TTYStringIO(BufferedStringIO):
+    """Buffered StringIO behaving like a terminal."""
+
+    def __init__(self) -> None:
+        super().__init__(tty=True)
+
+
+class AttributeDict(dict):
+    """Dictionary exposing keys as attributes."""
+
+    def __getattr__(self, key):
+        """Provide attribute-style access."""
+        try:
+            return self[key]
+        except KeyError as exc:
+            raise AttributeError(key) from exc
 
 
 class ResponseHandler:
@@ -47,7 +90,7 @@ class ResponseHandler:
                     return handle.read()
             except FileNotFoundError as error:
                 error.strerror = "Failed to find response mock"
-                raise error  # noqa: TRY201
+                raise error  # ruff: ignore[verbose-raise]
 
         return self.body
 
@@ -250,7 +293,7 @@ def register_uris() -> None:
     register_error("projects", 401, domain="http://denied.example.com")
 
 
-class APITest(TestCase):
+class APITest(TestCase, ABC):
     """Base class for API testing."""
 
     def setUp(self) -> None:
@@ -262,3 +305,43 @@ class APITest(TestCase):
         """Disable responses."""
         responses.mock.stop()
         responses.mock.reset()
+
+
+class CLITestBase(APITest, ABC):
+    """Base class for CLI testing."""
+
+    def execute(
+        self,
+        args: list[str] | None,
+        *,
+        settings: SettingsSource | Literal[False] | None = None,
+        stdout: Literal[True] | None = None,
+        stdin: IO[bytes] | None = None,
+        expected: int = 0,
+        tty: bool = False,
+    ):
+        """Execute command and return output."""
+        if settings is None:
+            settings = ()
+        elif not settings:
+            settings = None
+        output = TTYStringIO() if tty else BufferedStringIO()
+        backup = sys.stdout
+        backup_err = sys.stderr
+        try:
+            sys.stdout = output
+            sys.stderr = output
+            result = main(
+                args=args,
+                settings=settings,
+                stdout=output if stdout else None,
+                stdin=stdin,
+            )
+            self.assertEqual(result, expected)
+        finally:
+            sys.stdout = backup
+            sys.stderr = backup_err
+        result = output.buffer.getvalue()
+        if result:
+            return result
+        return output.getvalue()
