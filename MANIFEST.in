@@ -4,7 +4,7 @@ include SECURITY.md
 include LICENSE
 include wl
 recursive-include LICENSES *
-include CHANGES.rst
+include CHANGES.md
 include MANIFEST.in
 include completion/wlc
 graft tests
