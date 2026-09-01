@@ -505,6 +505,29 @@ class TestOutput(CLITestBase):
         self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
         self.assertNotIn("\x1b", rendered)
 
+    def test_csv_output_escapes_controls_in_structured_values(self) -> None:
+        """CSV output should escape controls after converting structured values."""
+        aliases = ["escape\x1b[31m", "nul\x00byte", "c1\x85byte"]
+        values = (
+            {"aliases": aliases},
+            [AttributeDict({"aliases": aliases})],
+        )
+
+        for value in values:
+            with self.subTest(value=value):
+                output = TTYStringIO()
+                cmd = self.create_command(output, "csv")
+
+                cmd.print(value)
+
+                rendered = output.getvalue()
+                self.assertIn(r"escape\x1b[31m", rendered)
+                self.assertIn(r"nul\x00byte", rendered)
+                self.assertIn(r"c1\x85byte", rendered)
+                self.assertNotIn("\x1b", rendered)
+                self.assertNotIn("\x00", rendered)
+                self.assertNotIn("\x85", rendered)
+
     def test_csv_output_allows_missing_optional_fields(self) -> None:
         """CSV output should leave blank cells for missing optional fields."""
         output = StringIO()

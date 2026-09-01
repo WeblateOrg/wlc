@@ -317,11 +317,9 @@ class Command:
             return to_value()
         return value
 
-    def format_csv_value(self, value: object) -> object:
+    def format_csv_value(self, value: object) -> str:
         """Format value for CSV output and harden dangerous spreadsheet cells."""
-        formatted = self.format_value(value)
-        if not isinstance(formatted, str):
-            return formatted
+        formatted = str(self.format_value(value))
 
         stripped = formatted.lstrip(CSV_DANGEROUS_LEADING)
         if stripped and stripped[0] in CSV_FORMULA_PREFIXES:
