@@ -14,7 +14,6 @@ from urllib.parse import urljoin
 
 import requests
 import requests.auth
-import requests.utils
 from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import LocationParseError
@@ -44,14 +43,9 @@ LazyObjectT = TypeVar("LazyObjectT", bound=LazyObject)
 
 # pylint: disable-next=too-few-public-methods
 class _NoNetrcAuth(requests.auth.AuthBase):
-    """Prevent netrc lookup while preserving URL-provided authentication."""
+    """Prevent automatic authentication from ambient credential sources."""
 
     def __call__(self, r: requests.PreparedRequest) -> requests.PreparedRequest:
-        if r.url is None:
-            return r
-        username, password = requests.utils.get_auth_from_url(r.url)
-        if username or password:
-            return requests.auth.HTTPBasicAuth(username, password)(r)
         return r
 
 
@@ -74,7 +68,8 @@ class Weblate:
     When an API key is configured, non-local ``http://`` URLs are rejected by
     default. Use HTTPS, loopback HTTP for local development, or set
     ``allow_insecure_http`` only for legacy deployments where HTTPS is not
-    available.
+    available. Credentials embedded in API URLs are not supported; configure
+    an API key instead.
     """
 
     def __init__(
@@ -159,11 +154,17 @@ class Weblate:
 
     @staticmethod
     def parse_request_url(url: str) -> Url:
-        """Parse a URL using the parser used by the HTTP transport."""
+        """Parse and validate a URL using the HTTP transport's parser."""
         try:
-            return parse_url(url)
+            parsed_url = parse_url(url)
         except LocationParseError as error:
             raise WeblateException("Invalid URL.") from error
+        if parsed_url.auth is not None:
+            raise WeblateException(
+                "Credentials embedded in URLs are not supported. "
+                "Configure an API key instead."
+            )
+        return parsed_url
 
     def validate_authenticated_transport(self) -> None:
         """Prevent sending API tokens over non-local cleartext HTTP."""

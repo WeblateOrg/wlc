@@ -379,6 +379,36 @@ class WeblateConfigTestCase(TestCase):
         config.cli_url = "https://repo.example.com/api/"
         self.assertFalse(config.get_allow_insecure_ssl())
 
+    def test_project_config_cannot_supply_url_credentials(self) -> None:
+        """A discovered project URL can not enable implicit authentication."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            user_config = root / "global.ini"
+            user_config.write_text(
+                "[insecure_http]\nhttp://repo.example.com:80 = yes\n",
+                encoding="utf-8",
+            )
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = http://user:password@repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(user_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertTrue(config.get_allow_insecure_http())
+        with self.assertRaisesRegex(wlc.WeblateException, "embedded in URLs"):
+            wlc.Weblate(config=config)
+
     def test_project_url_requires_transient_insecure_option_url_pairing(self) -> None:
         """Unscoped insecure overrides can not target a project-selected URL."""
         with TemporaryDirectory() as tmpdirname:
