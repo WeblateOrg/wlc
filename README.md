@@ -52,9 +52,9 @@ Configuration is loaded from `--config` when provided. Otherwise `wlc` reads the
 user configuration from XDG paths such as `~/.config/weblate` and then the
 nearest project configuration file (`.weblate`, `.weblate.ini`, or
 `weblate.ini`) from the current directory or its parents. Project configuration
-is loaded after user configuration and overrides matching settings, including
-the API URL. This allows a cloned repository to automatically select its Weblate
-server and default translation. See the
+is loaded after user configuration. Its API URL and default translation take
+precedence over user configuration, allowing a cloned repository to
+automatically select its Weblate server and translation. See the
 [configuration files documentation](https://docs.weblate.org/en/latest/wlc.html#configuration-files)
 for the full discovery rules and credential handling. The key/values
 (`retries`, `timeout`, `allowed_methods`, `backoff_factor`,
