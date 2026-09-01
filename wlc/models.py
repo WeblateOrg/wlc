@@ -348,9 +348,7 @@ class Component(RepoObjectMixin, LazyObject):
         """Delete the component."""
         self.weblate.raw_request("delete", self._url)
 
-    def add_source_string(
-        self, msgid: str, msgstr: str | list[str]
-    ) -> dict[str, Any]:
+    def add_source_string(self, msgid: str, msgstr: str | list[str]) -> dict[str, Any]:
         """Adds a source string to a monolingual base file."""
         return self.weblate.add_source_string(
             project=self.project.slug,
