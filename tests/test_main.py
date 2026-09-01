@@ -361,6 +361,17 @@ class TestSettings(CLITestBase):
             sys.argv = backup
 
 
+# pylint: disable-next=too-few-public-methods
+class RawControlValue:
+    """Value whose representation contains raw terminal controls."""
+
+    def __init__(self, value: str) -> None:
+        self.value = value
+
+    def __repr__(self) -> str:
+        return self.value
+
+
 class TestOutput(CLITestBase):
     """Test output formatting."""
 
@@ -507,14 +518,14 @@ class TestOutput(CLITestBase):
 
     def test_csv_output_escapes_controls_in_structured_values(self) -> None:
         """CSV output should escape controls after converting structured values."""
-        aliases = ["escape\x1b[31m", "nul\x00byte", "c1\x85byte"]
+        aliases = [RawControlValue("escape\x1b[31m nul\x00byte c1\x85byte")]
         values = (
-            {"aliases": aliases},
-            [AttributeDict({"aliases": aliases})],
+            ("detail", {"aliases": aliases}),
+            ("tabular", [AttributeDict({"aliases": aliases})]),
         )
 
-        for value in values:
-            with self.subTest(value=value):
+        for shape, value in values:
+            with self.subTest(shape=shape):
                 output = TTYStringIO()
                 cmd = self.create_command(output, "csv")
 
