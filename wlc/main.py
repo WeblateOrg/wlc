@@ -773,8 +773,7 @@ class Download(ObjectCommand[CommandObject]):
         if isinstance(obj, Translation):
             content = obj.download(self.args.convert)
             if self.args.output and self.args.output != "-":
-                with open(self.args.output, "wb") as handle:
-                    handle.write(content)
+                Path(self.args.output).write_bytes(content)
             else:
                 if stream_isatty(self.stdout):
                     raise CommandError(

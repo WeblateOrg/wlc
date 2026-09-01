@@ -152,23 +152,34 @@ target-version = "py310"
 docstring-code-format = true
 
 [tool.ruff.lint]
+future-annotations = true
 ignore = [
   "D10",  # TODO: we are missing many docstrings
-  "D203",  # CONFIG: incompatible with D211
-  "D212",  # CONFIG: incompatible with D213
-  "D401",  # TODO: many strings need rephrasing
-  "T201",  # WONTFIX: using print() (maybe add noqa)
-  "TRY003",  # WONTFIX: Avoid specifying long messages outside the exception class
-  "PLR0913",  # WONTFIX: Too many arguments to function call
-  "PLR2004",  # TODO: Magic value used in comparison, consider replacing 201 with a constant variable
+  "incorrect-blank-line-before-class",  # CONFIG: incompatible with D211
+  "multi-line-summary-first-line",  # CONFIG: incompatible with D213
+  "line-too-long",  # CONFIG: formatter
+  "non-imperative-mood",  # TODO: many strings need rephrasing
+  "print",  # WONTFIX: using print() (maybe add noqa)
+  "raise-vanilla-args",  # WONTFIX: Avoid specifying long messages outside the exception class
+  "too-many-arguments",  # WONTFIX: Too many arguments to function call
+  "magic-value-comparison",  # TODO: Magic value used in comparison, consider replacing 201 with a constant variable
+  "docstring-missing-returns",  # WONTFIX
+  "docstring-missing-yields",  # WONTFIX
+  "docstring-missing-exception",  # WONTFIX
+  "too-many-statements-in-try-clause",  # TODO
+  "subclass-builtin",  # TODO
+  "no-self-use",  # TODO
+  "too-many-public-methods",  # TODO
+  "read-whole-file",  # TODO
   "COM",  # CONFIG: No trailing commas
   "PT",  # CONFIG: Not using pytest
   "PTH",  # TODO: Not using pathlib
   "EM",  # TODO: Exception strings
   "FBT",  # TODO: Boolean in function definition
   "ANN",  # TODO: type annotations
-  "N818"  # TODO: exception naming
+  "error-suffix-on-exception-name"  # TODO: exception naming
 ]
+preview = true
 select = ["ALL"]
 
 [tool.ruff.lint.flake8-copyright]
