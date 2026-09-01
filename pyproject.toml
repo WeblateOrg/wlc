@@ -97,6 +97,7 @@ ignore = [
   "Dockerfile",
   ".well-known/*",
   ".editorconfig",
+  "AGENTS.md",
   "*.toml",
   "*.yaml",
   "*.yml"
