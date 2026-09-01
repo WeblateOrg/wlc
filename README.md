@@ -25,7 +25,7 @@ Sources are available at <https://github.com/WeblateOrg/wlc>.
 
 ## Usage
 
-Please see [Weblate documentation](https://docs.weblate.org/en/latest/wlc.html) for more complete documentation.
+Please see the [Weblate Client documentation](https://docs.weblate.org/en/latest/wlc.html) for complete documentation.
 
 Command-line usage:
 
@@ -51,7 +51,12 @@ wlc upload
 Configuration is loaded from `--config` when provided. Otherwise `wlc` reads the
 user configuration from XDG paths such as `~/.config/weblate` and then the
 nearest project configuration file (`.weblate`, `.weblate.ini`, or
-`weblate.ini`) from the current directory or its parents. The key/values
+`weblate.ini`) from the current directory or its parents. Project configuration
+is loaded after user configuration and overrides matching settings, including
+the API URL. This allows a cloned repository to automatically select its Weblate
+server and default translation. See the
+[configuration files documentation](https://docs.weblate.org/en/latest/wlc.html#configuration-files)
+for the full discovery rules and credential handling. The key/values
 (`retries`, `timeout`, `allowed_methods`, `backoff_factor`,
 `status_forcelist`) are closely coupled with the
 [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html)
