@@ -9,11 +9,16 @@
 from __future__ import annotations
 
 import csv
+import errno
 import html
 import json
+import os
+import secrets
+import stat
 import sys
 from argparse import ArgumentParser, Namespace
 from collections.abc import Iterable, Mapping
+from contextlib import suppress
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast
 
@@ -111,6 +116,140 @@ class CommandError(Exception):
         if detail is not None:
             message = f"{message}\n{detail}"
         super().__init__(message)
+
+
+def _is_link(file_stat: os.stat_result) -> bool:
+    """Detect symbolic links and Windows reparse points."""
+    file_attributes = getattr(file_stat, "st_file_attributes", 0)
+    reparse_point = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    return stat.S_ISLNK(file_stat.st_mode) or bool(file_attributes & reparse_point)
+
+
+def _download_destination_stat(path: Path) -> os.stat_result | None:
+    """Stat a download destination without following it."""
+    try:
+        return path.lstat()
+    except FileNotFoundError:
+        return None
+
+
+def _open_download_temporary(path: Path) -> tuple[int, str]:
+    """Create a short, exclusive temporary download file."""
+    flags = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_BINARY", 0)
+    for _attempt in range(10):
+        temporary_name = f".wlc-{secrets.token_hex(4)}"
+        try:
+            descriptor = os.open(path.parent / temporary_name, flags, 0o666)
+        except FileExistsError:
+            continue
+        return descriptor, temporary_name
+    raise CommandError(f"Could not create temporary download file for: {path}")
+
+
+def _unlink_download_temporary(path: Path, temporary_name: str) -> None:
+    """Remove a temporary download file if it still exists."""
+    with suppress(FileNotFoundError):
+        (path.parent / temporary_name).unlink()
+
+
+def _replace_download_file(path: Path, temporary_name: str) -> None:
+    """Atomically replace a download destination."""
+    os.replace(path.parent / temporary_name, path)
+
+
+def _write_existing_download_file(
+    path: Path,
+    content: bytes,
+    destination_stat: os.stat_result,
+) -> None:
+    """Safely update an existing file while preserving its inode metadata."""
+    if destination_stat.st_nlink != 1:
+        raise CommandError(
+            f"Refusing to update multiply-linked downloaded file: {path}"
+        )
+
+    flags = (
+        os.O_WRONLY
+        | getattr(os, "O_BINARY", 0)
+        | getattr(os, "O_NOFOLLOW", 0)
+        | getattr(os, "O_NONBLOCK", 0)
+    )
+    try:
+        opened_descriptor = os.open(path, flags)
+    except OSError as error:
+        if error.errno == errno.ELOOP:
+            raise CommandError(
+                f"Refusing to write downloaded file through symlink: {path}"
+            ) from error
+        raise
+
+    descriptor = opened_descriptor
+    descriptor_open = True
+    try:
+        opened_stat = os.fstat(descriptor)
+        if (
+            not stat.S_ISREG(opened_stat.st_mode)
+            or opened_stat.st_nlink != 1
+            or (opened_stat.st_dev, opened_stat.st_ino)
+            != (destination_stat.st_dev, destination_stat.st_ino)
+        ):
+            raise CommandError(
+                f"Refusing to write downloaded file after destination changed: {path}"
+            )
+        os.ftruncate(descriptor, 0)
+        handle = os.fdopen(descriptor, "wb")
+        descriptor_open = False
+        with handle:
+            handle.write(content)
+    finally:
+        if descriptor_open:
+            os.close(descriptor)
+
+
+def _write_download_file(
+    path: Path, content: bytes, *, create_directory: bool = False
+) -> None:
+    """Write a download without following the destination entry."""
+    if create_directory:
+        path.parent.mkdir(exist_ok=True, parents=True)
+
+    destination_stat = _download_destination_stat(path)
+    destination_mode: int | None = None
+    if destination_stat is not None:
+        if _is_link(destination_stat):
+            raise CommandError(
+                f"Refusing to write downloaded file through symlink: {path}"
+            )
+        if not stat.S_ISREG(destination_stat.st_mode):
+            raise CommandError(
+                f"Refusing to write downloaded file to non-regular path: {path}"
+            )
+        destination_mode = stat.S_IMODE(destination_stat.st_mode)
+        if destination_stat.st_nlink == 1:
+            _write_existing_download_file(path, content, destination_stat)
+            return
+
+    opened_descriptor, temporary_name = _open_download_temporary(path)
+    descriptor = opened_descriptor
+    descriptor_open = True
+    temporary_exists = True
+    try:
+        if destination_mode is not None and hasattr(os, "fchmod"):
+            with suppress(NotImplementedError):
+                os.fchmod(descriptor, destination_mode)
+        handle = os.fdopen(descriptor, "wb")
+        descriptor_open = False
+        with handle:
+            handle.write(content)
+        _replace_download_file(path, temporary_name)
+        temporary_exists = False
+    finally:
+        try:
+            if descriptor_open:
+                os.close(descriptor)
+        finally:
+            if temporary_exists:
+                _unlink_download_temporary(path, temporary_name)
 
 
 def print_stderr(message: str) -> None:
@@ -752,8 +891,7 @@ class Download(ObjectCommand[CommandObject]):
         file_path = directory / (
             f"{sanitize_slug(component.project.slug)}-{sanitize_slug(component.slug)}.zip"
         )
-        directory.mkdir(exist_ok=True, parents=True)
-        file_path.write_bytes(content)
+        _write_download_file(file_path, content, create_directory=True)
 
     def download_components(self, iterable: Iterable[Component]) -> None:
         for component in iterable:
@@ -773,7 +911,7 @@ class Download(ObjectCommand[CommandObject]):
         if isinstance(obj, Translation):
             content = obj.download(self.args.convert)
             if self.args.output and self.args.output != "-":
-                Path(self.args.output).write_bytes(content)
+                _write_download_file(Path(self.args.output), content)
             else:
                 if stream_isatty(self.stdout):
                     raise CommandError(
