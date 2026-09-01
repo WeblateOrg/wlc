@@ -900,10 +900,10 @@ class Download(ObjectCommand[CommandObject]):
             # Ignore glossary via --no-glossary
             if getattr(component, "is_glossary", False) and self.args.no_glossary:
                 continue
+            # Resolve lazy category data before writing so failure leaves no archive.
+            component_slug = component.full_slug()
             self.download_component(component)
-            self.println(
-                f"downloaded translations for component: {component.full_slug()}"
-            )
+            self.println(f"downloaded translations for component: {component_slug}")
 
     def run(self) -> None:
         """Executor."""
@@ -925,14 +925,7 @@ class Download(ObjectCommand[CommandObject]):
 
         # All translations for a component
         if isinstance(obj, Component):
-            # Only download for the component we scoped
-            self.download_components(
-                [
-                    component
-                    for component in self.wlc.list_components()
-                    if obj.full_slug() == component.full_slug()
-                ]
-            )
+            self.download_components([obj])
             return
 
         # All translations for a project
