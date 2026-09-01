@@ -218,7 +218,7 @@ class Weblate:
 
         # Since Weblate 5.10
         if "errors" in response_json:
-            return ", ".join(error["detail"] for error in response_json["errors"])
+            return ", ".join(item["detail"] for item in response_json["errors"])
 
         # Weblate before 5.10
         if "detail" in response_json:
