@@ -195,7 +195,7 @@ class Project(RepoObjectMixin, LazyObject):
         data = self.weblate.get(self._get_stored("statistics_url"))
         return Statistics(weblate=self.weblate, **data)
 
-    def languages(self) -> builtins.list[LanguageStats]:
+    def languages(self) -> list[LanguageStats]:
         """Return language statistics for the project."""
         return list(
             self.weblate.list_factory(self._get_stored("languages_url"), LanguageStats)
