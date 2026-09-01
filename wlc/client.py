@@ -13,6 +13,8 @@ from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 from urllib.parse import urljoin
 
 import requests
+import requests.auth
+import requests.utils
 from requests import Response
 from requests.adapters import HTTPAdapter
 from urllib3.exceptions import LocationParseError
@@ -38,6 +40,19 @@ JSONDict: TypeAlias = dict[str, Any]
 RequestPayload: TypeAlias = Mapping[str, Any]
 WeblateObject: TypeAlias = Project | Component | Translation | Unit
 LazyObjectT = TypeVar("LazyObjectT", bound=LazyObject)
+
+
+# pylint: disable-next=too-few-public-methods
+class _NoNetrcAuth(requests.auth.AuthBase):
+    """Prevent netrc lookup while preserving URL-provided authentication."""
+
+    def __call__(self, r: requests.PreparedRequest) -> requests.PreparedRequest:
+        if r.url is None:
+            return r
+        username, password = requests.utils.get_auth_from_url(r.url)
+        if username or password:
+            return requests.auth.HTTPBasicAuth(username, password)(r)
+        return r
 
 
 class Weblate:
@@ -76,6 +91,7 @@ class Weblate:
     ) -> None:
         """Create the object, storing key, API URL, and request options."""
         self.session = requests.Session()
+        self.session.auth = _NoNetrcAuth()
         self.retry_total: int
         self.status_forcelist: Collection[int] | None
         self.allowed_methods: Collection[str]

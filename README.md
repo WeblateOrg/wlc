@@ -86,6 +86,11 @@ especially useful for CI workflows where `WLC_KEY` is injected as a secret:
 - `WLC_ALLOW_INSECURE_HTTP` — set to `1`, `true`, `yes`, or `on` to allow
   API keys over non-local HTTP URLs
 
+wlc does not load HTTP authentication from the user's `.netrc` or the file
+named by `NETRC`; configure credentials using the sources described here.
+Other Requests environment integration, including proxy and CA bundle
+variables, remains enabled.
+
 When the API URL comes from automatically discovered project configuration
 (`.weblate`, `.weblate.ini`, or `weblate.ini` in the current directory or a
 parent directory), unscoped secrets must pin the destination explicitly:
