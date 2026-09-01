@@ -134,8 +134,18 @@ jobs:
       with:
         name: dist
         path: dist
+    - name: Prepare release notes
+      env:
+        VERSION: ${{ github.ref_name }}
+      run: |
+        awk -v version="$VERSION" '
+          $0 == "## " version { current = 1; next }
+          current && /^## / { exit }
+          current { print }
+        ' CHANGES.md > release-notes.md
+        grep -q '[^[:space:]]' release-notes.md
     - env:
         VERSION: ${{ github.ref_name }}
         GH_TOKEN: ${{ github.token }}
       run: |
-        gh release create "$VERSION" --verify-tag --generate-notes dist/*.tar.gz dist/*.whl dist/sboms/*.json
+        gh release create "$VERSION" --verify-tag --notes-file release-notes.md dist/*.tar.gz dist/*.whl dist/sboms/*.json
