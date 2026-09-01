@@ -210,6 +210,9 @@ include-package-data = false
 packages = ["wlc"]
 platforms = ["any"]
 
+[tool.setuptools.data-files]
+"share/doc/wlc" = ["THREAT_MODEL.md"]
+
 [tool.setuptools.dynamic.version]
 attr = "wlc.const.__version__"
 
