@@ -4,7 +4,7 @@
 
 """Package constants."""
 
-__version__ = "2.1.1"
+__version__ = "2.2.0"
 
 URL = "https://weblate.org/"
 DEVEL_URL = "https://github.com/WeblateOrg/wlc"

@@ -1,3 +1,19 @@
+2.2.0
+-----
+
+* Released on 1st September 2026.
+* Hardened authentication by disabling automatic ``netrc`` credentials,
+  rejecting credentials embedded in URLs, and redacting credentials from HTTP
+  failure logs.
+* Scoped insecure HTTP and TLS exceptions to explicitly trusted origins and
+  prevented project configuration from enabling them.
+* Hardened downloads against symbolic links, non-regular files, and
+  destination replacement races.
+* Escaped control characters in structured CSV fields and improved handling of
+  non-text output values.
+* Added a threat model and clarified configuration discovery and precedence.
+* Updated development dependencies, CI actions, and Docker base images.
+
 2.1.1
 -----
 
