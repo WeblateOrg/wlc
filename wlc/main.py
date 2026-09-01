@@ -90,6 +90,11 @@ def get_parser() -> ArgumentParser:
         action="store_true",
         help="Allow sending API keys over non-local HTTP URLs",
     )
+    parser.add_argument(
+        "--allow-insecure-ssl",
+        action="store_true",
+        help="Disable TLS certificate verification",
+    )
     subparser = parser.add_subparsers(
         title="Command",
         description="""
@@ -1080,6 +1085,8 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
         config.cli_url = args.url
     if args.allow_insecure_http:
         config.cli_allow_insecure_http = True
+    if args.allow_insecure_ssl:
+        config.cli_allow_insecure_ssl = True
 
     config.validate_url_key()
 

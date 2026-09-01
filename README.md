@@ -56,7 +56,7 @@ is loaded after user configuration. Its API URL and default translation take
 precedence over user configuration, allowing a cloned repository to
 automatically select its Weblate server and translation. See the
 [configuration files documentation](https://docs.weblate.org/en/latest/wlc.html#configuration-files)
-for the full discovery rules and credential handling. The key/values
+for the full discovery rules and credential handling. The request options
 (`retries`, `timeout`, `allowed_methods`, `backoff_factor`,
 `status_forcelist`) are closely coupled with the
 [urllib3 parameters](https://urllib3.readthedocs.io/en/latest/reference/urllib3.util.html)
@@ -70,10 +70,16 @@ allowed_methods = PUT,POST,GET
 backoff_factor = 0.2
 status_forcelist = 429,500,502,503,504
 timeout = 30
-allow_insecure_http = false
 
 [keys]
 https://hosted.weblate.org/api/ = APIKEY
+
+# Security exceptions are scoped to a network origin (scheme, host, and port).
+[insecure_http]
+http://legacy.example.com:80 = true
+
+[insecure_ssl]
+https://legacy.example.com:443 = true
 ```
 
 ## Environment variables
@@ -85,6 +91,8 @@ especially useful for CI workflows where `WLC_KEY` is injected as a secret:
 - `WLC_KEY` — API key
 - `WLC_ALLOW_INSECURE_HTTP` — set to `1`, `true`, `yes`, or `on` to allow
   API keys over non-local HTTP URLs
+- `WLC_ALLOW_INSECURE_SSL` — set to `1`, `true`, `yes`, or `on` to disable
+  TLS certificate verification
 
 wlc does not load HTTP authentication from the user's `.netrc` or the file
 named by `NETRC`; configure credentials using the sources described here.
@@ -106,10 +114,20 @@ The configuration precedence (highest to lowest) is:
 
 API keys are rejected over non-local `http://` URLs by default. Use HTTPS, a
 loopback HTTP URL for local development, or explicitly opt in with
-`--allow-insecure-http`, `WLC_ALLOW_INSECURE_HTTP`, or `allow_insecure_http`.
-Automatically discovered project configuration cannot enable
-`allow_insecure_http`; set it in user configuration or pass an explicit
-`--config` file instead.
+`--allow-insecure-http`, `WLC_ALLOW_INSECURE_HTTP`, or a matching origin in the
+trusted user configuration's `[insecure_http]` section.
+
+TLS certificates are verified for every HTTPS URL, including loopback URLs. For
+servers where verification can not be enabled, explicitly opt in with
+`--allow-insecure-ssl`, `WLC_ALLOW_INSECURE_SSL`, or a matching origin in the
+trusted user configuration's `[insecure_ssl]` section. Origin entries ignore the
+API path but distinguish schemes and ports.
+
+Automatically discovered project configuration cannot add insecure HTTP or TLS
+origins. When a project file supplies the API URL, `--allow-insecure-http` and
+`--allow-insecure-ssl` require `--url`; their environment equivalents require
+`WLC_URL`. User configuration and explicitly selected `--config` files are
+trusted sources for origin entries.
 
 ## Docker image
 

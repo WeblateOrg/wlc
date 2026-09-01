@@ -315,18 +315,10 @@ class WeblateTest(APITest):
                     filemask="po/*.po",
                 )
 
-    def test_should_verify_ssl(self) -> None:
-        self.assertEqual(Weblate.should_verify_ssl("http://localhost/api/"), False)
-        self.assertEqual(Weblate.should_verify_ssl("invalid/api/"), True)
-        self.assertEqual(
-            Weblate.should_verify_ssl("https://localhost.example.com/api/"), True
-        )
-        self.assertEqual(Weblate.should_verify_ssl("http://example.com/api/"), True)
-
     def test_insecure_warning_is_not_suppressed(self) -> None:
         response = Response()
         response.status_code = 200
-        weblate = Weblate(url="https://localhost/api/")
+        weblate = Weblate(url="https://localhost/api/", allow_insecure_ssl=True)
 
         def request(*_args: object, **_kwargs: object) -> Response:
             warnings.warn("insecure", InsecureRequestWarning, stacklevel=2)

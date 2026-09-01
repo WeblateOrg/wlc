@@ -42,7 +42,7 @@ class WeblateURLValidationTest(APITest):
         """Bracketed IPv6 loopback URLs should remain recognized as local."""
         weblate = Weblate(key="KEY", url="http://[::1]:8000/api/")
 
-        self.assertFalse(weblate.should_verify_ssl(weblate.url))
+        self.assertFalse(weblate.allow_insecure_http)
 
     def test_allows_api_key_with_non_local_http_url_when_opted_in(self) -> None:
         """Non-local HTTP token transport requires an explicit opt-in."""
