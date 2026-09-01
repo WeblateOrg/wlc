@@ -462,6 +462,17 @@ class TestOutput(CLITestBase):
         self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
         self.assertNotIn("\x1b", rendered)
 
+    def test_text_output_escapes_controls_in_structured_values(self) -> None:
+        """Text output should escape controls after converting structured values."""
+        output = TTYStringIO()
+        cmd = self.create_command(output, "text")
+
+        cmd.print({"aliases": ["safe", "hello\x1b[31mworld"]})
+
+        rendered = output.getvalue()
+        self.assertIn(r"hello\x1b[31mworld", rendered)
+        self.assertNotIn("\x1b", rendered)
+
     def test_text_output_sorts_detail_keys_lexically(self) -> None:
         """Text detail output should render keys in lexical order."""
         output = StringIO()
