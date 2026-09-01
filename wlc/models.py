@@ -13,7 +13,6 @@ from urllib.parse import urlencode
 from .base import LazyObject, RepoMixin, RepoObjectMixin
 
 if TYPE_CHECKING:
-    import builtins
     from collections.abc import Iterator
 
     from .client import Weblate
@@ -350,7 +349,7 @@ class Component(RepoObjectMixin, LazyObject):
         self.weblate.raw_request("delete", self._url)
 
     def add_source_string(
-        self, msgid: str, msgstr: str | builtins.list[str]
+        self, msgid: str, msgstr: str | list[str]
     ) -> dict[str, Any]:
         """Adds a source string to a monolingual base file."""
         return self.weblate.add_source_string(
