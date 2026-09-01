@@ -6,9 +6,10 @@
 
 from __future__ import annotations
 
-from requests.exceptions import RequestException
+from requests.exceptions import InvalidHeader, RequestException
 
 from wlc import (
+    API_URL,
     Weblate,
     WeblateException,
 )
@@ -70,6 +71,22 @@ class WeblateErrorTest(APITest):
         """Test handling of OS/request-level errors when listing projects."""
         with self.assertRaises(RequestException):
             Weblate().get_object("io")
+
+    def test_debug_failure_redacts_invalid_authorization(self) -> None:
+        """Invalid authorization headers should not leak into debug logs."""
+        key = "debug-secret\ncontinuation"
+        with (
+            self.assertLogs("wlc", level="DEBUG") as captured,
+            self.assertRaises(InvalidHeader),
+        ):
+            Weblate(key=key).invoke_request("GET", API_URL)
+
+        output = "\n".join(captured.output)
+        self.assertIn("HTTP failure", output)
+        self.assertIn("<redacted>", output)
+        self.assertIn("Invalid leading whitespace", output)
+        self.assertNotIn("debug-secret", output)
+        self.assertNotIn("continuation", output)
 
     def test_bug(self) -> None:
         """Test handling of a FileNotFoundError when listing projects."""

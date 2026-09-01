@@ -72,12 +72,32 @@ def log_response_debug(response: Response) -> None:
     )
 
 
-def log_failure_debug(method: str, path: str, error: Exception) -> None:
+def redact_sensitive_values(message: str, headers: Mapping[str, str]) -> str:
+    """Redact sensitive header values embedded in a message."""
+    for key, value in headers.items():
+        if key.lower() not in SENSITIVE_HEADERS or not value:
+            continue
+        # Requests can include either the value itself or its repr in exceptions.
+        message = message.replace(repr(value), "<redacted>")
+        message = message.replace(value, "<redacted>")
+    return message
+
+
+def log_failure_debug(
+    method: str,
+    path: str,
+    error: Exception,
+    *,
+    headers: Mapping[str, str] | None = None,
+) -> None:
     """Emit a debug log for failed HTTP requests."""
     if not log.isEnabledFor(logging.DEBUG):
         return
 
-    log.debug("HTTP failure %s %s -> %s", method.upper(), path, error)
+    error_message = str(error)
+    if headers is not None:
+        error_message = redact_sensitive_values(error_message, headers)
+    log.debug("HTTP failure %s %s -> %s", method.upper(), path, error_message)
 
 
 def enable_debug_logging() -> tuple[logging.Handler, int, bool]:
