@@ -11,6 +11,8 @@ from configparser import NoOptionError, RawConfigParser
 from io import StringIO
 from typing import TYPE_CHECKING, Literal, TypeAlias, cast
 
+from urllib3.exceptions import LocationParseError
+from urllib3.util import parse_url
 from xdg.BaseDirectory import load_first_config
 
 from .const import API_URL
@@ -23,6 +25,11 @@ __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
 RequestOptions: TypeAlias = tuple[int, list[int] | None, list[str], float, int]
 URLSource: TypeAlias = Literal["default", "cli", "env", "explicit", "user", "project"]
 KeySource: TypeAlias = Literal["none", "cli", "env", "keys"]
+Origin: TypeAlias = tuple[str, str, int]
+
+INSECURE_HTTP_SECTION = "insecure_http"
+INSECURE_SSL_SECTION = "insecure_ssl"
+INSECURE_ENV_VALUES = {"1", "true", "yes", "on"}
 
 
 class WLCConfigurationError(Exception):
@@ -48,12 +55,15 @@ class WeblateConfig(RawConfigParser):
         self.cli_key: str | None = None
         self.cli_url: str | None = None
         self.cli_allow_insecure_http = False
+        self.cli_allow_insecure_ssl = False
         self._config_url_source: URLSource = "default"
         self.set_defaults()
 
     def set_defaults(self) -> None:
         """Set default values."""
         self.add_section("keys")
+        self.add_section(INSECURE_HTTP_SECTION)
+        self.add_section(INSECURE_SSL_SECTION)
         self.add_section(self.section)
         self.set(self.section, "url", API_URL)
         self.set(self.section, "retries", "0")
@@ -61,7 +71,6 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "status_forcelist", None)
         self.set(self.section, "allowed_methods", "HEAD\nDELETE\nOPTIONS\nPUT\nGET")
         self.set(self.section, "backoff_factor", "0")
-        self.set(self.section, "allow_insecure_http", "false")
 
     @staticmethod
     def find_config() -> str | None:
@@ -103,9 +112,13 @@ class WeblateConfig(RawConfigParser):
             return loaded
 
         if url_source == "project":
-            parser.remove_option(parser.default_section, "allow_insecure_http")
+            parser.remove_section(INSECURE_HTTP_SECTION)
+            parser.remove_section(INSECURE_SSL_SECTION)
+            for option in ("allow_insecure_http", "allow_insecure_ssl"):
+                parser.remove_option(parser.default_section, option)
             if parser.has_section(self.section):
-                parser.remove_option(self.section, "allow_insecure_http")
+                for option in ("allow_insecure_http", "allow_insecure_ssl"):
+                    parser.remove_option(self.section, option)
         config_data = StringIO()
         parser.write(config_data)
         config_data.seek(0)
@@ -139,6 +152,85 @@ class WeblateConfig(RawConfigParser):
             raise WLCConfigurationError(
                 "Using 'key' in settings is insecure, use [keys] section instead."
             )
+        self._validate_insecure_configuration()
+
+    @staticmethod
+    def _environment_enabled(name: str) -> bool:
+        """Return whether an enable-only environment option is set."""
+        return os.environ.get(name, "").lower() in INSECURE_ENV_VALUES
+
+    @staticmethod
+    def _normalize_origin(
+        value: str, expected_scheme: str, *, allow_auth: bool = False
+    ) -> Origin:
+        """Normalize a configured URL to scheme, host, and effective port."""
+        section = (
+            INSECURE_SSL_SECTION
+            if expected_scheme == "https"
+            else INSECURE_HTTP_SECTION
+        )
+        try:
+            url = parse_url(value)
+            explicit_port = url.port
+        except (LocationParseError, ValueError) as error:
+            raise WLCConfigurationError(
+                f"Invalid origin in [{section}]: {value}"
+            ) from error
+        if (
+            url.scheme != expected_scheme
+            or url.host is None
+            or (url.auth is not None and not allow_auth)
+        ):
+            raise WLCConfigurationError(f"Invalid origin in [{section}]: {value}")
+        port = (
+            explicit_port
+            if explicit_port is not None
+            else (443 if expected_scheme == "https" else 80)
+        )
+        return expected_scheme, url.host.strip("[]").lower(), port
+
+    @classmethod
+    def _parse_boolean(cls, section: str, option: str, value: str | None) -> bool:
+        """Parse a boolean security setting and fail closed on invalid values."""
+        normalized = "" if value is None else value.lower()
+        if normalized not in cls.BOOLEAN_STATES:
+            raise WLCConfigurationError(
+                f"Invalid boolean value for [{section}] {option}: {value}"
+            )
+        return cls.BOOLEAN_STATES[normalized]
+
+    def _validate_legacy_insecure_option(self, option: str, section: str) -> None:
+        """Reject enabled global insecure settings in trusted configuration."""
+        if not self.has_option(self.section, option):
+            return
+        value = self.get(self.section, option, raw=True)
+        if self._parse_boolean(self.section, option, value):
+            raise WLCConfigurationError(
+                f"Global '{option}' is not supported; configure the trusted origin "
+                f"in [{section}] instead."
+            )
+
+    def _direct_section_items(self, section: str) -> dict[str, str | None]:
+        """Return section-local entries without ConfigParser DEFAULT inheritance."""
+        sections = cast("dict[str, dict[str, str | None]]", vars(self)["_sections"])
+        return sections.get(section, {})
+
+    def _validate_insecure_section(self, section: str, scheme: str) -> None:
+        """Validate all entries in an origin-scoped insecure section."""
+        for option, value in self._direct_section_items(section).items():
+            self._normalize_origin(option, scheme)
+            self._parse_boolean(section, option, value)
+
+    def _validate_insecure_configuration(self) -> None:
+        """Validate trusted origin-scoped transport exceptions."""
+        self._validate_legacy_insecure_option(
+            "allow_insecure_http", INSECURE_HTTP_SECTION
+        )
+        self._validate_legacy_insecure_option(
+            "allow_insecure_ssl", INSECURE_SSL_SECTION
+        )
+        self._validate_insecure_section(INSECURE_HTTP_SECTION, "http")
+        self._validate_insecure_section(INSECURE_SSL_SECTION, "https")
 
     def _get_url_key_sources(self) -> tuple[str, URLSource, str, KeySource]:
         """Get API URL, key, and their sources."""
@@ -163,16 +255,42 @@ class WeblateConfig(RawConfigParser):
             key_source = "keys" if key else "none"
 
         if url_source == "project":
-            if key_source == "cli":
-                raise WLCConfigurationError(
-                    "Using --key with project configuration requires --url."
-                )
-            if key_source == "env":
-                raise WLCConfigurationError(
-                    "Using WLC_KEY with project configuration requires WLC_URL."
-                )
+            self._validate_project_overrides(key_source)
 
         return url, url_source, key, key_source
+
+    def _validate_project_overrides(self, key_source: KeySource) -> None:
+        """Require unscoped secrets and security flags to pin project URLs."""
+        if key_source == "cli":
+            raise WLCConfigurationError(
+                "Using --key with project configuration requires --url."
+            )
+        if key_source == "env":
+            raise WLCConfigurationError(
+                "Using WLC_KEY with project configuration requires WLC_URL."
+            )
+        for cli_enabled, option in (
+            (self.cli_allow_insecure_http, "--allow-insecure-http"),
+            (self.cli_allow_insecure_ssl, "--allow-insecure-ssl"),
+        ):
+            if cli_enabled:
+                raise WLCConfigurationError(
+                    f"Using {option} with project configuration requires --url."
+                )
+        for env_enabled, option in (
+            (
+                self._environment_enabled("WLC_ALLOW_INSECURE_HTTP"),
+                "WLC_ALLOW_INSECURE_HTTP",
+            ),
+            (
+                self._environment_enabled("WLC_ALLOW_INSECURE_SSL"),
+                "WLC_ALLOW_INSECURE_SSL",
+            ),
+        ):
+            if env_enabled:
+                raise WLCConfigurationError(
+                    f"Using {option} with project configuration requires WLC_URL."
+                )
 
     def validate_url_key(self) -> None:
         """
@@ -183,6 +301,7 @@ class WeblateConfig(RawConfigParser):
         ``WLC_KEY`` requires ``WLC_URL``, and a command-line key requires a
         command-line URL.
         """
+        self._validate_insecure_configuration()
         self._get_url_key_sources()
 
     def get_url_key(self) -> tuple[str, str]:
@@ -209,19 +328,46 @@ class WeblateConfig(RawConfigParser):
         """
         Return whether authenticated non-local HTTP URLs are allowed.
 
-        The insecure HTTP opt-in is enable-only: a command-line flag, a true
-        ``WLC_ALLOW_INSECURE_HTTP`` value, or trusted configuration can enable
-        it. False or unset command-line and environment sources do not disable a
-        configuration opt-in. Automatically discovered project configuration can
-        not enable it.
+        The insecure HTTP opt-in is enable-only. Persistent configuration is
+        scoped to the selected network origin.
         """
-        if self.cli_allow_insecure_http:
+        return self._get_allow_insecure(
+            INSECURE_HTTP_SECTION,
+            "http",
+            self.cli_allow_insecure_http,
+            "WLC_ALLOW_INSECURE_HTTP",
+        )
+
+    def get_allow_insecure_ssl(self) -> bool:
+        """Return whether TLS verification is disabled for the selected origin."""
+        return self._get_allow_insecure(
+            INSECURE_SSL_SECTION,
+            "https",
+            self.cli_allow_insecure_ssl,
+            "WLC_ALLOW_INSECURE_SSL",
+        )
+
+    def _get_allow_insecure(
+        self,
+        section: str,
+        scheme: str,
+        cli_enabled: bool,
+        env_name: str,
+    ) -> bool:
+        """Resolve an enable-only insecure transport option."""
+        self._validate_insecure_configuration()
+        url, _url_source, _key, _key_source = self._get_url_key_sources()
+        if cli_enabled or self._environment_enabled(env_name):
             return True
-        if os.environ.get("WLC_ALLOW_INSECURE_HTTP", "").lower() in {
-            "1",
-            "true",
-            "yes",
-            "on",
-        }:
-            return True
-        return self.getboolean(self.section, "allow_insecure_http")
+
+        try:
+            selected_origin = self._normalize_origin(url, scheme, allow_auth=True)
+        except WLCConfigurationError:
+            return False
+
+        for option, value in self._direct_section_items(section).items():
+            if self._normalize_origin(
+                option, scheme
+            ) == selected_origin and self._parse_boolean(section, option, value):
+                return True
+        return False

@@ -89,11 +89,56 @@ class WeblateConfigTestCase(TestCase):
             self.assertFalse(config.get_allow_insecure_http())
 
     def test_allow_insecure_http_from_config(self) -> None:
-        """Configuration can explicitly allow non-local HTTP token transport."""
+        """Configuration can allow HTTP for the selected origin."""
         config = WeblateConfig()
-        config.set("weblate", "allow_insecure_http", "yes")
+        config.set("weblate", "url", "http://example.com/api/")
+        config.set("insecure_http", "http://EXAMPLE.com:80/other/", "yes")
         with patch.dict(os.environ, {}, clear=True):
             self.assertTrue(config.get_allow_insecure_http())
+
+        config.set("weblate", "url", "http://example.com:8080/api/")
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertFalse(config.get_allow_insecure_http())
+
+    def test_allow_insecure_ssl_from_config(self) -> None:
+        """Configuration can disable TLS verification for one origin."""
+        config = WeblateConfig()
+        config.set("weblate", "url", "https://example.com/api/")
+        config.set("insecure_ssl", "https://EXAMPLE.com:443/other/", "yes")
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertTrue(config.get_allow_insecure_ssl())
+            self.assertTrue(wlc.Weblate(config=config).allow_insecure_ssl)
+
+        config.set("weblate", "url", "https://other.example.com/api/")
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertFalse(config.get_allow_insecure_ssl())
+
+    def test_insecure_origin_configuration_is_validated(self) -> None:
+        """Invalid security-sensitive configuration should fail closed."""
+        config = WeblateConfig()
+        config.set("insecure_ssl", "http://example.com/", "yes")
+        with self.assertRaisesRegex(WLCConfigurationError, "Invalid origin"):
+            config.get_allow_insecure_ssl()
+
+        config = WeblateConfig()
+        config.set("insecure_http", "http://example.com/", "sometimes")
+        with self.assertRaisesRegex(WLCConfigurationError, "Invalid boolean"):
+            config.get_allow_insecure_http()
+
+    def test_global_insecure_configuration_is_rejected(self) -> None:
+        """Legacy global opt-ins should provide scoped migration guidance."""
+        config = WeblateConfig()
+        config.set("weblate", "allow_insecure_http", "yes")
+        with self.assertRaisesRegex(WLCConfigurationError, r"\[insecure_http\]"):
+            config.get_allow_insecure_http()
+
+    def test_insecure_origin_does_not_inherit_from_default(self) -> None:
+        """DEFAULT entries can not implicitly add trusted origins."""
+        config = WeblateConfig()
+        config.set("weblate", "url", "https://example.com/api/")
+        config.set("DEFAULT", "https://example.com:443", "yes")
+
+        self.assertFalse(config.get_allow_insecure_ssl())
 
     def test_allow_insecure_http_from_env(self) -> None:
         """Environment can explicitly allow non-local HTTP token transport."""
@@ -107,6 +152,17 @@ class WeblateConfigTestCase(TestCase):
         config.cli_allow_insecure_http = True
         with patch.dict(os.environ, {}, clear=True):
             self.assertTrue(config.get_allow_insecure_http())
+
+    def test_allow_insecure_ssl_from_env_and_cli(self) -> None:
+        """Transient trusted sources can explicitly disable TLS verification."""
+        config = WeblateConfig()
+        config.set("weblate", "url", "https://example.com/api/")
+        with patch.dict(os.environ, {"WLC_ALLOW_INSECURE_SSL": "1"}, clear=True):
+            self.assertTrue(config.get_allow_insecure_ssl())
+
+        config.cli_allow_insecure_ssl = True
+        with patch.dict(os.environ, {}, clear=True):
+            self.assertTrue(config.get_allow_insecure_ssl())
 
     def test_default_allowed_methods_splits_newlines(self) -> None:
         """Default allowed methods parse newline-separated methods."""
@@ -142,7 +198,9 @@ class WeblateConfigTestCase(TestCase):
             root = Path(tmpdirname)
             explicit = root / "explicit.ini"
             explicit.write_text(
-                "[weblate]\nurl = https://explicit.example.com/api/\n",
+                "[weblate]\nurl = https://explicit.example.com/api/\n"
+                "\n"
+                "[insecure_ssl]\nhttps://explicit.example.com:443 = yes\n",
                 encoding="utf-8",
             )
             repo = root / "repo"
@@ -167,6 +225,7 @@ class WeblateConfigTestCase(TestCase):
         self.assertEqual(
             config.get("weblate", "url"), "https://explicit.example.com/api/"
         )
+        self.assertTrue(config.get_allow_insecure_ssl())
 
     def test_explicit_path_must_be_read(self) -> None:
         """Explicit config path should fail fast when the file is missing."""
@@ -275,7 +334,7 @@ class WeblateConfigTestCase(TestCase):
         )
 
     def test_project_config_cannot_allow_insecure_http(self) -> None:
-        """Project config can not opt users into insecure token transport."""
+        """Project config can not opt users into insecure transport."""
         with TemporaryDirectory() as tmpdirname:
             root = Path(tmpdirname)
             global_config = root / "global.ini"
@@ -288,10 +347,18 @@ class WeblateConfigTestCase(TestCase):
             (nested / ".weblate").write_text(
                 "[DEFAULT]\n"
                 "allow_insecure_http = yes\n"
+                "allow_insecure_ssl = yes\n"
                 "\n"
                 "[weblate]\n"
                 "url = http://repo.example.com/api/\n"
-                "allow_insecure_http = yes\n",
+                "allow_insecure_http = yes\n"
+                "allow_insecure_ssl = yes\n"
+                "\n"
+                "[insecure_http]\n"
+                "http://repo.example.com:80 = yes\n"
+                "\n"
+                "[insecure_ssl]\n"
+                "https://repo.example.com:443 = yes\n",
                 encoding="utf-8",
             )
             current = os.getcwd()
@@ -309,6 +376,78 @@ class WeblateConfigTestCase(TestCase):
         self.assertEqual(config.get_url_key()[1], "scoped-api-key")
         with self.assertRaisesRegex(wlc.WeblateException, "insecure HTTP"):
             wlc.Weblate(config=config)
+        config.cli_url = "https://repo.example.com/api/"
+        self.assertFalse(config.get_allow_insecure_ssl())
+
+    def test_project_url_requires_transient_insecure_option_url_pairing(self) -> None:
+        """Unscoped insecure overrides can not target a project-selected URL."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            project_config = root / ".weblate"
+            project_config.write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(root)
+                for attribute, option in (
+                    ("cli_allow_insecure_http", "--allow-insecure-http"),
+                    ("cli_allow_insecure_ssl", "--allow-insecure-ssl"),
+                ):
+                    with self.subTest(option=option):
+                        config = WeblateConfig()
+                        with patch.object(
+                            WeblateConfig, "find_config", return_value=None
+                        ):
+                            config.load()
+                        setattr(config, attribute, True)
+                        with self.assertRaisesRegex(
+                            WLCConfigurationError, "requires --url"
+                        ):
+                            config.validate_url_key()
+
+                for variable in (
+                    "WLC_ALLOW_INSECURE_HTTP",
+                    "WLC_ALLOW_INSECURE_SSL",
+                ):
+                    with self.subTest(variable=variable):
+                        config = WeblateConfig()
+                        with patch.object(
+                            WeblateConfig, "find_config", return_value=None
+                        ):
+                            config.load()
+                        with (
+                            patch.dict(os.environ, {variable: "1"}, clear=True),
+                            self.assertRaisesRegex(
+                                WLCConfigurationError, "requires WLC_URL"
+                            ),
+                        ):
+                            config.validate_url_key()
+
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                config.cli_url = "https://cli.example.com/api/"
+                config.cli_allow_insecure_ssl = True
+                config.validate_url_key()
+                self.assertTrue(config.get_allow_insecure_ssl())
+
+                config = WeblateConfig()
+                with patch.object(WeblateConfig, "find_config", return_value=None):
+                    config.load()
+                with patch.dict(
+                    os.environ,
+                    {
+                        "WLC_URL": "https://env.example.com/api/",
+                        "WLC_ALLOW_INSECURE_SSL": "1",
+                    },
+                    clear=True,
+                ):
+                    config.validate_url_key()
+                    self.assertTrue(config.get_allow_insecure_ssl())
+            finally:
+                os.chdir(current)
 
     def test_user_config_can_allow_insecure_http_with_project_url(self) -> None:
         """User config can opt into insecure transport for project URLs."""
@@ -316,7 +455,7 @@ class WeblateConfigTestCase(TestCase):
             root = Path(tmpdirname)
             global_config = root / "global.ini"
             global_config.write_text(
-                "[weblate]\nallow_insecure_http = yes\n"
+                "[insecure_http]\nhttp://repo.example.com:80 = yes\n"
                 "\n"
                 "[keys]\nhttp://repo.example.com/api/ = scoped-api-key\n",
                 encoding="utf-8",
@@ -341,6 +480,35 @@ class WeblateConfigTestCase(TestCase):
         self.assertTrue(config.get_allow_insecure_http())
         client = wlc.Weblate(config=config)
         self.assertTrue(client.allow_insecure_http)
+
+    def test_user_config_can_allow_insecure_ssl_with_project_url(self) -> None:
+        """A trusted origin entry can approve a project-selected HTTPS server."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            global_config = root / "global.ini"
+            global_config.write_text(
+                "[insecure_ssl]\nhttps://repo.example.com:443 = yes\n",
+                encoding="utf-8",
+            )
+            nested = root / "repo"
+            nested.mkdir()
+            (nested / ".weblate").write_text(
+                "[weblate]\nurl = https://repo.example.com/api/\n",
+                encoding="utf-8",
+            )
+            current = os.getcwd()
+            try:
+                os.chdir(nested)
+                config = WeblateConfig()
+                with patch.object(
+                    WeblateConfig, "find_config", return_value=str(global_config)
+                ):
+                    config.load()
+            finally:
+                os.chdir(current)
+
+        self.assertTrue(config.get_allow_insecure_ssl())
+        self.assertTrue(wlc.Weblate(config=config).allow_insecure_ssl)
 
     def test_project_config_without_selected_section_is_harmless(self) -> None:
         """Project config without selected section should not crash loading."""
