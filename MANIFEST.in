@@ -1,4 +1,5 @@
 include README.md
+include THREAT_MODEL.md
 include SECURITY.md
 include LICENSE
 include wl
@@ -8,3 +9,4 @@ include MANIFEST.in
 include completion/wlc
 graft tests
 prune tests/__pycache__
+global-exclude *.swp

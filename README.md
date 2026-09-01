@@ -130,6 +130,21 @@ origins. When a project file supplies the API URL, `--allow-insecure-http` and
 `WLC_URL`. User configuration and explicitly selected `--config` files are
 trusted sources for origin entries.
 
+## Security model
+
+Project configuration is part of the repository workflow and is intentionally
+trusted to select the API endpoint, default translation, request settings, and
+matching URL-scoped API key. Running `wlc` inside a repository authorizes its
+nearest project configuration to select the server that receives commands and
+uploads and supplies displayed or downloaded content. Use an explicit trusted
+`--config` file when this is not desired.
+
+The [wlc threat model](https://github.com/WeblateOrg/wlc/blob/main/THREAT_MODEL.md)
+documents the complete trust boundaries, security properties, non-goals, and
+downstream responsibilities. A version-matched copy is included in source and
+wheel distributions. Security issues can be reported using the
+[Weblate vulnerability reporting process](https://docs.weblate.org/en/latest/security/issues.html).
+
 ## Docker image
 
 The image is published on [Docker Hub](https://hub.docker.com/r/weblate/wlc).

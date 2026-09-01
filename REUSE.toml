@@ -18,5 +18,5 @@ precedence = "aggregate"
 [[annotations]]
 SPDX-FileCopyrightText = "Michal Čihař <michal@weblate.org>"
 SPDX-License-Identifier = "GPL-3.0-or-later"
-path = ["CHANGES.rst", "README.md"]
+path = ["CHANGES.rst", "README.md", "THREAT_MODEL.md"]
 precedence = "aggregate"

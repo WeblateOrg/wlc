@@ -38,3 +38,5 @@ Always use Conventional Commits, e.g. `fix: avoid ...`, `docs: clarify ...`, or 
 ## Security & Configuration
 
 Never commit API keys. With credentials configured, non-local HTTP requires explicit opt-in; prefer HTTPS. Treat URLs, redirects, downloads, paths, and symlinks as security boundaries. Mock APIs with loopback URLs and synthetic credentials.
+
+Check `THREAT_MODEL.md` when changing configuration discovery or precedence, credential sources, HTTP or TLS policy, proxies, URL normalization, redirects, uploads, downloads, filesystem writes, output rendering, the public Python API, or container behavior. Update `THREAT_MODEL.md` in the same change whenever its “Conditions that change this model” apply, including when a claimed security property changes or a vulnerability report exposes a model gap.
