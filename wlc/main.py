@@ -168,11 +168,6 @@ def _write_existing_download_file(
     destination_stat: os.stat_result,
 ) -> None:
     """Safely update an existing file while preserving its inode metadata."""
-    if destination_stat.st_nlink != 1:
-        raise CommandError(
-            f"Refusing to update multiply-linked downloaded file: {path}"
-        )
-
     flags = (
         os.O_WRONLY
         | getattr(os, "O_BINARY", 0)
@@ -192,6 +187,8 @@ def _write_existing_download_file(
     descriptor_open = True
     try:
         opened_stat = os.fstat(descriptor)
+        # Recheck the opened inode to catch type, hard-link, and replacement races
+        # between the initial lstat() and open().
         if (
             not stat.S_ISREG(opened_stat.st_mode)
             or opened_stat.st_nlink != 1
@@ -240,6 +237,8 @@ def _write_download_file(
     temporary_exists = True
     try:
         if destination_mode is not None and hasattr(os, "fchmod"):
+            # Preserve the replaced file's mode where supported. Some platforms
+            # expose fchmod without implementing it for every filesystem.
             with suppress(NotImplementedError):
                 os.fchmod(descriptor, destination_mode)
         handle = os.fdopen(descriptor, "wb")
