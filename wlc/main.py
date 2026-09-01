@@ -329,9 +329,9 @@ class Command:
 
         return format_for_stream(formatted, self.stdout)
 
-    def format_output_value(self, value: object) -> object:
+    def format_output_value(self, value: object) -> str:
         """Format a value for human-readable output."""
-        return format_for_stream(self.format_value(value), self.stdout)
+        return format_for_stream(str(self.format_value(value)), self.stdout)
 
     @classmethod
     def format_html_value(cls, value: object) -> str:
