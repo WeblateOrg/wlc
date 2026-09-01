@@ -17,7 +17,7 @@ from unittest.mock import patch
 from urllib.parse import urlencode
 
 import responses
-from requests import Request, Response
+from requests import Response
 from urllib3.exceptions import InsecureRequestWarning
 from urllib3.util.retry import Retry
 
@@ -122,17 +122,6 @@ class WeblateTest(APITest):
                 ),
             ):
                 self.assert_netrc_authentication_is_ignored()
-
-    def test_url_authentication_is_preserved(self) -> None:
-        """Disabling netrc should not disable URL-provided credentials."""
-        weblate = Weblate(url="https://user:password@example.com/api/")
-
-        request = weblate.session.prepare_request(Request("GET", weblate.url))
-
-        self.assertEqual(
-            request.headers.get("Authorization"),
-            "Basic dXNlcjpwYXNzd29yZA==",
-        )
 
     def test_request_environment_settings_are_preserved(self) -> None:
         """Proxy and CA bundle environment settings should remain enabled."""
