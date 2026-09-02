@@ -53,6 +53,13 @@ class WeblateTest(APITest):
             frozenset({"GET"}),
         )
 
+    def test_adapter_is_mounted_for_both_schemes(self) -> None:
+        """The configured adapter should be mounted during initialization."""
+        weblate = Weblate()
+
+        self.assertIs(weblate.session.get_adapter("http://"), weblate.adapter)
+        self.assertIs(weblate.session.get_adapter("https://"), weblate.adapter)
+
     def test_languages(self) -> None:
         """Test listing projects."""
         self.assertEqual(len(list(Weblate().list_languages())), 47)
