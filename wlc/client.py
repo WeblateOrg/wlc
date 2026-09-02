@@ -133,6 +133,8 @@ class Weblate:
             raise_on_status=False,
         )
         self.adapter = HTTPAdapter(pool_connections=1, max_retries=retry_config)
+        self.session.mount("http://", self.adapter)
+        self.session.mount("https://", self.adapter)
 
         if not self.url.endswith("/"):
             self.url += "/"
@@ -339,9 +341,6 @@ class Weblate:
             files=files,
         )
         try:
-            self.session.mount(
-                f"{self.parse_request_url(path).scheme}://", self.adapter
-            )
             response = self.session.request(
                 method,
                 path,
