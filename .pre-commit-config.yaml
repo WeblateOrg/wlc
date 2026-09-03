@@ -47,12 +47,8 @@ repos:
   rev: v6.2.0
   hooks:
   - id: reuse
-- repo: https://github.com/rhysd/actionlint
-  rev: v1.7.12
-  hooks:
-  - id: actionlint
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: v1.29.0
+  rev: v1.30.0
   hooks:
   - id: zizmor
 - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -76,6 +72,18 @@ repos:
   hooks:
   - id: rumdl
   - id: rumdl-fmt
+- repo: https://github.com/pappasam/toml-sort
+  rev: v0.24.4
+  hooks:
+  - id: toml-sort-fix
+- repo: https://github.com/abravalheri/validate-pyproject
+  rev: '0.26'
+  hooks:
+  - id: validate-pyproject
+- repo: https://github.com/kjanat/actionlint
+  rev: v1.14.0
+  hooks:
+  - id: actionlint
 ci:
   autoupdate_schedule: quarterly
   skip:
