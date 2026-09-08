@@ -11,13 +11,54 @@ import os
 import stat
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest import TestCase
 from unittest.mock import patch
+
+import responses
+
+from wlc import Component, Weblate
 
 from .test_main import CLITestBase
 
 
 class TestDownloadSecurity(CLITestBase):
     """Download destination security tests."""
+
+    def test_component_download_preserves_repository_slug(self) -> None:
+        """The archive must belong to the requested component, not a sibling."""
+        base_url = "http://127.0.0.1:8000/api/"
+        component_url = f"{base_url}components/hello/docs_repository/"
+        responses.get(
+            component_url,
+            json={
+                "url": component_url,
+                "slug": "docs_repository",
+                "repository_url": f"{component_url}repository/",
+                "project": {
+                    "url": f"{base_url}projects/hello/",
+                    "slug": "hello",
+                },
+                "category": None,
+                "is_glossary": False,
+            },
+        )
+        correct = responses.get(f"{component_url}file/", body=b"correct archive")
+        decoy = responses.get(
+            f"{base_url}components/hello/docs_file/file/", body=b"decoy archive"
+        )
+
+        with TemporaryDirectory() as directory:
+            output = self.execute(
+                ["download", "hello/docs_repository", "--output", directory]
+            )
+            archive = Path(directory) / "hello-docs_repository.zip"
+            self.assertEqual(archive.read_bytes(), b"correct archive")
+
+        self.assertIn(
+            "downloaded translations for component: hello/docs_repository", output
+        )
+        self.assertEqual(correct.call_count, 1)
+        self.assertEqual(decoy.call_count, 0)
 
     def create_symlink(self, target: str | Path, link: Path) -> None:
         """Create a symlink or skip on Windows without symlink privileges."""
@@ -258,3 +299,37 @@ class TestDownloadSecurity(CLITestBase):
                 )
 
             self.assertEqual(list(output_directory.iterdir()), [])
+
+
+class TestComponentDownload(TestCase):
+    """Component archive URL tests."""
+
+    def test_download_preserves_url_identifiers(self) -> None:
+        """Only the repository endpoint suffix changes when downloading."""
+        cases = (
+            ("http://127.0.0.1:8000/api/", "hello/docs"),
+            ("http://127.0.0.1:8000/api/", "hello/docs_repository"),
+            ("http://127.0.0.1:8000/api/", "my_repository/docs"),
+            ("http://127.0.0.1:8000/repository/api/", "hello/docs"),
+            ("https://repository.example/api/", "hello/docs"),
+        )
+        for base_url, slug in cases:
+            for convert in (None, "csv"):
+                with (
+                    self.subTest(base_url=base_url, slug=slug, convert=convert),
+                    responses.RequestsMock() as mock,
+                ):
+                    url = f"{base_url}components/{slug}/"
+                    component = Component(
+                        Weblate(url=base_url, key="synthetic"),
+                        url=url,
+                        repository_url=f"{url}repository/",
+                    )
+                    expected_url = f"{url}file/"
+                    if convert is not None:
+                        expected_url += "?format=csv"
+                    mock.get(expected_url, body=b"correct archive")
+
+                    self.assertEqual(component.download(convert), b"correct archive")
+                    self.assertEqual(len(mock.calls), 1)
+                    self.assertEqual(mock.calls[0].request.url, expected_url)
