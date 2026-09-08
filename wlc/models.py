@@ -364,7 +364,11 @@ class Component(RepoObjectMixin, LazyObject):
     def download(self, convert: str | None = None) -> bytes:
         """Download translation file from server."""
         self.ensure_loaded("repository_url")
-        url = self._get_repo_url().replace("repository", "file")
+        # Rewrite only the trailing /repository/ endpoint segment. A global
+        # substring replacement would also corrupt component slugs that
+        # legitimately contain "repository" (e.g. docs_repository), fetching
+        # an unrelated component's archive or a 404.
+        url = self._get_repo_url().removesuffix("/repository/") + "/file/"
         if convert is not None:
             url = f"{url}?{urlencode({'format': convert})}"
         return self.weblate.raw_request("get", url)
