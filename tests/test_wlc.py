@@ -705,7 +705,7 @@ class ComponentTest(ObjectTest):
     def test_download_preserves_repository_in_slug(self) -> None:
         """
         Download URL must rewrite only the trailing /repository/ segment.
-    
+
         A global substring replacement would corrupt legal component slugs
         containing "repository" (e.g. docs_repository) and request the wrong
         component's file endpoint.
@@ -727,13 +727,14 @@ class ComponentTest(ObjectTest):
             content_type="application/zip",
         )
         responses.add(responses.GET, corrupted_url, status=500)
-    
+
         content = obj.download()
-    
+
         self.assertEqual(content, b"correct-archive")
         requested = [call.request.url for call in responses.mock.calls]
         self.assertIn(file_url, requested)
         self.assertNotIn(corrupted_url, requested)
+
 
 class ComponentCompatibilityTest(ObjectTest):
     """Tests a component with lack of all optional fields in a response."""
