@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test the module."""
+# pylint: disable=too-many-lines
 
 from __future__ import annotations
 
@@ -701,6 +702,39 @@ class ComponentTest(ObjectTest):
         obj = self.get()
         resp = obj.patch(priority=80)
         self.assertIn("--patched--", resp.decode())
+
+    def test_download_preserves_repository_in_slug(self) -> None:
+        """
+        Download URL must rewrite only the trailing /repository/ segment.
+
+        A global substring replacement would corrupt legal component slugs
+        containing "repository" (e.g. docs_repository) and request the wrong
+        component's file endpoint.
+        """
+        weblate = Weblate()
+        slug = "docs_repository"
+        base = "http://127.0.0.1:8000/api"
+        obj = Component(
+            weblate,
+            url=f"components/hello/{slug}/",
+            repository_url=f"{base}/components/hello/{slug}/repository/",
+        )
+        file_url = f"{base}/components/hello/{slug}/file/"
+        corrupted_url = f"{base}/components/hello/docs_file/file/"
+        responses.add(
+            responses.GET,
+            file_url,
+            body=b"correct-archive",
+            content_type="application/zip",
+        )
+        responses.add(responses.GET, corrupted_url, status=500)
+
+        content = obj.download()
+
+        self.assertEqual(content, b"correct-archive")
+        requested = [call.request.url for call in responses.mock.calls]
+        self.assertIn(file_url, requested)
+        self.assertNotIn(corrupted_url, requested)
 
 
 class ComponentCompatibilityTest(ObjectTest):
