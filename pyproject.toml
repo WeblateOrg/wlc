@@ -4,13 +4,13 @@ requires = ["setuptools>=78.0.2"]
 
 [dependency-groups]
 dev = [
-  {include-group = "lint"},
-  {include-group = "test"},
-  {include-group = "types"}
+  { include-group = "lint" },
+  { include-group = "test" },
+  { include-group = "types" }
 ]
 lint = [
-  {include-group = "pre-commit"},
-  {include-group = "pylint"}
+  { include-group = "pre-commit" },
+  { include-group = "pylint" }
 ]
 pre-commit = [
   "prek==0.5.3"
