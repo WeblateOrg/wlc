@@ -197,10 +197,10 @@ def register_uri(
 
 
 def raise_error(request) -> NoReturn:
-    """Raise IOError."""
+    """Raise an expected request error or an unexpected programming error."""
     if "/io" in request.path_url:
         raise RequestException("Some error")
-    raise FileNotFoundError("Bug")
+    raise RuntimeError("Bug")
 
 
 def register_error(

@@ -885,11 +885,14 @@ class Download(ObjectCommand[CommandObject]):
 
     def download_component(self, component: Component) -> None:
         """Download a single component as file (if not a translation)."""
-        content = component.download(self.args.convert)
         if self.args.output is None:
             raise CommandError("Output is needed for download!")
 
         directory = Path(self.args.output)
+        if _download_destination_stat(directory) is not None and not directory.is_dir():
+            raise CommandError(f"Output path is not a directory: {directory}")
+
+        content = component.download(self.args.convert)
         file_path = directory / (
             f"{sanitize_slug(component.project.slug)}-{sanitize_slug(component.slug)}.zip"
         )
@@ -1124,7 +1127,7 @@ def main(
     except RequestException as error:
         print_stderr(f"Request failed: {error}")
         return 10
-    except (CommandError, WeblateException) as error:
+    except (CommandError, WeblateException, OSError) as error:
         print_stderr(f"Error: {error}")
         return 1
     else:

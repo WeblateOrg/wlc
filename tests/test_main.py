@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import csv
+import errno
 import html
 import json
 import os
@@ -695,7 +696,7 @@ class TestCommands(CLITestBase):
 
     def test_show_error(self) -> None:
         self.execute(["show", "io"], expected=10)
-        with self.assertRaises(FileNotFoundError):
+        with self.assertRaises(RuntimeError):
             self.execute(["show", "bug"])
 
     def test_delete(self) -> None:
@@ -923,6 +924,16 @@ class TestCommands(CLITestBase):
                 ["upload", "hello/weblate/cs", "-i", handle.name, "--overwrite"]
             )
             self.assertEqual("", output)
+
+        with TemporaryDirectory() as tmpdirname:
+            missing = os.path.join(tmpdirname, "missing.po")
+            output = self.execute(
+                ["upload", "hello/weblate/cs", "-i", missing], expected=1
+            )
+            missing_error = FileNotFoundError(
+                errno.ENOENT, os.strerror(errno.ENOENT), missing
+            )
+            self.assertEqual(f"Error: {missing_error}\n", output)
 
     @staticmethod
     def get_text_io_wrapper(string):
