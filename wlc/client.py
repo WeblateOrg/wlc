@@ -125,6 +125,8 @@ class Weblate:
             ]
             self.backoff_factor = backoff_factor
 
+        self._validate_api_key()
+
         retry_config = Retry(
             total=self.retry_total,
             backoff_factor=self.backoff_factor,
@@ -140,6 +142,13 @@ class Weblate:
             self.url += "/"
         self.api_origin = self.get_origin(self.parse_request_url(self.url))
         self.validate_authenticated_transport()
+
+    def _validate_api_key(self) -> None:
+        """Reject API keys that can not be safely used in an HTTP header."""
+        if "\r" in self.key or "\n" in self.key:
+            raise WeblateException(
+                "API key must not contain carriage returns or line feeds."
+            )
 
     @staticmethod
     def is_loopback_host(hostname: str | None) -> bool:

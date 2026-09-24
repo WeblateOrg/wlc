@@ -30,7 +30,11 @@ from .client import Weblate
 from .config import NoOptionError, WeblateConfig, WLCConfigurationError
 from .const import DEVEL_URL, URL
 from .exceptions import WeblateDeniedError, WeblateException
-from .http_debug import disable_debug_logging, enable_debug_logging
+from .http_debug import (
+    disable_debug_logging,
+    enable_debug_logging,
+    redact_sensitive_values,
+)
 from .models import Component, Project, Translation, Unit
 from .output import (
     CSV_DANGEROUS_LEADING,
@@ -259,6 +263,13 @@ def _write_download_file(
 def print_stderr(message: str) -> None:
     """Print a terminal-safe error message to stderr."""
     print(format_for_stream(message, sys.stderr), file=sys.stderr)
+
+
+def _redact_request_error(error: RequestException, config: WeblateConfig) -> str:
+    """Remove the configured authorization value from a request error."""
+    _url, key = config.get_url_key()
+    headers = {"Authorization": f"Token {key}"} if key else {}
+    return redact_sensitive_values(str(error), headers)
 
 
 class Command:
@@ -1122,7 +1133,7 @@ def main(
             )
         return 1
     except RequestException as error:
-        print_stderr(f"Request failed: {error}")
+        print_stderr(f"Request failed: {_redact_request_error(error, config)}")
         return 10
     except (CommandError, WeblateException) as error:
         print_stderr(f"Error: {error}")
