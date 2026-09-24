@@ -6,6 +6,9 @@
 
 from __future__ import annotations
 
+import os
+from unittest.mock import patch
+
 from requests.exceptions import InvalidHeader, RequestException
 
 from wlc import (
@@ -14,7 +17,52 @@ from wlc import (
     WeblateException,
 )
 
-from .test_base import APITest
+from .test_base import APITest, CLITestBase
+
+
+class CLIErrorTest(CLITestBase):
+    """Testing CLI error handling."""
+
+    def test_rejects_api_keys_with_line_breaks(self) -> None:
+        """CLI and environment keys with line breaks should not be disclosed."""
+        for source in ("environment", "command-line"):
+            for line_break in ("\r", "\n"):
+                for debug in (False, True):
+                    with self.subTest(
+                        source=source,
+                        line_break=repr(line_break),
+                        debug=debug,
+                    ):
+                        key = f"invalid-secret{line_break}continuation"
+                        args = ["--debug"] if debug else []
+                        environment = {}
+                        if source == "environment":
+                            environment = {"WLC_KEY": key}
+                        else:
+                            args.extend(["--key", key])
+                        args.append("list-projects")
+
+                        with patch.dict(os.environ, environment, clear=True):
+                            output = self.execute(args, expected=1)
+
+                        self.assertIn("must not contain", output)
+                        self.assertNotIn("invalid-secret", output)
+                        self.assertNotIn("continuation", output)
+
+    def test_request_error_redacts_authorization(self) -> None:
+        """Request errors should not disclose configured API tokens."""
+        key = "request-error-secret"
+        with patch(
+            "wlc.main.ListProjects.run",
+            side_effect=RequestException(f"Invalid Authorization: 'Token {key}'"),
+        ):
+            output = self.execute(
+                ["--key", key, "list-projects"],
+                expected=10,
+            )
+
+        self.assertIn("Request failed: Invalid Authorization: <redacted>", output)
+        self.assertNotIn(key, output)
 
 
 class WeblateErrorTest(APITest):
@@ -74,19 +122,23 @@ class WeblateErrorTest(APITest):
 
     def test_debug_failure_redacts_invalid_authorization(self) -> None:
         """Invalid authorization headers should not leak into debug logs."""
-        key = "debug-secret\ncontinuation"
+        key = "debug-secret"
+        error = InvalidHeader(
+            f"Invalid leading whitespace in header value: {f'Token {key}'!r}"
+        )
+        weblate = Weblate(key=key)
         with (
             self.assertLogs("wlc", level="DEBUG") as captured,
             self.assertRaises(InvalidHeader),
+            patch.object(weblate.session, "request", side_effect=error),
         ):
-            Weblate(key=key).invoke_request("GET", API_URL)
+            weblate.invoke_request("GET", API_URL)
 
         output = "\n".join(captured.output)
         self.assertIn("HTTP failure", output)
         self.assertIn("<redacted>", output)
         self.assertIn("Invalid leading whitespace", output)
         self.assertNotIn("debug-secret", output)
-        self.assertNotIn("continuation", output)
 
     def test_bug(self) -> None:
         """Test handling of a FileNotFoundError when listing projects."""

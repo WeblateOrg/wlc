@@ -92,6 +92,19 @@ class WeblateTest(APITest):
         obj = Weblate(key="KEY").get_object("acl")
         self.assertEqual(obj.name, "ACL")
 
+    def test_api_key_rejects_line_breaks(self) -> None:
+        """API keys with line breaks should be rejected without disclosure."""
+        for line_break in ("\r", "\n"):
+            with self.subTest(line_break=repr(line_break)):
+                key = f"invalid-secret{line_break}continuation"
+                with self.assertRaises(WeblateException) as raised:
+                    Weblate(key=key)
+
+                message = str(raised.exception)
+                self.assertIn("must not contain", message)
+                self.assertNotIn("invalid-secret", message)
+                self.assertNotIn("continuation", message)
+
     def assert_netrc_authentication_is_ignored(self) -> None:
         """Assert netrc credentials are not added or used over an API token."""
         for key, expected in (("", None), ("KEY", "Token KEY")):
