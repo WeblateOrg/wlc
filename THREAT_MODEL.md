@@ -2,11 +2,11 @@
 
 Project: wlc (Weblate command-line client and Python API client)
 
-Last reviewed for wlc 2.2.0 at base commit
-`1e63ad96951734ba26ba240f1ccfa80be4a8c645`, including the accompanying
-changes in this revision.
+Last reviewed for wlc 2.2.1 at base commit
+`b61361bc7854f084b3b91081e8c1279d1ee057b0`, including the accompanying
+release changes in this revision.
 
-Date: 2026-09-01.
+Date: 2026-09-24.
 
 Status: Accepted, 2026-09-01.
 

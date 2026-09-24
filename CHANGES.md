@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.2.1
+
+* Released on 24th September 2026.
+* Prevented API keys from appearing in CLI request errors and rejected API keys
+  containing line breaks.
+* Fixed component downloads when a slug contains `repository` and avoided
+  relisting an already resolved component.
+* Reported local filesystem failures as CLI errors and validated component
+  download output paths before fetching data.
+* Updated development dependencies, CI actions, and Docker base images.
+
 ## 2.2.0
 
 * Released on 1st September 2026.
