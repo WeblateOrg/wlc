@@ -13,16 +13,20 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+from wlc import WeblateException
+
 from .test_main import CLITestBase
 
 
 class TestDownloadSecurity(CLITestBase):
     """Download destination security tests."""
 
-    def create_symlink(self, target: str | Path, link: Path) -> None:
+    def create_symlink(
+        self, target: str | Path, link: Path, *, target_is_directory: bool = False
+    ) -> None:
         """Create a symlink or skip on Windows without symlink privileges."""
         try:
-            link.symlink_to(target)
+            link.symlink_to(target, target_is_directory=target_is_directory)
         except OSError:
             if os.name == "nt":
                 self.skipTest("Symlink creation is not permitted")
@@ -79,6 +83,92 @@ class TestDownloadSecurity(CLITestBase):
                 "Refusing to write downloaded file to non-regular path", output
             )
             self.assertTrue(destination.is_dir())
+
+    def test_rejects_component_output_file_before_download(self) -> None:
+        with TemporaryDirectory() as tmpdirname:
+            output = Path(tmpdirname) / "out.zip"
+            output.touch()
+
+            with patch("wlc.models.Component.download") as download:
+                error = self.execute(
+                    ["download", "hello/weblate", "--output", str(output)],
+                    expected=1,
+                )
+
+            self.assertEqual(
+                f"Error: Output path is not a directory: {output}\n", error
+            )
+            download.assert_not_called()
+
+    def test_rejects_dangling_component_output_symlink_before_download(self) -> None:
+        with TemporaryDirectory() as tmpdirname:
+            output = Path(tmpdirname) / "output"
+            self.create_symlink("missing", output)
+
+            with patch("wlc.models.Component.download") as download:
+                error = self.execute(
+                    ["download", "hello/weblate", "--output", str(output)],
+                    expected=1,
+                )
+
+            self.assertEqual(
+                f"Error: Output path is not a directory: {output}\n", error
+            )
+            download.assert_not_called()
+
+    def test_accepts_component_output_directory_symlink(self) -> None:
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            output_directory = root / "output"
+            output_directory.mkdir()
+            output = root / "output-link"
+            self.create_symlink("output", output, target_is_directory=True)
+
+            self.execute(["download", "hello/weblate", "--output", str(output)])
+
+            self.assertTrue((output_directory / "hello-weblate.zip").is_file())
+
+    def test_reports_component_output_permission_error(self) -> None:
+        with TemporaryDirectory() as tmpdirname:
+            output_directory = Path(tmpdirname) / "protected"
+            permission_error = PermissionError(
+                errno.EACCES, "Permission denied", str(output_directory)
+            )
+
+            with patch.object(Path, "mkdir", side_effect=permission_error):
+                output = self.execute(
+                    [
+                        "download",
+                        "hello/weblate",
+                        "--output",
+                        str(output_directory),
+                    ],
+                    expected=1,
+                )
+
+            self.assertEqual(f"Error: {permission_error}\n", output)
+
+    def test_partial_project_download_reports_completed_component(self) -> None:
+        with TemporaryDirectory() as tmpdirname:
+            output_directory = Path(tmpdirname)
+            with patch(
+                "wlc.models.Component.download",
+                side_effect=(b"archive", WeblateException("download failed")),
+            ):
+                output = self.execute(
+                    ["download", "hello", "--output", str(output_directory)],
+                    expected=1,
+                )
+
+            self.assertIn(
+                "downloaded translations for component: hello/hi/android", output
+            )
+            self.assertIn("Error: download failed", output)
+            self.assertNotIn("downloaded translations for project", output)
+            self.assertEqual(
+                [path.name for path in output_directory.iterdir()],
+                ["hello-android.zip"],
+            )
 
     def test_does_not_follow_racing_symlink(self) -> None:
         with TemporaryDirectory() as tmpdirname:
@@ -241,20 +331,19 @@ class TestDownloadSecurity(CLITestBase):
     def test_failure_cleans_temporary_file(self) -> None:
         with TemporaryDirectory() as tmpdirname:
             output_directory = Path(tmpdirname)
-            with (
-                patch(
-                    "wlc.main._replace_download_file",
-                    side_effect=OSError("replace failed"),
-                ),
-                self.assertRaisesRegex(OSError, "replace failed"),
+            with patch(
+                "wlc.main._replace_download_file",
+                side_effect=OSError("replace failed"),
             ):
-                self.execute(
+                output = self.execute(
                     [
                         "download",
                         "hello/weblate",
                         "--output",
                         str(output_directory),
-                    ]
+                    ],
+                    expected=1,
                 )
 
+            self.assertEqual("Error: replace failed\n", output)
             self.assertEqual(list(output_directory.iterdir()), [])

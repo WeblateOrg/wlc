@@ -141,8 +141,8 @@ class WeblateErrorTest(APITest):
         self.assertNotIn("debug-secret", output)
 
     def test_bug(self) -> None:
-        """Test handling of a FileNotFoundError when listing projects."""
-        with self.assertRaises(FileNotFoundError):
+        """Test handling of an unexpected error when listing projects."""
+        with self.assertRaises(RuntimeError):
             Weblate().get_object("bug")
 
     def test_invalid(self) -> None:
