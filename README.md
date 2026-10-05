@@ -19,7 +19,6 @@ using [Weblate's REST API](https://docs.weblate.org/en/latest/api.html).
 
 Part of [Weblate](https://weblate.org/) — a privacy-respecting localization platform built on open-source foundations.
 
-
 ## Installation
 
 Install wlc from PyPI:
