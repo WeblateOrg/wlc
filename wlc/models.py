@@ -11,12 +11,17 @@ from typing import TYPE_CHECKING, Any, ClassVar
 from urllib.parse import urlencode
 
 from .base import LazyObject, RepoMixin, RepoObjectMixin
+from .exceptions import WeblateException
 
 if TYPE_CHECKING:
     import builtins
     from collections.abc import Iterator
 
     from .client import Weblate
+
+
+# Match the maximum category nesting depth enforced by Weblate.
+_MAX_CATEGORY_DEPTH = 3
 
 
 class Language(LazyObject):
@@ -241,10 +246,20 @@ class Category(LazyObject):
     def full_slug(self) -> str:
         """Return the category slug including the project and parent categories."""
         current = self
+        seen = {self.url}
         slugs = [self.project.slug, self.slug]
-        while current.category:
-            current = current.category
-            slugs.insert(1, current.slug)
+        while (parent := current.category) is not None:
+            parent_url = parent.url
+            if parent_url in seen:
+                raise WeblateException("Server returned cyclic category hierarchy")
+            if len(seen) >= _MAX_CATEGORY_DEPTH:
+                raise WeblateException(
+                    "Server returned category hierarchy deeper than "
+                    f"{_MAX_CATEGORY_DEPTH} levels"
+                )
+            seen.add(parent_url)
+            slugs.insert(1, parent.slug)
+            current = parent
         return "/".join(slugs)
 
 
