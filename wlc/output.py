@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+from collections import UserDict
 from datetime import datetime
 from typing import TYPE_CHECKING, TypeVar, overload
 
@@ -45,11 +46,14 @@ def sorted_items(value: Mapping[str, object]) -> Iterator[tuple[str, object]]:
 
 
 class DateTimeEncoder(json.JSONEncoder):
-    """JSON encoder with datetime support."""
+    """JSON encoder with datetime and UserDict support."""
 
     def default(self, o: object) -> object:
         if isinstance(o, datetime):
             return o.isoformat()
+
+        if isinstance(o, UserDict):
+            return dict(o.items())
 
         return super().default(o)
 
