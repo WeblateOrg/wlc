@@ -168,7 +168,6 @@ ignore = [
   "docstring-missing-yields", # WONTFIX
   "docstring-missing-exception", # WONTFIX
   "too-many-statements-in-try-clause", # TODO
-  "subclass-builtin", # TODO
   "no-self-use", # TODO
   "too-many-public-methods", # TODO
   "read-whole-file", # TODO

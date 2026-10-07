@@ -49,7 +49,8 @@ from .utils import sanitize_slug
 if TYPE_CHECKING:
     import logging
 
-CommandObject: TypeAlias = Project | Component | Translation | Unit
+# Defer the union so Pylint does not infer UserDict.__or__ on model classes.
+CommandObject: TypeAlias = "Project|Component|Translation|Unit"  # ruff: ignore[quoted-type-alias]
 ObjectT = TypeVar("ObjectT", bound=CommandObject)
 SettingsEntry: TypeAlias = tuple[str, str, str]
 SettingsSource: TypeAlias = Iterable[SettingsEntry]

@@ -416,6 +416,8 @@ class TestOutput(CLITestBase):
         output = self.execute(["--format", "json", "list-projects"])
         values = json.loads(output)
         self.assertEqual(2, len(values))
+        self.assertEqual(values[1]["name"], "Hello")
+        self.assertEqual(values[1]["slug"], "hello")
 
     def test_projects_csv(self) -> None:
         """Test projects printing."""

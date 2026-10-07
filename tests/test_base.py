@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 import sys
 from abc import ABC
+from collections import UserDict
 from email import message_from_string
 from email.message import Message
 from hashlib import blake2b
@@ -51,7 +52,7 @@ class TTYStringIO(BufferedStringIO):
         super().__init__(tty=True)
 
 
-class AttributeDict(dict):
+class AttributeDict(UserDict):
     """Dictionary exposing keys as attributes."""
 
     def __getattr__(self, key):

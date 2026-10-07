@@ -91,7 +91,7 @@ class Statistics(LazyObject):
         """Construct statistics, preserving response URLs as data."""
         super().__init__(weblate, url="" if kwargs else url, **kwargs)
         if kwargs or not url:
-            self._data.pop("url", None)
+            self.data.pop("url", None)
             if url:
                 self._load_params(url=url)
 
@@ -102,7 +102,7 @@ class Statistics(LazyObject):
         super().refresh()
 
     def __getattr__(self, name: str) -> Any:
-        if name in self.PARAMS and not self._url and name not in self._data:
+        if name in self.PARAMS and not self._url and name not in self.data:
             raise AttributeError(name)
         return super().__getattr__(name)
 
@@ -110,7 +110,7 @@ class Statistics(LazyObject):
         """Return present statistics fields without fetching URL-less objects."""
         if not self._url:
             for param in self.PARAMS:
-                if param in self._data or param in self.NULLS:
+                if param in self.data or param in self.NULLS:
                     yield param
             return
         yield from super().keys()
@@ -143,7 +143,7 @@ class ProjectRepository(RepoMixin, LazyObject):
 
     def _get_repo_url(self) -> str:
         """Return repository url."""
-        return self._data["url"]
+        return self.data["url"]
 
 
 class Repository(ProjectRepository):
