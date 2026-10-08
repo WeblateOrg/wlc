@@ -154,7 +154,6 @@ ignore = [
   "line-too-long", # CONFIG: formatter
   "raise-vanilla-args", # WONTFIX: Avoid specifying long messages outside the exception class
   "too-many-arguments", # WONTFIX: Too many arguments to function call
-  "magic-value-comparison", # TODO: Magic value used in comparison, consider replacing 201 with a constant variable
   "docstring-missing-returns", # WONTFIX
   "docstring-missing-yields", # WONTFIX
   "docstring-missing-exception", # WONTFIX

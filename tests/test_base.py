@@ -34,6 +34,7 @@ TEST_DATA = Path(__file__).parent / "test_data"
 DATA_TEST_BASE = TEST_DATA / "api"
 TEST_CONFIG = TEST_DATA / "wlc"
 TEST_SECTION = TEST_DATA / "section"
+BODY_HASH_THRESHOLD = 100
 
 
 class BufferedStringIO(StringIO):
@@ -123,7 +124,7 @@ class ResponseHandler:
             .replace("]", "-")
             .replace("*", "-")
         )
-        if len(result) < 100:
+        if len(result) < BODY_HASH_THRESHOLD:
             return result
         digest = blake2b(digest_size=4)
         digest.update(result.encode())
