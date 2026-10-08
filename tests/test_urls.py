@@ -7,6 +7,12 @@
 from __future__ import annotations
 
 import io
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from requests import PreparedRequest
 
 import responses
 
@@ -75,11 +81,16 @@ class WeblateURLValidationTest(APITest):
 
         self.assertFalse(responses.calls)
 
-    def assert_origin_rejected(self, action, attacker_url, method=responses.GET):
+    def assert_origin_rejected(
+        self,
+        action: Callable[[], object],
+        attacker_url: str,
+        method: str = responses.GET,
+    ) -> None:
         """Assert the client rejects a cross-origin URL before any request is sent."""
         attacker_requests = []
 
-        def trap(request):
+        def trap(request: PreparedRequest) -> tuple[int, dict[str, str], str]:
             attacker_requests.append(request)
             return 200, {}, "{}"
 

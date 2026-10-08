@@ -348,7 +348,13 @@ class TestDownloadSecurity(CLITestBase):
             original_open = os.open
             swapped = False
 
-            def replace_before_open(path, flags, mode=0o777, *, dir_fd=None):
+            def replace_before_open(
+                path: str | Path,
+                flags: int,
+                mode: int = 0o777,
+                *,
+                dir_fd: int | None = None,
+            ) -> int:
                 nonlocal swapped
                 if Path(path).name == destination.name and not swapped:
                     swapped = True

@@ -14,13 +14,20 @@ from email.message import Message
 from hashlib import blake2b
 from io import BytesIO, StringIO
 from pathlib import Path
-from typing import IO, Literal, NoReturn
+from typing import TYPE_CHECKING, Literal, NoReturn, TextIO, cast
 from unittest import TestCase
 
 import responses
 from requests.exceptions import RequestException
 
 from wlc.main import SettingsSource, main
+
+if TYPE_CHECKING:
+    from collections.abc import Callable
+
+    from requests import PreparedRequest
+
+    from wlc.main import BufferedStream
 
 TEST_DATA = Path(__file__).parent / "test_data"
 DATA_TEST_BASE = TEST_DATA / "api"
@@ -52,10 +59,10 @@ class TTYStringIO(BufferedStringIO):
         super().__init__(tty=True)
 
 
-class AttributeDict(UserDict):
+class AttributeDict(UserDict[str, object]):
     """Dictionary exposing keys as attributes."""
 
-    def __getattr__(self, key):
+    def __getattr__(self, key: str) -> object:
         """Provide attribute-style access."""
         try:
             return self[key]
@@ -72,7 +79,9 @@ class ResponseHandler:
         self.filename = filename
         self.auth = auth
 
-    def __call__(self, request):
+    def __call__(
+        self, request: PreparedRequest
+    ) -> tuple[int, dict[str, str], bytes | str]:
         """Call interface for responses."""
         if self.auth and request.headers.get("Authorization") != "Token KEY":
             return 403, {}, ""
@@ -81,7 +90,7 @@ class ResponseHandler:
 
         return 200, {}, content
 
-    def get_content(self, request):
+    def get_content(self, request: PreparedRequest) -> bytes:
         """Return content for given request."""
         filename = self.get_filename(request)
 
@@ -96,12 +105,12 @@ class ResponseHandler:
         return self.body
 
     @staticmethod
-    def format_body(body) -> str:
+    def format_body(body: bytes | None) -> str:
         if not body:
             return ""
-        body = body.decode()
+        decoded = body.decode()
         result = (
-            body.replace(": ", "=")
+            decoded.replace(": ", "=")
             .replace("{", "")
             .replace("}", "")
             .replace('"', "")
@@ -119,9 +128,9 @@ class ResponseHandler:
         digest.update(result.encode())
         return digest.hexdigest()
 
-    def get_filename(self, request):
+    def get_filename(self, request: PreparedRequest) -> Path | None:
         """Return filename for given request."""
-        filename_parts = [str(self.filename), request.method]
+        filename_parts = [str(self.filename), cast("str", request.method)]
         if request.method != "GET":
             content_type = request.headers.get("content-type", None)
 
@@ -129,10 +138,14 @@ class ResponseHandler:
                 "multipart/form-data"
             ):
                 filename_parts.append(
-                    self.format_multipart_body(request.body, content_type)
+                    self.format_multipart_body(
+                        cast("bytes", request.body), content_type
+                    )
                 )
             else:
-                filename_parts.append(self.format_body(request.body))
+                filename_parts.append(
+                    self.format_body(cast("bytes | None", request.body))
+                )
             return Path("--".join(filename_parts))
         if "?" in request.path_url:
             filename_parts.append(request.path_url.split("?", 1)[-1])
@@ -140,7 +153,7 @@ class ResponseHandler:
         return None
 
     @staticmethod
-    def format_multipart_body(body, content_type):
+    def format_multipart_body(body: bytes, content_type: str) -> str:
         message = message_from_string(
             f"Content-Type: {content_type}\n\n{body.decode()}"
         )
@@ -198,7 +211,7 @@ def register_uri(
         )
 
 
-def raise_error(request) -> NoReturn:
+def raise_error(request: PreparedRequest) -> NoReturn:
     """Raise an expected request error or an unexpected programming error."""
     if "/io" in request.path_url:
         msg = "Some error"
@@ -208,14 +221,21 @@ def raise_error(request) -> NoReturn:
 
 
 def register_error(
-    path, code, domain="http://127.0.0.1:8000/api", method=responses.GET, **kwargs
+    path: str,
+    code: int,
+    domain: str = "http://127.0.0.1:8000/api",
+    method: str = responses.GET,
+    *,
+    callback: Callable[[PreparedRequest], NoReturn] | None = None,
+    json: object = None,
+    headers: dict[str, str] | None = None,
 ) -> None:
     """Simplified URL error registration."""
     url = f"{domain}/{path}/"
-    if "callback" in kwargs:
-        responses.add_callback(method, url, **kwargs)
+    if callback is not None:
+        responses.add_callback(method, url, callback=callback)
     else:
-        responses.add(method, url, status=code, **kwargs)
+        responses.add(method, url, status=code, json=json, headers=headers)
 
 
 def register_uris() -> None:
@@ -320,10 +340,10 @@ class CLITestBase(APITest, ABC):
         *,
         settings: SettingsSource | Literal[False] | None = None,
         stdout: Literal[True] | None = None,
-        stdin: IO[bytes] | None = None,
+        stdin: BufferedStream | TextIO | None = None,
         expected: int = 0,
         tty: bool = False,
-    ):
+    ) -> bytes | str:
         """Execute command and return output."""
         if settings is None:
             settings = ()

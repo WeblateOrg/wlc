@@ -7,9 +7,9 @@
 from __future__ import annotations
 
 import json
-from collections.abc import Collection, Iterator, Mapping
+from collections.abc import Collection, Iterable, Iterator, Mapping
 from ipaddress import ip_address
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, BinaryIO, TextIO, TypeAlias, TypeVar, cast
 from urllib.parse import urljoin
 
 import requests
@@ -35,8 +35,22 @@ if TYPE_CHECKING:
     from .config import WeblateConfig
 
 Origin: TypeAlias = tuple[str | None, str | None, int | None]
+JSONValue: TypeAlias = (
+    str | int | float | bool | list["JSONValue"] | dict[str, "JSONValue"] | None
+)
 JSONDict: TypeAlias = dict[str, Any]
-RequestPayload: TypeAlias = Mapping[str, Any]
+RequestPayload: TypeAlias = Mapping[str, object]
+QueryScalar: TypeAlias = str | bytes | int | float
+QueryValue: TypeAlias = QueryScalar | Iterable[QueryScalar] | None
+RequestParams: TypeAlias = Mapping[str, QueryValue]
+FileContent: TypeAlias = str | bytes | BinaryIO | TextIO
+FileSpec: TypeAlias = (
+    FileContent
+    | tuple[str | None, FileContent]
+    | tuple[str | None, FileContent, str]
+    | tuple[str | None, FileContent, str, Mapping[str, str]]
+)
+RequestFiles: TypeAlias = Mapping[str, FileSpec]
 WeblateObject: TypeAlias = Project | Component | Translation | Unit
 LazyObjectT = TypeVar("LazyObjectT", bound=LazyObject)
 
@@ -287,8 +301,8 @@ class Weblate:
         path: str,
         *,
         data: RequestPayload | None = None,
-        files: RequestPayload | None = None,
-        params: RequestPayload | None = None,
+        files: RequestFiles | None = None,
+        params: RequestParams | None = None,
     ) -> bytes:
         """Construct request object and returns raw content."""
         response = self.invoke_request(
@@ -303,9 +317,9 @@ class Weblate:
         path: str,
         *,
         data: RequestPayload | None = None,
-        files: RequestPayload | None = None,
-        params: RequestPayload | None = None,
-    ) -> Any:
+        files: RequestFiles | None = None,
+        params: RequestParams | None = None,
+    ) -> JSONValue:
         """Construct request object and returns json response."""
         response = self.invoke_request(
             method, path, data=data, files=files, params=params
@@ -331,8 +345,8 @@ class Weblate:
         path: str,
         *,
         data: RequestPayload | None = None,
-        files: RequestPayload | None = None,
-        params: RequestPayload | None = None,
+        files: RequestFiles | None = None,
+        params: RequestParams | None = None,
     ) -> Response:
         """Construct request object."""
         try:
@@ -387,18 +401,22 @@ class Weblate:
         self,
         path: str,
         *,
-        files: RequestPayload | None = None,
-        params: RequestPayload | None = None,
-        **kwargs: Any,
+        files: RequestFiles | None = None,
+        params: RequestParams | None = None,
+        **kwargs: object,
     ) -> JSONDict:
         """Perform POST request on the API."""
-        return self.request("post", path, data=kwargs, files=files, params=params)
+        return cast(
+            "JSONDict",
+            self.request("post", path, data=kwargs, files=files, params=params),
+        )
 
     def _post_factory(self, prefix: str, path: str, kwargs: RequestPayload) -> JSONDict:
         """Create an object at the given API path."""
-        return self.post(f"{prefix}/{path}/", **kwargs)
+        # Preserve post() overrides and its handling of reserved transport options.
+        return self.post(f"{prefix}/{path}/", **cast("JSONDict", kwargs))
 
-    def get(self, path: str, *, params: RequestPayload | None = None) -> Any:
+    def get(self, path: str, *, params: RequestParams | None = None) -> JSONValue:
         """Perform GET request on the API."""
         return self.request("get", path, params=params)
 
@@ -407,11 +425,11 @@ class Weblate:
         path: str,
         parser: type[LazyObjectT],
         *,
-        params: RequestPayload | None = None,
+        params: RequestParams | None = None,
     ) -> Iterator[LazyObjectT]:
         """Iterate over parsed objects across API result pages."""
         while path is not None:
-            data = self.get(path, params=params)
+            data = cast("JSONDict | list[JSONDict]", self.get(path, params=params))
             params = None
             if isinstance(data, list):
                 for item in data:
@@ -426,7 +444,7 @@ class Weblate:
         self, prefix: str, path: str, parser: type[LazyObjectT]
     ) -> LazyObjectT:
         """Fetch and parse an object at the given API path."""
-        data = self.get(f"{prefix}/{path}/")
+        data = cast("JSONDict", self.get(f"{prefix}/{path}/"))
         return parser(weblate=self, **data)
 
     def get_object(self, path: str) -> WeblateObject:
@@ -480,7 +498,7 @@ class Weblate:
         return self.list_factory(path, Change)
 
     def list_units(
-        self, path: str, *, params: RequestPayload | None = None
+        self, path: str, *, params: RequestParams | None = None
     ) -> Iterator[Unit]:
         """List units in the instance."""
         return self.list_factory(path, Unit, params=params)
@@ -539,12 +557,14 @@ class Weblate:
 
         return self.post("projects/", **data)
 
-    def create_component(self, project: str, **kwargs: Any) -> JSONDict:
+    def create_component(
+        self, project: str, *, params: RequestParams | None = None, **kwargs: object
+    ) -> JSONDict:
         """Create a new component for project in the instance."""
-        files: JSONDict = {}
+        files: dict[str, FileSpec] = {}
         for fileattr in ("docfile", "zipfile"):
             if fileattr in kwargs:
-                files[fileattr] = kwargs.pop(fileattr)
+                files[fileattr] = cast("FileSpec", kwargs.pop(fileattr))
 
         required_keys = ["name", "slug", "file_format", "filemask", "repo"]
         for key in required_keys:
@@ -552,7 +572,12 @@ class Weblate:
                 msg = f"{key} is required."
                 raise WeblateException(msg)
 
-        return self.post(f"projects/{project}/components/", files=files, **kwargs)
+        return self.post(
+            f"projects/{project}/components/",
+            files=files,
+            params=params,
+            **kwargs,
+        )
 
     def create_language(
         self,

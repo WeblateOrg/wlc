@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+from argparse import Namespace
 from datetime import datetime, timezone
 from io import StringIO
 
@@ -22,7 +23,7 @@ class JSONOutputTest(CLITestBase):
     def test_json_encoder_userdict(self) -> None:
         """UserDict values should support nesting and datetime encoding."""
         output = StringIO()
-        cmd = Version(args=[], config=WeblateConfig(), stdout=output)
+        cmd = Version(args=Namespace(), config=WeblateConfig(), stdout=output)
         cmd.print_json(
             AttributeDict(
                 {
@@ -40,7 +41,7 @@ class JSONOutputTest(CLITestBase):
     def test_json_encoder_nested_models(self) -> None:
         """Lazy model fields should retain filtering and nested models."""
         output = StringIO()
-        cmd = Version(args=[], config=WeblateConfig(), stdout=output)
+        cmd = Version(args=Namespace(), config=WeblateConfig(), stdout=output)
         obj = cmd.wlc.get_project("hello")
         cmd.print_json(obj)
         values = json.loads(output.getvalue())
@@ -50,7 +51,7 @@ class JSONOutputTest(CLITestBase):
     def test_json_encoder_nullable_field(self) -> None:
         """Missing nullable model fields should still serialize as null."""
         output = StringIO()
-        cmd = Version(args=[], config=WeblateConfig(), stdout=output)
+        cmd = Version(args=Namespace(), config=WeblateConfig(), stdout=output)
         obj = cmd.wlc.get_component("hello/weblate")
         cmd.print_json(obj)
         self.assertIsNone(json.loads(output.getvalue())["category"])

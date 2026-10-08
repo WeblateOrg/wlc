@@ -167,8 +167,7 @@ ignore = [
   "docstring-missing-exception", # WONTFIX
   "too-many-public-methods", # TODO
   "COM", # CONFIG: No trailing commas
-  "PT", # CONFIG: Not using pytest
-  "ANN" # TODO: type annotations
+  "PT" # CONFIG: Not using pytest
 ]
 preview = true
 select = ["ALL"]
