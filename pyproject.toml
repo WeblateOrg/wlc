@@ -165,7 +165,6 @@ ignore = [
   "docstring-missing-returns", # WONTFIX
   "docstring-missing-yields", # WONTFIX
   "docstring-missing-exception", # WONTFIX
-  "too-many-public-methods", # TODO
   "COM", # CONFIG: No trailing commas
   "PT" # CONFIG: Not using pytest
 ]

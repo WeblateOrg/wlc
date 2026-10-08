@@ -50,7 +50,7 @@ ObjectT = TypeVar("ObjectT", Project, Component, Translation, Unit)
 
 
 class WeblateTest(APITest):
-    """Testing of Weblate class."""
+    """Test Weblate requests and resource listing."""
 
     def test_low_level_json_values(self) -> None:
         """Low-level request methods should preserve every JSON value shape."""
@@ -81,40 +81,6 @@ class WeblateTest(APITest):
                     )
                     self.assertEqual(result, value)
                     self.assertIs(type(result), type(value))
-
-    def test_add_source_string_uses_post_override(self) -> None:
-        """Creation factories should dispatch through an overridden post method."""
-        calls: list[tuple[str, dict[str, object]]] = []
-        result = {"id": 123}
-
-        class CustomWeblate(Weblate):
-            """Client intercepting POST calls before HTTP dispatch."""
-
-            def post(self, path: str, **kwargs: object) -> JSONDict:
-                calls.append((path, kwargs))
-                return result
-
-        weblate = CustomWeblate()
-        self.assertIs(
-            weblate.add_source_string(
-                project="hello",
-                component="weblate",
-                source_language="en",
-                msgid="key",
-                msgstr="value",
-            ),
-            result,
-        )
-        self.assertEqual(
-            calls,
-            [
-                (
-                    "translations/hello/weblate/en/units/",
-                    {"key": "key", "value": ["value"]},
-                )
-            ],
-        )
-        self.assertFalse(responses.calls)
 
     def test_adapter_uses_configured_retries(self) -> None:
         """HTTP adapter should use the resolved Retry configuration."""
@@ -160,6 +126,90 @@ class WeblateTest(APITest):
     def test_categories(self) -> None:
         """Test listing categories."""
         self.assertEqual(len(list(Weblate().list_categories())), 2)
+
+    def test_request_environment_settings_are_preserved(self) -> None:
+        """Proxy and CA bundle environment settings should remain enabled."""
+        with TemporaryDirectory() as tmpdirname:
+            ca_bundle = Path(tmpdirname) / "ca-bundle.pem"
+            ca_bundle.touch()
+            with patch.dict(
+                os.environ,
+                {
+                    "HTTPS_PROXY": "http://proxy.example.com:8080",
+                    "REQUESTS_CA_BUNDLE": str(ca_bundle),
+                },
+                clear=True,
+            ):
+                settings = Weblate().session.merge_environment_settings(
+                    "https://example.com/api/",
+                    proxies={},
+                    stream=False,
+                    verify=True,
+                    cert=None,
+                )
+
+        self.assertEqual(settings["proxies"]["https"], "http://proxy.example.com:8080")
+        self.assertEqual(settings["verify"], str(ca_bundle))
+
+    def test_insecure_warning_is_not_suppressed(self) -> None:
+        response = Response()
+        response.status_code = 200
+        weblate = Weblate(url="https://localhost/api/", allow_insecure_ssl=True)
+
+        def request(*_args: object, **_kwargs: object) -> Response:
+            warnings.warn("insecure", InsecureRequestWarning, stacklevel=2)
+            warnings.warn("unrelated", UserWarning, stacklevel=2)
+            return response
+
+        with (
+            patch.object(weblate.session, "request", side_effect=request),
+            warnings.catch_warnings(record=True) as caught,
+        ):
+            warnings.simplefilter("always")
+            weblate.invoke_request("GET", weblate.url)
+            warnings.warn("insecure afterward", InsecureRequestWarning, stacklevel=1)
+
+        self.assertEqual(
+            [(warning.category, str(warning.message)) for warning in caught],
+            [
+                (InsecureRequestWarning, "insecure"),
+                (UserWarning, "unrelated"),
+                (InsecureRequestWarning, "insecure afterward"),
+            ],
+        )
+
+    def test_paginated_listing_uses_params_only_for_first_request(self) -> None:
+        """The API-provided next URL already includes query parameters."""
+        query = "language:en AND state:<translated"
+        page1 = "http://127.0.0.1:8000/api/filtered-units/"
+        page2 = f"{page1}?{urlencode({'page': 2, 'q': query})}"
+        pages = (
+            ({"q": query}, page2, 1),
+            ({"page": "2", "q": query}, None, 2),
+        )
+        for params, next_url, unit_id in pages:
+            responses.add(
+                responses.GET,
+                page1,
+                json={
+                    "next": next_url,
+                    "results": [
+                        {
+                            "id": unit_id,
+                            "url": f"http://127.0.0.1:8000/api/units/{unit_id}/",
+                        }
+                    ],
+                },
+                match=[responses.matchers.query_param_matcher(params)],
+            )
+
+        units = list(Weblate().list_units("filtered-units/", params={"q": query}))
+
+        self.assertEqual([1, 2], [unit.id for unit in units])
+
+
+class WeblateAuthenticationTest(APITest):
+    """Test API credentials and netrc isolation."""
 
     def test_authentication(self) -> None:
         """Test authentication against server."""
@@ -220,29 +270,9 @@ class WeblateTest(APITest):
             ):
                 self.assert_netrc_authentication_is_ignored()
 
-    def test_request_environment_settings_are_preserved(self) -> None:
-        """Proxy and CA bundle environment settings should remain enabled."""
-        with TemporaryDirectory() as tmpdirname:
-            ca_bundle = Path(tmpdirname) / "ca-bundle.pem"
-            ca_bundle.touch()
-            with patch.dict(
-                os.environ,
-                {
-                    "HTTPS_PROXY": "http://proxy.example.com:8080",
-                    "REQUESTS_CA_BUNDLE": str(ca_bundle),
-                },
-                clear=True,
-            ):
-                settings = Weblate().session.merge_environment_settings(
-                    "https://example.com/api/",
-                    proxies={},
-                    stream=False,
-                    verify=True,
-                    cert=None,
-                )
 
-        self.assertEqual(settings["proxies"]["https"], "http://proxy.example.com:8080")
-        self.assertEqual(settings["verify"], str(ca_bundle))
+class LazyObjectTest(APITest):
+    """Test lazy object loading and representation."""
 
     def test_ensure_loaded(self) -> None:
         """Test lazy loading of attributes."""
@@ -263,6 +293,44 @@ class WeblateTest(APITest):
         obj = Weblate().get_object("hello")
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
+
+
+class WeblateCreationTest(APITest):
+    """Test resource creation through the client."""
+
+    def test_add_source_string_uses_post_override(self) -> None:
+        """Creation factories should dispatch through an overridden post method."""
+        calls: list[tuple[str, dict[str, object]]] = []
+        result = {"id": 123}
+
+        class CustomWeblate(Weblate):
+            """Client intercepting POST calls before HTTP dispatch."""
+
+            def post(self, path: str, **kwargs: object) -> JSONDict:
+                calls.append((path, kwargs))
+                return result
+
+        weblate = CustomWeblate()
+        self.assertIs(
+            weblate.add_source_string(
+                project="hello",
+                component="weblate",
+                source_language="en",
+                msgid="key",
+                msgstr="value",
+            ),
+            result,
+        )
+        self.assertEqual(
+            calls,
+            [
+                (
+                    "translations/hello/weblate/en/units/",
+                    {"key": "key", "value": ["value"]},
+                )
+            ],
+        )
+        self.assertFalse(responses.calls)
 
     def test_add_source_string_to_monolingual_component(self) -> None:
         resp = Weblate().add_source_string(
@@ -430,62 +498,6 @@ class WeblateTest(APITest):
                     file_format="po",
                     filemask="po/*.po",
                 )
-
-    def test_insecure_warning_is_not_suppressed(self) -> None:
-        response = Response()
-        response.status_code = 200
-        weblate = Weblate(url="https://localhost/api/", allow_insecure_ssl=True)
-
-        def request(*_args: object, **_kwargs: object) -> Response:
-            warnings.warn("insecure", InsecureRequestWarning, stacklevel=2)
-            warnings.warn("unrelated", UserWarning, stacklevel=2)
-            return response
-
-        with (
-            patch.object(weblate.session, "request", side_effect=request),
-            warnings.catch_warnings(record=True) as caught,
-        ):
-            warnings.simplefilter("always")
-            weblate.invoke_request("GET", weblate.url)
-            warnings.warn("insecure afterward", InsecureRequestWarning, stacklevel=1)
-
-        self.assertEqual(
-            [(warning.category, str(warning.message)) for warning in caught],
-            [
-                (InsecureRequestWarning, "insecure"),
-                (UserWarning, "unrelated"),
-                (InsecureRequestWarning, "insecure afterward"),
-            ],
-        )
-
-    def test_paginated_listing_uses_params_only_for_first_request(self) -> None:
-        """The API-provided next URL already includes query parameters."""
-        query = "language:en AND state:<translated"
-        page1 = "http://127.0.0.1:8000/api/filtered-units/"
-        page2 = f"{page1}?{urlencode({'page': 2, 'q': query})}"
-        pages = (
-            ({"q": query}, page2, 1),
-            ({"page": "2", "q": query}, None, 2),
-        )
-        for params, next_url, unit_id in pages:
-            responses.add(
-                responses.GET,
-                page1,
-                json={
-                    "next": next_url,
-                    "results": [
-                        {
-                            "id": unit_id,
-                            "url": f"http://127.0.0.1:8000/api/units/{unit_id}/",
-                        }
-                    ],
-                },
-                match=[responses.matchers.query_param_matcher(params)],
-            )
-
-        units = list(Weblate().list_units("filtered-units/", params={"q": query}))
-
-        self.assertEqual([1, 2], [unit.id for unit in units])
 
 
 class ObjectTestBaseClass(APITest, ABC, Generic[ObjectT]):

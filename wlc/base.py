@@ -23,7 +23,8 @@ if TYPE_CHECKING:
 _MISSING = object()
 
 
-class LazyObject(UserDict[str, Any]):
+# Preserve the mapping interface alongside the lazy-loading API.
+class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
     """Mapping object that supports deferred loading from the Weblate API."""
 
     PARAMS: ClassVar[tuple[str, ...]] = ()

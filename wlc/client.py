@@ -63,7 +63,8 @@ class _NoNetrcAuth(requests.auth.AuthBase):
         return r
 
 
-class Weblate:
+# The public client exposes transport helpers and API resource operations.
+class Weblate:  # ruff: ignore[too-many-public-methods]
     """
     Weblate API wrapper object.
 
