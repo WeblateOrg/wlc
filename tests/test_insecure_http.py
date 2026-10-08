@@ -11,7 +11,7 @@ from unittest.mock import patch
 
 import responses
 
-from .test_main import CLITestBase
+from .test_base import CLITestBase
 
 
 class TestInsecureHTTPCLI(CLITestBase):

@@ -14,7 +14,7 @@ from requests import Response
 
 from wlc import Weblate
 
-from .test_main import CLITestBase
+from .test_base import CLITestBase
 
 
 class TestInsecureSSLCLI(CLITestBase):
