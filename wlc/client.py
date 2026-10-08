@@ -146,9 +146,8 @@ class Weblate:
     def _validate_api_key(self) -> None:
         """Reject API keys that can not be safely used in an HTTP header."""
         if "\r" in self.key or "\n" in self.key:
-            raise WeblateException(
-                "API key must not contain carriage returns or line feeds."
-            )
+            msg = "API key must not contain carriage returns or line feeds."
+            raise WeblateException(msg)
 
     @staticmethod
     def is_loopback_host(hostname: str | None) -> bool:
@@ -169,12 +168,14 @@ class Weblate:
         try:
             parsed_url = parse_url(url)
         except LocationParseError as error:
-            raise WeblateException("Invalid URL.") from error
+            msg = "Invalid URL."
+            raise WeblateException(msg) from error
         if parsed_url.auth is not None:
-            raise WeblateException(
+            msg = (
                 "Credentials embedded in URLs are not supported. "
                 "Configure an API key instead."
             )
+            raise WeblateException(msg)
         return parsed_url
 
     def validate_authenticated_transport(self) -> None:
@@ -186,10 +187,11 @@ class Weblate:
             and not self.is_loopback_host(parsed_url.host)
             and not self.allow_insecure_http
         ):
-            raise WeblateException(
+            msg = (
                 "Refusing to use an API key over insecure HTTP. "
                 "Use HTTPS or explicitly enable insecure HTTP."
             )
+            raise WeblateException(msg)
 
     @staticmethod
     def get_effective_port(url: Url) -> int | None:
@@ -211,9 +213,8 @@ class Weblate:
         """Resolve a request path and reject cross-origin targets."""
         url = self.parse_request_url(urljoin(self.url, path))
         if self.get_origin(url) != self.api_origin:
-            raise WeblateException(
-                "Server returned a URL outside the configured API origin."
-            )
+            msg = "Server returned a URL outside the configured API origin."
+            raise WeblateException(msg)
         return url.url
 
     @staticmethod
@@ -241,17 +242,17 @@ class Weblate:
         """Raise WeblateException for known HTTP errors."""
         if isinstance(error, requests.HTTPError):
             if error.response is None:
-                raise WeblateException(
-                    "Server returned an invalid response."
-                ) from error
+                msg = "Server returned an invalid response."
+                raise WeblateException(msg) from error
             status_code = error.response.status_code
 
             match status_code:
                 case _ if 300 <= status_code < 400:
-                    raise WeblateException(
+                    msg = (
                         "Server responded with an unexpected HTTP redirect. "
                         "Please check your configuration."
-                    ) from error
+                    )
+                    raise WeblateException(msg) from error
                 case 429:
                     headers = error.response.headers
                     raise WeblateThrottlingError(
@@ -259,10 +260,11 @@ class Weblate:
                         headers.get("Retry-After", "unknown"),
                     ) from error
                 case 404:
-                    raise WeblateException(
+                    msg = (
                         "Object not found on the server "
                         "(maybe operation is not supported on the server)"
-                    ) from error
+                    )
+                    raise WeblateException(msg) from error
                 case 403:
                     raise WeblatePermissionError(
                         self.permission_error_message(error)
@@ -276,9 +278,8 @@ class Weblate:
                     # pylint: disable-next=broad-exception-caught
                     except Exception:  # ruff: ignore[blind-except]
                         error_string = ""
-                    raise WeblateException(
-                        f"HTTP error {status_code}: {reason} {error_string}"
-                    ) from error
+                    msg = f"HTTP error {status_code}: {reason} {error_string}"
+                    raise WeblateException(msg) from error
 
     def raw_request(
         self,
@@ -311,7 +312,16 @@ class Weblate:
         try:
             return response.json()
         except ValueError as error:
-            raise WeblateException("Server returned invalid JSON") from error
+            msg = "Server returned invalid JSON"
+            raise WeblateException(msg) from error
+
+    @staticmethod
+    def check_response(response: Response) -> None:
+        """Verify response code for a requests response."""
+        response.raise_for_status()
+        if 300 <= response.status_code < 400:
+            msg = "Server redirected"
+            raise requests.HTTPError(msg, response=response)
 
     def invoke_request(
         self,
@@ -363,9 +373,7 @@ class Weblate:
                 timeout=self.timeout,
             )
             log_response_debug(response)
-            response.raise_for_status()
-            if 300 <= response.status_code < 400:
-                raise requests.HTTPError("Server redirected", response=response)
+            self.check_response(response)
         except requests.exceptions.RequestException as error:
             log_failure_debug(method, path, error, headers=headers)
             self.process_error(error)
@@ -435,7 +443,8 @@ class Weblate:
                 return self.get_component(path)
             case 1:
                 return self.get_project(path)
-        raise ValueError(f"Not supported path: {path}")
+        msg = f"Not supported path: {path}"
+        raise ValueError(msg)
 
     def get_project(self, path: str) -> Project:
         """Return project of given path."""
@@ -533,7 +542,8 @@ class Weblate:
         required_keys = ["name", "slug", "file_format", "filemask", "repo"]
         for key in required_keys:
             if key not in kwargs:
-                raise WeblateException(f"{key} is required.")
+                msg = f"{key} is required."
+                raise WeblateException(msg)
 
         return self.post(f"projects/{project}/components/", files=files, **kwargs)
 

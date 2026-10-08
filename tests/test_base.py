@@ -147,7 +147,8 @@ class ResponseHandler:
         payload = []
         for part in message.get_payload():
             if not isinstance(part, Message):
-                raise TypeError(f"Unexpected test data: {part}")
+                msg = f"Unexpected test data: {part}"
+                raise TypeError(msg)
             name = part.get_param("name", header="content-disposition")
             value = part.get_payload()
             if isinstance(value, bytes):
@@ -200,8 +201,10 @@ def register_uri(
 def raise_error(request) -> NoReturn:
     """Raise an expected request error or an unexpected programming error."""
     if "/io" in request.path_url:
-        raise RequestException("Some error")
-    raise RuntimeError("Bug")
+        msg = "Some error"
+        raise RequestException(msg)
+    msg = "Bug"
+    raise RuntimeError(msg)
 
 
 def register_error(

@@ -153,7 +153,8 @@ def _open_download_temporary(path: Path) -> tuple[int, str]:
         except FileExistsError:
             continue
         return descriptor, temporary_name
-    raise CommandError(f"Could not create temporary download file for: {path}")
+    msg = f"Could not create temporary download file for: {path}"
+    raise CommandError(msg)
 
 
 def _unlink_download_temporary(path: Path, temporary_name: str) -> None:
@@ -183,9 +184,8 @@ def _write_existing_download_file(
         opened_descriptor = os.open(path, flags)
     except OSError as error:
         if error.errno == errno.ELOOP:
-            raise CommandError(
-                f"Refusing to write downloaded file through symlink: {path}"
-            ) from error
+            msg = f"Refusing to write downloaded file through symlink: {path}"
+            raise CommandError(msg) from error
         raise
 
     descriptor = opened_descriptor
@@ -200,9 +200,8 @@ def _write_existing_download_file(
             or (opened_stat.st_dev, opened_stat.st_ino)
             != (destination_stat.st_dev, destination_stat.st_ino)
         ):
-            raise CommandError(
-                f"Refusing to write downloaded file after destination changed: {path}"
-            )
+            msg = f"Refusing to write downloaded file after destination changed: {path}"
+            raise CommandError(msg)
         os.ftruncate(descriptor, 0)
         handle = os.fdopen(descriptor, "wb")
         descriptor_open = False
@@ -224,13 +223,11 @@ def _write_download_file(
     destination_mode: int | None = None
     if destination_stat is not None:
         if _is_link(destination_stat):
-            raise CommandError(
-                f"Refusing to write downloaded file through symlink: {path}"
-            )
+            msg = f"Refusing to write downloaded file through symlink: {path}"
+            raise CommandError(msg)
         if not stat.S_ISREG(destination_stat.st_mode):
-            raise CommandError(
-                f"Refusing to write downloaded file to non-regular path: {path}"
-            )
+            msg = f"Refusing to write downloaded file to non-regular path: {path}"
+            raise CommandError(msg)
         destination_mode = stat.S_IMODE(destination_stat.st_mode)
         if destination_stat.st_nlink == 1:
             _write_existing_download_file(path, content, destination_stat)
@@ -467,7 +464,8 @@ class ObjectCommand(Command, Generic[ObjectT]):
         if not path:
             if blank:
                 return None
-            raise CommandError("No object passed on command-line!")
+            msg = "No object passed on command-line!"
+            raise CommandError(msg)
 
         obj = self.wlc.get_object(path)
         object_type = self.object_type
@@ -481,7 +479,8 @@ class ObjectCommand(Command, Generic[ObjectT]):
         """Return a required object after CLI validation."""
         obj = self.get_object()
         if obj is None:
-            raise CommandError("No object passed on command-line!")
+            msg = "No object passed on command-line!"
+            raise CommandError(msg)
         return obj
 
     def run(self) -> None:
@@ -898,11 +897,13 @@ class Download(ObjectCommand[CommandObject]):
     def download_component(self, component: Component) -> None:
         """Download a single component as file (if not a translation)."""
         if self.args.output is None:
-            raise CommandError("Output is needed for download!")
+            msg = "Output is needed for download!"
+            raise CommandError(msg)
 
         directory = Path(self.args.output)
         if _download_destination_stat(directory) is not None and not directory.is_dir():
-            raise CommandError(f"Output path is not a directory: {directory}")
+            msg = f"Output path is not a directory: {directory}"
+            raise CommandError(msg)
 
         content = component.download(self.args.convert)
         file_path = directory / (
@@ -932,10 +933,11 @@ class Download(ObjectCommand[CommandObject]):
                 _write_download_file(Path(self.args.output), content)
             else:
                 if stream_isatty(self.stdout):
-                    raise CommandError(
+                    msg = (
                         "Refusing to write downloaded file to terminal. "
                         "Use --output or redirect stdout."
                     )
+                    raise CommandError(msg)
                 self.stdout.buffer.write(content)
             return
 
@@ -1022,8 +1024,9 @@ class Upload(TranslationCommand):
             and "not_found" in result
             and "skipped" in result
         ):
+            msg = "Failed to upload translations!"
             raise CommandError(
-                "Failed to upload translations!",
+                msg,
                 result.get("detail", ""),
             )
 
@@ -1072,7 +1075,8 @@ class EditUnit(UnitCommand):
         if self.args.extra_flags is not None:
             kwargs["extra_flags"] = self.args.extra_flags
         if not kwargs:
-            raise CommandError("No changes specified!")
+            msg = "No changes specified!"
+            raise CommandError(msg)
         obj.patch(**kwargs)
 
 
