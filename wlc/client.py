@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Collection, Iterable, Iterator, Mapping
+from http import HTTPStatus
 from ipaddress import ip_address
 from typing import TYPE_CHECKING, Any, BinaryIO, TextIO, TypeAlias, TypeVar, cast
 from urllib.parse import urljoin
@@ -264,7 +265,9 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
             status_code = error.response.status_code
 
             match status_code:
-                case _ if 300 <= status_code < 400:
+                case _ if (
+                    HTTPStatus.MULTIPLE_CHOICES <= status_code < HTTPStatus.BAD_REQUEST
+                ):
                     msg = (
                         "Server responded with an unexpected HTTP redirect. "
                         "Please check your configuration."
@@ -338,7 +341,7 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
     def check_response(response: Response) -> None:
         """Verify response code for a requests response."""
         response.raise_for_status()
-        if 300 <= response.status_code < 400:
+        if HTTPStatus.MULTIPLE_CHOICES <= response.status_code < HTTPStatus.BAD_REQUEST:
             msg = "Server redirected"
             raise requests.HTTPError(msg, response=response)
 
