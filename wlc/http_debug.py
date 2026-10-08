@@ -28,6 +28,7 @@ def redact_headers(headers: dict[str, str]) -> dict[str, str]:
     }
 
 
+# pylint: disable-next=too-many-arguments
 def log_request_debug(
     method: str,
     path: str,

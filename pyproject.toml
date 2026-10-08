@@ -135,15 +135,6 @@ exclude_also = [
 [tool.isort]
 profile = "black"
 
-[tool.pylint.main]
-disable = [
-  "too-many-instance-attributes",
-  "too-many-positional-arguments",
-  "too-many-arguments",
-  "missing-function-docstring",
-  "too-many-public-methods"
-]
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
@@ -175,9 +166,6 @@ select = ["ALL"]
 min-file-size = 2
 # Copyright without a year, see https://github.com/astral-sh/ruff/issues/10062
 notice-rgx = "(?i)Copyright\\s+©\\s+"
-
-[tool.ruff.lint.mccabe]
-max-complexity = 16
 
 [tool.ruff.lint.per-file-ignores]
 # Test names describe their behavior and self might not be used there

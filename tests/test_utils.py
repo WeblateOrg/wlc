@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Utils tests."""
+# pylint: disable=missing-function-docstring
 
 from unittest import TestCase
 

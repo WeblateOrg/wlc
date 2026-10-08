@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Keyword-only API option contracts."""
+# pylint: disable=missing-function-docstring
 
 from __future__ import annotations
 
