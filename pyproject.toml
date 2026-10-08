@@ -1,6 +1,6 @@
 [build-system]
 build-backend = "setuptools.build_meta"
-requires = ["setuptools>=78.0.2"]
+requires = ["setuptools>=83.0.0"]
 
 [dependency-groups]
 dev = [
@@ -52,10 +52,12 @@ classifiers = [
 ]
 dependencies = [
   "argcomplete",
+  "certifi>=2024.7.4",
+  "idna>=3.15",
   "python-dateutil",
-  "pyxdg",
+  "pyxdg>=0.26",
   "requests>=2.33.0",
-  "urllib3>=2.7.0"
+  "urllib3>=2.8.0"
 ]
 description = "A command-line utility for Weblate, translation tool with tight version control integration"
 dynamic = ["version"]
