@@ -158,15 +158,12 @@ ignore = [
   "incorrect-blank-line-before-class", # CONFIG: incompatible with D211
   "multi-line-summary-first-line", # CONFIG: incompatible with D213
   "line-too-long", # CONFIG: formatter
-  "print", # WONTFIX: using print() (maybe add noqa)
   "raise-vanilla-args", # WONTFIX: Avoid specifying long messages outside the exception class
   "too-many-arguments", # WONTFIX: Too many arguments to function call
   "magic-value-comparison", # TODO: Magic value used in comparison, consider replacing 201 with a constant variable
   "docstring-missing-returns", # WONTFIX
   "docstring-missing-yields", # WONTFIX
   "docstring-missing-exception", # WONTFIX
-  "too-many-statements-in-try-clause", # TODO
-  "no-self-use", # TODO
   "too-many-public-methods", # TODO
   "read-whole-file", # TODO
   "COM", # CONFIG: No trailing commas
@@ -174,8 +171,7 @@ ignore = [
   "PTH", # TODO: Not using pathlib
   "EM", # TODO: Exception strings
   "FBT", # TODO: Boolean in function definition
-  "ANN", # TODO: type annotations
-  "error-suffix-on-exception-name" # TODO: exception naming
+  "ANN" # TODO: type annotations
 ]
 preview = true
 select = ["ALL"]
@@ -189,7 +185,8 @@ notice-rgx = "(?i)Copyright\\s+©\\s+"
 max-complexity = 16
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["D"] # CONFIG: Test names describe their behavior
+# Test names describe their behavior and self might not be used there
+"tests/**" = ["D", "no-self-use"]
 
 [tool.rumdl]
 disable = [
