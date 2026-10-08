@@ -1,5 +1,24 @@
 # Changelog
 
+## 3.0.0
+
+* Released on 8th October 2026.
+* Breaking Python API changes:
+
+  * Require keyword arguments for client construction, request options,
+    project and language creation, source string creation, upload and download
+    options, throttling error construction, and CLI entry point options.
+  * API model objects now inherit from `UserDict` and are no longer `dict`
+    instances. Use `get_data()` or `dict(obj.items())` when a plain dictionary
+    is required.
+  * `WeblateConfig.find_config()` and `WeblateConfig.find_project_config()` now
+    return `pathlib.Path` objects instead of strings when a file is found.
+* Reject cyclic category hierarchies and category nesting deeper than three
+  levels.
+* Raised minimum dependency versions to exclude vulnerable releases.
+* Added testing with Python 3.15 and improved type annotations.
+* Updated development dependencies, CI actions, and Docker base images.
+
 ## 2.2.1
 
 * Released on 24th September 2026.
