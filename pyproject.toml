@@ -52,7 +52,7 @@ classifiers = [
 ]
 dependencies = [
   "argcomplete",
-  "certifi>=2024.7.4",
+  "certifi>=2024.12.14",
   "idna>=3.15",
   "python-dateutil",
   "pyxdg>=0.26",
