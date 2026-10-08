@@ -6,7 +6,6 @@
 
 from __future__ import annotations
 
-import os
 import sys
 from abc import ABC
 from collections import UserDict
@@ -14,6 +13,7 @@ from email import message_from_string
 from email.message import Message
 from hashlib import blake2b
 from io import BytesIO, StringIO
+from pathlib import Path
 from typing import IO, Literal, NoReturn
 from unittest import TestCase
 
@@ -22,10 +22,10 @@ from requests.exceptions import RequestException
 
 from wlc.main import SettingsSource, main
 
-TEST_DATA = os.path.join(os.path.dirname(__file__), "test_data")
-DATA_TEST_BASE = os.path.join(TEST_DATA, "api")
-TEST_CONFIG = os.path.join(TEST_DATA, "wlc")
-TEST_SECTION = os.path.join(TEST_DATA, "section")
+TEST_DATA = Path(__file__).parent / "test_data"
+DATA_TEST_BASE = TEST_DATA / "api"
+TEST_CONFIG = TEST_DATA / "wlc"
+TEST_SECTION = TEST_DATA / "section"
 
 
 class BufferedStringIO(StringIO):
@@ -66,7 +66,7 @@ class AttributeDict(UserDict):
 class ResponseHandler:
     """responses response handler."""
 
-    def __init__(self, body: bytes, filename: str, auth: bool = False) -> None:
+    def __init__(self, body: bytes, filename: Path, auth: bool = False) -> None:
         """Construct response handler object."""
         self.body = body
         self.filename = filename
@@ -87,7 +87,7 @@ class ResponseHandler:
 
         if filename is not None:
             try:
-                with open(filename, "rb") as handle:
+                with filename.open("rb") as handle:
                     return handle.read()
             except FileNotFoundError as error:
                 error.strerror = "Failed to find response mock"
@@ -121,7 +121,7 @@ class ResponseHandler:
 
     def get_filename(self, request):
         """Return filename for given request."""
-        filename_parts = [self.filename, request.method]
+        filename_parts = [str(self.filename), request.method]
         if request.method != "GET":
             content_type = request.headers.get("content-type", None)
 
@@ -133,10 +133,10 @@ class ResponseHandler:
                 )
             else:
                 filename_parts.append(self.format_body(request.body))
-            return "--".join(filename_parts)
+            return Path("--".join(filename_parts))
         if "?" in request.path_url:
             filename_parts.append(request.path_url.split("?", 1)[-1])
-            return "--".join(filename_parts)
+            return Path("--".join(filename_parts))
         return None
 
     @staticmethod
@@ -162,9 +162,9 @@ def register_uri(
     path: str, domain: str = "http://127.0.0.1:8000/api", auth: bool = False
 ) -> None:
     """Simplified URL registration."""
-    filename = os.path.join(DATA_TEST_BASE, path.replace("/", "-"))
+    filename = DATA_TEST_BASE / path.replace("/", "-")
     url = f"{domain}/{path}/"
-    with open(filename, "rb") as handle:
+    with filename.open("rb") as handle:
         responses.add_callback(
             responses.GET,
             url,

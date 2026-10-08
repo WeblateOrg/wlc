@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test command-line interface."""
+# pylint: disable=too-many-lines
 
 from __future__ import annotations
 
@@ -11,9 +12,9 @@ import errno
 import html
 import json
 import os
-import pathlib
 import sys
 from io import BytesIO, StringIO, TextIOWrapper
+from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from types import SimpleNamespace
 from unittest.mock import patch
@@ -71,23 +72,23 @@ class TestSettings(CLITestBase):
     def test_config(self) -> None:
         """Configuration using custom config file."""
         output = self.execute(
-            ["--config", TEST_CONFIG, "list-projects"], settings=False
+            ["--config", str(TEST_CONFIG), "list-projects"], settings=False
         )
         self.assertIn("Hello", output)
 
     def test_explicit_config_is_authoritative(self) -> None:
         """Explicit config is not overridden by repo config in cwd."""
-        current = os.path.abspath(".")
+        current = Path.cwd()
         with TemporaryDirectory() as tmpdirname:
-            explicit = os.path.join(tmpdirname, "explicit.ini")
-            pathlib.Path(explicit).write_text(
+            explicit = Path(tmpdirname) / "explicit.ini"
+            explicit.write_text(
                 "[weblate]\nurl = http://127.0.0.1:8000/api/\n", encoding="utf-8"
             )
 
-            repo = os.path.join(tmpdirname, "repo")
-            nested = os.path.join(repo, "nested")
-            os.makedirs(nested)
-            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+            repo = Path(tmpdirname) / "repo"
+            nested = repo / "nested"
+            nested.mkdir(parents=True)
+            (repo / ".weblate").write_text(
                 "[weblate]\nurl = http://denied.example.com/\n", encoding="utf-8"
             )
 
@@ -95,7 +96,7 @@ class TestSettings(CLITestBase):
                 os.environ["WLC_KEY"] = "KEY"
                 os.chdir(nested)
                 output = self.execute(
-                    ["--config", explicit, "show", "acl"], settings=False
+                    ["--config", str(explicit), "show", "acl"], settings=False
                 )
             finally:
                 os.chdir(current)
@@ -107,9 +108,9 @@ class TestSettings(CLITestBase):
     def test_missing_explicit_config_reports_error(self) -> None:
         """Missing explicit config path should be reported to the user."""
         with TemporaryDirectory() as tmpdirname:
-            missing = os.path.join(tmpdirname, "missing.ini")
+            missing = Path(tmpdirname) / "missing.ini"
             output = self.execute(
-                ["--config", missing, "list-projects"], settings=False, expected=1
+                ["--config", str(missing), "list-projects"], settings=False, expected=1
             )
 
         self.assertIn("Error: Could not read configuration file:", output)
@@ -118,7 +119,13 @@ class TestSettings(CLITestBase):
     def test_config_section(self) -> None:
         """Configuration using custom config file section."""
         output = self.execute(
-            ["--config", TEST_SECTION, "--config-section", "custom", "list-projects"],
+            [
+                "--config",
+                str(TEST_SECTION),
+                "--config-section",
+                "custom",
+                "list-projects",
+            ],
             settings=False,
         )
         self.assertIn("Hello", output)
@@ -126,7 +133,14 @@ class TestSettings(CLITestBase):
     def test_config_key(self) -> None:
         """Configuration using custom config file section and key set is ignored."""
         output = self.execute(
-            ["--config", TEST_CONFIG, "--config-section", "withkey", "show", "acl"],
+            [
+                "--config",
+                str(TEST_CONFIG),
+                "--config-section",
+                "withkey",
+                "show",
+                "acl",
+            ],
             settings=False,
             expected=1,
         )
@@ -140,7 +154,7 @@ class TestSettings(CLITestBase):
         output = self.execute(["show", "acl"], settings=False, expected=1)
         self.assertIn("You don't have permission to access this object", output)
         try:
-            os.environ["APPDATA"] = TEST_DATA
+            os.environ["APPDATA"] = str(TEST_DATA)
             output = self.execute(["show", "acl"], settings=False)
             self.assertIn("ACL", output)
         finally:
@@ -166,11 +180,11 @@ class TestSettings(CLITestBase):
 
     def test_project_config_with_env_key_reports_error(self) -> None:
         """WLC_KEY can not use a URL from discovered project config."""
-        current = os.path.abspath(".")
+        current = Path.cwd()
         with TemporaryDirectory() as tmpdirname:
-            repo = os.path.join(tmpdirname, "repo")
-            os.makedirs(repo)
-            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+            repo = Path(tmpdirname) / "repo"
+            repo.mkdir(parents=True)
+            (repo / ".weblate").write_text(
                 "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
             )
 
@@ -191,11 +205,11 @@ class TestSettings(CLITestBase):
 
     def test_project_config_with_env_key_allows_env_url(self) -> None:
         """WLC_KEY can use WLC_URL even when project config is present."""
-        current = os.path.abspath(".")
+        current = Path.cwd()
         with TemporaryDirectory() as tmpdirname:
-            repo = os.path.join(tmpdirname, "repo")
-            os.makedirs(repo)
-            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+            repo = Path(tmpdirname) / "repo"
+            repo.mkdir(parents=True)
+            (repo / ".weblate").write_text(
                 "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
             )
 
@@ -220,11 +234,11 @@ class TestSettings(CLITestBase):
 
     def test_project_config_with_cli_key_reports_error(self) -> None:
         """--key can not use a URL from discovered project config."""
-        current = os.path.abspath(".")
+        current = Path.cwd()
         with TemporaryDirectory() as tmpdirname:
-            repo = os.path.join(tmpdirname, "repo")
-            os.makedirs(repo)
-            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+            repo = Path(tmpdirname) / "repo"
+            repo.mkdir(parents=True)
+            (repo / ".weblate").write_text(
                 "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
             )
 
@@ -249,11 +263,11 @@ class TestSettings(CLITestBase):
 
     def test_project_config_with_cli_key_allows_cli_url(self) -> None:
         """--key can use --url even when project config is present."""
-        current = os.path.abspath(".")
+        current = Path.cwd()
         with TemporaryDirectory() as tmpdirname:
-            repo = os.path.join(tmpdirname, "repo")
-            os.makedirs(repo)
-            pathlib.Path(os.path.join(repo, ".weblate")).write_text(
+            repo = Path(tmpdirname) / "repo"
+            repo.mkdir(parents=True)
+            (repo / ".weblate").write_text(
                 "[weblate]\nurl = http://denied.example.com/api/\n", encoding="utf-8"
             )
 
@@ -281,9 +295,9 @@ class TestSettings(CLITestBase):
 
     def test_config_cwd(self) -> None:
         """Test loading settings from current dir."""
-        current = os.path.abspath(".")
+        current = Path.cwd()
         try:
-            os.chdir(os.path.join(os.path.dirname(__file__), "test_data"))
+            os.chdir(Path(__file__).parent / "test_data")
             output = self.execute(["show"], settings=False)
             self.assertIn("Weblate", output)
         finally:
@@ -838,7 +852,7 @@ class TestCommands(CLITestBase):
         with NamedTemporaryFile() as handle:
             handle.close()
             self.execute(["download", "hello/weblate/cs", "-o", handle.name])
-            output = pathlib.Path(handle.name).read_bytes()
+            output = Path(handle.name).read_bytes()
             self.assertIn(b"Plural-Forms:", output)
 
         output = self.execute(["download", "hello/weblate"], expected=1)
@@ -853,7 +867,10 @@ class TestCommands(CLITestBase):
         with TemporaryDirectory() as tmpdirname:
             self.execute(["download", "hello", "--no-glossary", "--output", tmpdirname])
             # The hello-android should not be present as it is flagged as a glossary
-            self.assertEqual(os.listdir(tmpdirname), ["hello-weblate.zip"])
+            self.assertEqual(
+                [path.name for path in Path(tmpdirname).iterdir()],
+                ["hello-weblate.zip"],
+            )
 
         with TemporaryDirectory() as tmpdirname:
             self.execute(
@@ -863,17 +880,19 @@ class TestCommands(CLITestBase):
                     "--convert",
                     "zip",
                     "--output",
-                    os.path.join(tmpdirname, "output"),
+                    str(Path(tmpdirname) / "output"),
                 ]
             )
-            self.assertEqual(os.listdir(tmpdirname), ["output"])
+            self.assertEqual(
+                [path.name for path in Path(tmpdirname).iterdir()], ["output"]
+            )
 
     def test_download_config(self) -> None:
         with TemporaryDirectory() as tmpdirname:
             self.execute(
                 [
                     "--config",
-                    TEST_CONFIG,
+                    str(TEST_CONFIG),
                     "--config-section",
                     "withcomponent",
                     "download",
@@ -882,12 +901,15 @@ class TestCommands(CLITestBase):
                 ],
                 settings=False,
             )
-            self.assertEqual(os.listdir(tmpdirname), ["hello-weblate.zip"])
+            self.assertEqual(
+                [path.name for path in Path(tmpdirname).iterdir()],
+                ["hello-weblate.zip"],
+            )
         with TemporaryDirectory() as tmpdirname:
             self.execute(
                 [
                     "--config",
-                    TEST_CONFIG,
+                    str(TEST_CONFIG),
                     "--config-section",
                     "withproject",
                     "download",
@@ -897,7 +919,8 @@ class TestCommands(CLITestBase):
                 settings=False,
             )
             self.assertEqual(
-                set(os.listdir(tmpdirname)), {"hello-weblate.zip", "hello-android.zip"}
+                {path.name for path in Path(tmpdirname).iterdir()},
+                {"hello-weblate.zip", "hello-android.zip"},
             )
 
     def test_upload(self) -> None:
@@ -928,12 +951,12 @@ class TestCommands(CLITestBase):
             self.assertEqual("", output)
 
         with TemporaryDirectory() as tmpdirname:
-            missing = os.path.join(tmpdirname, "missing.po")
+            missing = Path(tmpdirname) / "missing.po"
             output = self.execute(
-                ["upload", "hello/weblate/cs", "-i", missing], expected=1
+                ["upload", "hello/weblate/cs", "-i", str(missing)], expected=1
             )
             missing_error = FileNotFoundError(
-                errno.ENOENT, os.strerror(errno.ENOENT), missing
+                errno.ENOENT, os.strerror(errno.ENOENT), str(missing)
             )
             self.assertEqual(f"Error: {missing_error}\n", output)
 
