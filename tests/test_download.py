@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Download command security tests."""
+# pylint: disable=missing-function-docstring
 
 from __future__ import annotations
 

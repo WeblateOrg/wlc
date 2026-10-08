@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test the module."""
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines,missing-function-docstring
 
 from __future__ import annotations
 

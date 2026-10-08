@@ -64,6 +64,7 @@ class _NoNetrcAuth(requests.auth.AuthBase):
 
 
 # The public client exposes transport helpers and API resource operations.
+# pylint: disable-next=too-many-instance-attributes,too-many-public-methods
 class Weblate:  # ruff: ignore[too-many-public-methods]
     """
     Weblate API wrapper object.
@@ -87,6 +88,7 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
     an API key instead.
     """
 
+    # pylint: disable-next=too-many-arguments
     def __init__(
         self,
         *,

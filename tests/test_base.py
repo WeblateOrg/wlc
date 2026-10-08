@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 """Test helpers."""
+# pylint: disable=missing-function-docstring
 
 from __future__ import annotations
 
@@ -220,6 +221,7 @@ def raise_error(request: PreparedRequest) -> NoReturn:
     raise RuntimeError(msg)
 
 
+# pylint: disable-next=too-many-arguments
 def register_error(
     path: str,
     code: int,
@@ -334,6 +336,7 @@ class APITest(TestCase, ABC):
 class CLITestBase(APITest, ABC):
     """Base class for CLI testing."""
 
+    # pylint: disable-next=too-many-arguments
     def execute(
         self,
         args: list[str] | None,
