@@ -102,6 +102,7 @@ class Statistics(LazyObject):
         super().refresh()
 
     def __getattr__(self, name: str) -> Any:
+        """Return a statistics field, fetching it only when an API URL exists."""
         if name in self.PARAMS and not self._url and name not in self.data:
             raise AttributeError(name)
         return super().__getattr__(name)
@@ -330,7 +331,7 @@ class Component(RepoObjectMixin, LazyObject):
         return self.weblate.list_translations(self._get_stored("translations_url"))
 
     def add_translation(self, language: str) -> dict[str, Any]:
-        """Creates a new translation in the component."""
+        """Create a new translation in the component."""
         return self.weblate.post(
             path=self._get_stored("translations_url"), language_code=language
         )
@@ -367,7 +368,7 @@ class Component(RepoObjectMixin, LazyObject):
     def add_source_string(
         self, msgid: str, msgstr: str | builtins.list[str]
     ) -> dict[str, Any]:
-        """Adds a source string to a monolingual base file."""
+        """Add a source string to a monolingual base file."""
         return self.weblate.add_source_string(
             project=self.project.slug,
             component=self.slug,
@@ -446,7 +447,7 @@ class Translation(RepoObjectMixin, LazyObject):
     REPOSITORY_CLASS = Repository
 
     def list(self) -> Translation:
-        """API compatibility method, returns self."""
+        """Load and return this object for API compatibility."""
         self.ensure_loaded("last_author")
         return self
 
@@ -576,7 +577,7 @@ class Unit(LazyObject):
     MAPPINGS: ClassVar[dict[str, Any]] = {"translation": Translation}
 
     def list(self) -> Unit:
-        """API compatibility method, returns self."""
+        """Load and return this object for API compatibility."""
         self.ensure_loaded("id")
         return self
 
