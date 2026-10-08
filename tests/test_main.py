@@ -178,6 +178,92 @@ class TestSettings(CLITestBase):
         finally:
             del os.environ["WLC_URL"]
 
+    def test_config_cwd(self) -> None:
+        """Test loading settings from current dir."""
+        current = Path.cwd()
+        try:
+            os.chdir(Path(__file__).parent / "test_data")
+            output = self.execute(["show"], settings=False)
+            self.assertIn("Weblate", output)
+        finally:
+            os.chdir(current)
+
+    def test_default_config_values(self) -> None:
+        """Test default parser values."""
+        config = WeblateConfig()
+        self.assertEqual(config.get("weblate", "retries"), "0")
+        self.assertEqual(config.get("weblate", "timeout"), "300")
+        self.assertEqual(
+            config.get("weblate", "allowed_methods"),
+            "HEAD\nDELETE\nOPTIONS\nPUT\nGET",
+        )
+        self.assertEqual(config.get("weblate", "backoff_factor"), "0")
+        self.assertIsNone(config.get("weblate", "status_forcelist"))
+
+    def test_parsing(self) -> None:
+        """Test config file parsing."""
+        config = WeblateConfig()
+        self.assertEqual(config.get("weblate", "url"), wlc.API_URL)
+        config.load()
+        config.load(TEST_CONFIG)
+        self.assertEqual(config.get("weblate", "url"), "https://example.net/")
+        self.assertEqual(config.get("weblate", "retries"), "999")
+        self.assertEqual(config.get("weblate", "allowed_methods"), "PUT,POST")
+        self.assertEqual(config.get("weblate", "backoff_factor"), "0.2")
+        self.assertEqual(
+            config.get("weblate", "status_forcelist"), "429,500,502,503,504"
+        )
+
+    def test_get_request_options(self) -> None:
+        """Test the get_request_options method when all options are in config."""
+        config = WeblateConfig()
+        config.load()
+        config.load(TEST_CONFIG)
+        (
+            retries,
+            status_forcelist,
+            allowed_methods,
+            backoff_factor,
+            _timeout,
+        ) = config.get_request_options()
+        self.assertEqual(retries, 999)
+        self.assertEqual(status_forcelist, [429, 500, 502, 503, 504])
+        self.assertEqual(allowed_methods, ["PUT", "POST"])
+        self.assertEqual(backoff_factor, 0.2)
+
+    def test_default_request_options(self) -> None:
+        """Test the get_request_options method with default config values."""
+        config = WeblateConfig()
+        (
+            retries,
+            status_forcelist,
+            allowed_methods,
+            backoff_factor,
+            timeout,
+        ) = config.get_request_options()
+        self.assertEqual(retries, 0)
+        self.assertIsNone(status_forcelist)
+        self.assertEqual(
+            allowed_methods,
+            ["HEAD", "DELETE", "OPTIONS", "PUT", "GET"],
+        )
+        self.assertEqual(backoff_factor, 0.0)
+        self.assertEqual(timeout, 300)
+
+    def test_argv(self) -> None:
+        """Test sys.argv processing."""
+        backup = sys.argv
+        try:
+            sys.argv = ["wlc", "version"]
+            output = self.execute(None)
+            self.assertIn(f"version: {wlc.__version__}", output)
+        finally:
+            sys.argv = backup
+
+
+class TestProjectSettings(CLITestBase):
+    """Test project configuration credential precedence."""
+
     def test_project_config_with_env_key_reports_error(self) -> None:
         """WLC_KEY can not use a URL from discovered project config."""
         current = Path.cwd()
@@ -293,88 +379,6 @@ class TestSettings(CLITestBase):
 
         self.assertIn("ACL", output)
 
-    def test_config_cwd(self) -> None:
-        """Test loading settings from current dir."""
-        current = Path.cwd()
-        try:
-            os.chdir(Path(__file__).parent / "test_data")
-            output = self.execute(["show"], settings=False)
-            self.assertIn("Weblate", output)
-        finally:
-            os.chdir(current)
-
-    def test_default_config_values(self) -> None:
-        """Test default parser values."""
-        config = WeblateConfig()
-        self.assertEqual(config.get("weblate", "retries"), "0")
-        self.assertEqual(config.get("weblate", "timeout"), "300")
-        self.assertEqual(
-            config.get("weblate", "allowed_methods"),
-            "HEAD\nDELETE\nOPTIONS\nPUT\nGET",
-        )
-        self.assertEqual(config.get("weblate", "backoff_factor"), "0")
-        self.assertIsNone(config.get("weblate", "status_forcelist"))
-
-    def test_parsing(self) -> None:
-        """Test config file parsing."""
-        config = WeblateConfig()
-        self.assertEqual(config.get("weblate", "url"), wlc.API_URL)
-        config.load()
-        config.load(TEST_CONFIG)
-        self.assertEqual(config.get("weblate", "url"), "https://example.net/")
-        self.assertEqual(config.get("weblate", "retries"), "999")
-        self.assertEqual(config.get("weblate", "allowed_methods"), "PUT,POST")
-        self.assertEqual(config.get("weblate", "backoff_factor"), "0.2")
-        self.assertEqual(
-            config.get("weblate", "status_forcelist"), "429,500,502,503,504"
-        )
-
-    def test_get_request_options(self) -> None:
-        """Test the get_request_options method when all options are in config."""
-        config = WeblateConfig()
-        config.load()
-        config.load(TEST_CONFIG)
-        (
-            retries,
-            status_forcelist,
-            allowed_methods,
-            backoff_factor,
-            _timeout,
-        ) = config.get_request_options()
-        self.assertEqual(retries, 999)
-        self.assertEqual(status_forcelist, [429, 500, 502, 503, 504])
-        self.assertEqual(allowed_methods, ["PUT", "POST"])
-        self.assertEqual(backoff_factor, 0.2)
-
-    def test_default_request_options(self) -> None:
-        """Test the get_request_options method with default config values."""
-        config = WeblateConfig()
-        (
-            retries,
-            status_forcelist,
-            allowed_methods,
-            backoff_factor,
-            timeout,
-        ) = config.get_request_options()
-        self.assertEqual(retries, 0)
-        self.assertIsNone(status_forcelist)
-        self.assertEqual(
-            allowed_methods,
-            ["HEAD", "DELETE", "OPTIONS", "PUT", "GET"],
-        )
-        self.assertEqual(backoff_factor, 0.0)
-        self.assertEqual(timeout, 300)
-
-    def test_argv(self) -> None:
-        """Test sys.argv processing."""
-        backup = sys.argv
-        try:
-            sys.argv = ["wlc", "version"]
-            output = self.execute(None)
-            self.assertIn(f"version: {wlc.__version__}", output)
-        finally:
-            sys.argv = backup
-
 
 # pylint: disable-next=too-few-public-methods
 class RawControlValue:
@@ -387,8 +391,8 @@ class RawControlValue:
         return self.value
 
 
-class TestOutput(CLITestBase):
-    """Test output formatting."""
+class OutputTestBase(CLITestBase):
+    """Shared command construction for output tests."""
 
     @staticmethod
     def create_command(output: StringIO, format_name: str) -> Command:
@@ -399,78 +403,19 @@ class TestOutput(CLITestBase):
             stdout=output,
         )
 
+
+class TestTextOutput(OutputTestBase):
+    """Test text output formatting."""
+
     def test_version_text(self) -> None:
         """Test version printing."""
         output = self.execute(["--format", "text", "version"])
         self.assertIn(f"version: {wlc.__version__}", output)
 
-    def test_version_json(self) -> None:
-        """Test version printing."""
-        output = self.execute(["--format", "json", "version"])
-        values = json.loads(output)
-        self.assertEqual({"version": wlc.__version__}, values)
-
-    def test_version_csv(self) -> None:
-        """Test version printing."""
-        output = self.execute(["--format", "csv", "version"])
-        self.assertIn(f"version,{wlc.__version__}", output)
-
-    def test_version_html(self) -> None:
-        """Test version printing."""
-        output = self.execute(["--format", "html", "version"])
-        self.assertIn(wlc.__version__, output)
-
     def test_projects_text(self) -> None:
         """Test projects printing."""
         output = self.execute(["--format", "text", "list-projects"])
         self.assertIn("name: Hello", output)
-
-    def test_projects_json(self) -> None:
-        """Test projects printing."""
-        output = self.execute(["--format", "json", "list-projects"])
-        values = json.loads(output)
-        self.assertEqual(2, len(values))
-        self.assertEqual(values[1]["name"], "Hello")
-        self.assertEqual(values[1]["slug"], "hello")
-
-    def test_projects_csv(self) -> None:
-        """Test projects printing."""
-        output = self.execute(["--format", "csv", "list-projects"])
-        self.assertIn("Hello", output)
-
-    def test_csv_escapes_formula_values(self) -> None:
-        """CSV output should neutralize spreadsheet formulas."""
-        output = StringIO()
-        cmd = self.create_command(output, "csv")
-
-        cmd.print(
-            {
-                "plain": "Hello",
-                "formula": "=1+1",
-                "spaced": " \t@SUM(A1:A2)",
-            }
-        )
-
-        rows = dict(csv.reader(StringIO(output.getvalue())))
-        self.assertEqual(rows["plain"], "Hello")
-        self.assertEqual(rows["formula"], "'=1+1")
-        self.assertEqual(rows["spaced"], "' \t@SUM(A1:A2)")
-
-    def test_csv_escapes_formula_headers(self) -> None:
-        """CSV headers should also be hardened."""
-        output = StringIO()
-        cmd = self.create_command(output, "csv")
-
-        cmd.print_csv([AttributeDict({"=name": "=Hello"})], ["=name"])
-
-        rows = list(csv.reader(StringIO(output.getvalue())))
-        self.assertEqual(rows[0], ["'=name"])
-        self.assertEqual(rows[1], ["'=Hello"])
-
-    def test_projects_html(self) -> None:
-        """Test projects printing."""
-        output = self.execute(["--format", "html", "list-projects"])
-        self.assertIn("Hello", output)
 
     def test_format_for_stream_escapes_terminal_control_characters(self) -> None:
         """Terminal output should render control characters visibly."""
@@ -521,6 +466,49 @@ class TestOutput(CLITestBase):
         cmd.print([AttributeDict({"zeta": "last", "alpha": "first"})])
 
         self.assertEqual(output.getvalue(), "alpha: first\nzeta: last\n\n")
+
+
+class TestCSVOutput(OutputTestBase):
+    """Test CSV output formatting."""
+
+    def test_version_csv(self) -> None:
+        """Test version printing."""
+        output = self.execute(["--format", "csv", "version"])
+        self.assertIn(f"version,{wlc.__version__}", output)
+
+    def test_projects_csv(self) -> None:
+        """Test projects printing."""
+        output = self.execute(["--format", "csv", "list-projects"])
+        self.assertIn("Hello", output)
+
+    def test_csv_escapes_formula_values(self) -> None:
+        """CSV output should neutralize spreadsheet formulas."""
+        output = StringIO()
+        cmd = self.create_command(output, "csv")
+
+        cmd.print(
+            {
+                "plain": "Hello",
+                "formula": "=1+1",
+                "spaced": " \t@SUM(A1:A2)",
+            }
+        )
+
+        rows = dict(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows["plain"], "Hello")
+        self.assertEqual(rows["formula"], "'=1+1")
+        self.assertEqual(rows["spaced"], "' \t@SUM(A1:A2)")
+
+    def test_csv_escapes_formula_headers(self) -> None:
+        """CSV headers should also be hardened."""
+        output = StringIO()
+        cmd = self.create_command(output, "csv")
+
+        cmd.print_csv([AttributeDict({"=name": "=Hello"})], ["=name"])
+
+        rows = list(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows[0], ["'=name"])
+        self.assertEqual(rows[1], ["'=Hello"])
 
     def test_csv_output_escapes_terminal_control_characters(self) -> None:
         """CSV output should not emit raw terminal control characters to a tty."""
@@ -584,6 +572,20 @@ class TestOutput(CLITestBase):
         self.assertEqual(rows[0], ["alpha", "zeta"])
         self.assertEqual(rows[1], ["first", "last"])
 
+
+class TestHTMLOutput(OutputTestBase):
+    """Test HTML output formatting."""
+
+    def test_version_html(self) -> None:
+        """Test version printing."""
+        output = self.execute(["--format", "html", "version"])
+        self.assertIn(wlc.__version__, output)
+
+    def test_projects_html(self) -> None:
+        """Test projects printing."""
+        output = self.execute(["--format", "html", "list-projects"])
+        self.assertIn("Hello", output)
+
     def test_html_output_escapes_terminal_control_characters(self) -> None:
         """HTML output should not emit raw terminal control characters to a tty."""
         output = TTYStringIO()
@@ -636,6 +638,24 @@ class TestOutput(CLITestBase):
         rendered = output.getvalue()
         self.assertIn(html.escape(payload_value), rendered)
         self.assertNotIn(payload_value, rendered)
+
+
+class TestJSONOutput(OutputTestBase):
+    """Test JSON output formatting."""
+
+    def test_version_json(self) -> None:
+        """Test version printing."""
+        output = self.execute(["--format", "json", "version"])
+        values = json.loads(output)
+        self.assertEqual({"version": wlc.__version__}, values)
+
+    def test_projects_json(self) -> None:
+        """Test projects printing."""
+        output = self.execute(["--format", "json", "list-projects"])
+        values = json.loads(output)
+        self.assertEqual(2, len(values))
+        self.assertEqual(values[1]["name"], "Hello")
+        self.assertEqual(values[1]["slug"], "hello")
 
     def test_json_encoder(self) -> None:
         """Test JSON encoder."""
@@ -725,6 +745,10 @@ class TestCommands(CLITestBase):
 
         output = self.execute(["delete", "hello/weblate/cs"])
         self.assertEqual("", output)
+
+
+class TestRepositoryCommands(CLITestBase):
+    """Test repository management commands."""
 
     def test_commit(self) -> None:
         """Project commit."""
@@ -829,6 +853,10 @@ class TestCommands(CLITestBase):
 
         output = self.execute(["changes", "hello/weblate/cs"])
         self.assertIn("action_name", output)
+
+
+class TestFileCommands(CLITestBase):
+    """Test translation file transfer commands."""
 
     def test_download(self) -> None:
         """Translation file downloads."""
@@ -964,6 +992,10 @@ class TestCommands(CLITestBase):
     def get_text_io_wrapper(string: str) -> TextIOWrapper[BytesIO]:
         """Create a text io wrapper from a string."""
         return TextIOWrapper(BytesIO(string.encode()), "utf8")
+
+
+class TestUnitCommands(CLITestBase):
+    """Test unit management commands."""
 
     def test_list_units(self) -> None:
         """Unit listing."""

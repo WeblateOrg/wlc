@@ -143,6 +143,10 @@ class WeblateConfigTestCase(TestCase):
             del os.environ["WLC_URL"]
             del os.environ["WLC_KEY"]
 
+
+class WeblateTransportConfigTestCase(TestCase):
+    """Test origin-scoped transport configuration."""
+
     def test_allow_insecure_http_defaults_to_false(self) -> None:
         """Non-local HTTP token transport is disabled by default."""
         config = WeblateConfig()
@@ -225,6 +229,10 @@ class WeblateConfigTestCase(TestCase):
         with patch.dict(os.environ, {}, clear=True):
             self.assertTrue(config.get_allow_insecure_ssl())
 
+
+class WeblateRequestConfigTestCase(TestCase):
+    """Test request option parsing."""
+
     def test_default_allowed_methods_splits_newlines(self) -> None:
         """Default allowed methods parse newline-separated methods."""
         config = WeblateConfig()
@@ -252,6 +260,10 @@ class WeblateConfigTestCase(TestCase):
             _timeout,
         ) = config.get_request_options()
         self.assertEqual(allowed_methods, ["PUT", "POST", "GET"])
+
+
+class WeblateConfigLoadingTestCase(TestCase):
+    """Test explicit and discovered configuration loading."""
 
     def test_explicit_path_ignores_project_config(self) -> None:
         """Explicit config does not load project config from cwd or parents."""
@@ -393,6 +405,10 @@ class WeblateConfigTestCase(TestCase):
         self.assertEqual(
             config.get("weblate", "url"), "https://parent.example.com/api/"
         )
+
+
+class WeblateProjectConfigTestCase(TestCase):
+    """Test project configuration trust boundaries."""
 
     def test_project_config_cannot_allow_insecure_http(self) -> None:
         """Project config can not opt users into insecure transport."""
