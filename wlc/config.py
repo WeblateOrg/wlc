@@ -326,8 +326,8 @@ class WeblateConfig(RawConfigParser):
         return self._get_allow_insecure(
             INSECURE_HTTP_SECTION,
             "http",
-            self.cli_allow_insecure_http,
-            "WLC_ALLOW_INSECURE_HTTP",
+            cli_enabled=self.cli_allow_insecure_http,
+            env_name="WLC_ALLOW_INSECURE_HTTP",
         )
 
     def get_allow_insecure_ssl(self) -> bool:
@@ -335,14 +335,15 @@ class WeblateConfig(RawConfigParser):
         return self._get_allow_insecure(
             INSECURE_SSL_SECTION,
             "https",
-            self.cli_allow_insecure_ssl,
-            "WLC_ALLOW_INSECURE_SSL",
+            cli_enabled=self.cli_allow_insecure_ssl,
+            env_name="WLC_ALLOW_INSECURE_SSL",
         )
 
     def _get_allow_insecure(
         self,
         section: str,
         scheme: str,
+        *,
         cli_enabled: bool,
         env_name: str,
     ) -> bool:

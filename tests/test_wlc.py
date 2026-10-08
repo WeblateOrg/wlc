@@ -161,7 +161,11 @@ class WeblateTest(APITest):
                 clear=True,
             ):
                 settings = Weblate().session.merge_environment_settings(
-                    "https://example.com/api/", {}, False, True, None
+                    "https://example.com/api/",
+                    proxies={},
+                    stream=False,
+                    verify=True,
+                    cert=None,
                 )
 
         self.assertEqual(settings["proxies"]["https"], "http://proxy.example.com:8080")
@@ -201,7 +205,11 @@ class WeblateTest(APITest):
 
     def test_create_project(self) -> None:
         resp = Weblate().create_project(
-            "Hello", "hello", "http://example.com/", "Malayalam", "ml"
+            name="Hello",
+            slug="hello",
+            website="http://example.com/",
+            source_language_name="Malayalam",
+            source_language_code="ml",
         )
         self.assertEqual("Hello", resp["name"])
         self.assertEqual("hello", resp["slug"])
@@ -750,6 +758,20 @@ class ComponentTest(ObjectTest):
     _name = "hello/weblate"
     _cls = Component
 
+    def test_add_source_string(self) -> None:
+        obj = self.get()
+        result = {"id": 1646}
+        with patch.object(obj.weblate, "add_source_string", return_value=result) as add:
+            self.assertIs(obj.add_source_string(msgid="key", msgstr="value"), result)
+
+        add.assert_called_once_with(
+            project="hello",
+            component="weblate",
+            msgid="key",
+            msgstr="value",
+            source_language=obj.source_language["code"],
+        )
+
     def check_object(self, obj) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
@@ -944,7 +966,7 @@ class TranslationTest(ObjectTest):
     def test_download_csv(self) -> None:
         """Test download of file converted to CSV."""
         obj = self.get()
-        content = obj.download("csv")
+        content = obj.download(convert="csv")
         self.assertIn(b'"location"', content)
 
     def test_upload(self) -> None:
@@ -967,6 +989,35 @@ class TranslationTest(ObjectTest):
         file = io.StringIO("test upload data")
 
         obj.upload(file, format="po")
+
+    def test_upload_overwrite_options(self) -> None:
+        obj = self.get()
+        for overwrite in (True, False, None):
+            for file_format in ("po", None):
+                with self.subTest(overwrite=overwrite, format=file_format):
+                    file = io.StringIO("test upload data")
+                    with patch.object(
+                        obj.weblate, "request", return_value={}
+                    ) as request:
+                        obj.upload(
+                            file,
+                            overwrite=overwrite,
+                            format=file_format,
+                            conflicts="ignore",
+                            method="translate",
+                        )
+
+                    request.assert_called_once_with(
+                        "post",
+                        obj.file_url,
+                        files={"file": ("file.po", file) if file_format else file},
+                        data={
+                            "conflicts": "replace-translated"
+                            if overwrite
+                            else "ignore",
+                            "method": "translate",
+                        },
+                    )
 
     def test_units(self) -> None:
         obj = self.get()
