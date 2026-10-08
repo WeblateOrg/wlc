@@ -137,9 +137,8 @@ class WeblateConfig(RawConfigParser):
         if path:
             loaded = self._read_config(path, "explicit")
             if not loaded:
-                raise WLCConfigurationError(
-                    f"Could not read configuration file: {Path(path).absolute()}"
-                )
+                msg = f"Could not read configuration file: {Path(path).absolute()}"
+                raise WLCConfigurationError(msg)
         else:
             if config := self.find_config():
                 self._read_config(config, "user")
@@ -147,9 +146,8 @@ class WeblateConfig(RawConfigParser):
                 self._read_config(config, "project")
 
         if self.has_option(self.section, "key"):
-            raise WLCConfigurationError(
-                "Using 'key' in settings is insecure, use [keys] section instead."
-            )
+            msg = "Using 'key' in settings is insecure, use [keys] section instead."
+            raise WLCConfigurationError(msg)
         self._validate_insecure_configuration()
 
     @staticmethod
@@ -171,15 +169,15 @@ class WeblateConfig(RawConfigParser):
             url = parse_url(value)
             explicit_port = url.port
         except (LocationParseError, ValueError) as error:
-            raise WLCConfigurationError(
-                f"Invalid origin in [{section}]: {value}"
-            ) from error
+            msg = f"Invalid origin in [{section}]: {value}"
+            raise WLCConfigurationError(msg) from error
         if (
             url.scheme != expected_scheme
             or url.host is None
             or (url.auth is not None and not allow_auth)
         ):
-            raise WLCConfigurationError(f"Invalid origin in [{section}]: {value}")
+            msg = f"Invalid origin in [{section}]: {value}"
+            raise WLCConfigurationError(msg)
         port = (
             explicit_port
             if explicit_port is not None
@@ -192,9 +190,8 @@ class WeblateConfig(RawConfigParser):
         """Parse a boolean security setting and fail closed on invalid values."""
         normalized = "" if value is None else value.lower()
         if normalized not in cls.BOOLEAN_STATES:
-            raise WLCConfigurationError(
-                f"Invalid boolean value for [{section}] {option}: {value}"
-            )
+            msg = f"Invalid boolean value for [{section}] {option}: {value}"
+            raise WLCConfigurationError(msg)
         return cls.BOOLEAN_STATES[normalized]
 
     def _validate_legacy_insecure_option(self, option: str, section: str) -> None:
@@ -203,10 +200,11 @@ class WeblateConfig(RawConfigParser):
             return
         value = self.get(self.section, option, raw=True)
         if self._parse_boolean(self.section, option, value):
-            raise WLCConfigurationError(
+            msg = (
                 f"Global '{option}' is not supported; configure the trusted origin "
                 f"in [{section}] instead."
             )
+            raise WLCConfigurationError(msg)
 
     def _direct_section_items(self, section: str) -> dict[str, str | None]:
         """Return section-local entries without ConfigParser DEFAULT inheritance."""
@@ -260,21 +258,18 @@ class WeblateConfig(RawConfigParser):
     def _validate_project_overrides(self, key_source: KeySource) -> None:
         """Require unscoped secrets and security flags to pin project URLs."""
         if key_source == "cli":
-            raise WLCConfigurationError(
-                "Using --key with project configuration requires --url."
-            )
+            msg = "Using --key with project configuration requires --url."
+            raise WLCConfigurationError(msg)
         if key_source == "env":
-            raise WLCConfigurationError(
-                "Using WLC_KEY with project configuration requires WLC_URL."
-            )
+            msg = "Using WLC_KEY with project configuration requires WLC_URL."
+            raise WLCConfigurationError(msg)
         for cli_enabled, option in (
             (self.cli_allow_insecure_http, "--allow-insecure-http"),
             (self.cli_allow_insecure_ssl, "--allow-insecure-ssl"),
         ):
             if cli_enabled:
-                raise WLCConfigurationError(
-                    f"Using {option} with project configuration requires --url."
-                )
+                msg = f"Using {option} with project configuration requires --url."
+                raise WLCConfigurationError(msg)
         for env_enabled, option in (
             (
                 self._environment_enabled("WLC_ALLOW_INSECURE_HTTP"),
@@ -286,9 +281,8 @@ class WeblateConfig(RawConfigParser):
             ),
         ):
             if env_enabled:
-                raise WLCConfigurationError(
-                    f"Using {option} with project configuration requires WLC_URL."
-                )
+                msg = f"Using {option} with project configuration requires WLC_URL."
+                raise WLCConfigurationError(msg)
 
     def validate_url_key(self) -> None:
         """

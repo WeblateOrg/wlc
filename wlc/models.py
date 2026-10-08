@@ -98,7 +98,8 @@ class Statistics(LazyObject):
     def refresh(self) -> None:
         """Refresh statistics when a backing API URL is available."""
         if not self._url:
-            raise AttributeError("url")
+            msg = "url"
+            raise AttributeError(msg)
         super().refresh()
 
     def __getattr__(self, name: str) -> Any:
@@ -252,12 +253,14 @@ class Category(LazyObject):
         while (parent := current.category) is not None:
             parent_url = parent.url
             if parent_url in seen:
-                raise WeblateException("Server returned cyclic category hierarchy")
+                msg = "Server returned cyclic category hierarchy"
+                raise WeblateException(msg)
             if len(seen) >= _MAX_CATEGORY_DEPTH:
-                raise WeblateException(
+                msg = (
                     "Server returned category hierarchy deeper than "
                     f"{_MAX_CATEGORY_DEPTH} levels"
                 )
+                raise WeblateException(msg)
             seen.add(parent_url)
             slugs.insert(1, parent.slug)
             current = parent
