@@ -173,7 +173,7 @@ class WeblateTest(APITest):
         obj.ensure_loaded("missing")
         obj.ensure_loaded("missing")
         with self.assertRaises(AttributeError):
-            print(obj.missing)
+            print(obj.missing)  # ruff: ignore[print]
 
     def test_setattrvalue(self) -> None:
         """Test lazy loading of attributes."""

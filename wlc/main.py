@@ -263,7 +263,7 @@ def _write_download_file(
 
 def print_stderr(message: str) -> None:
     """Print a terminal-safe error message to stderr."""
-    print(format_for_stream(message, sys.stderr), file=sys.stderr)
+    print(format_for_stream(message, sys.stderr), file=sys.stderr)  # ruff: ignore[print]
 
 
 def _redact_request_error(error: RequestException, config: WeblateConfig) -> str:

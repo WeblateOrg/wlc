@@ -9,7 +9,7 @@ from __future__ import annotations
 from typing import cast
 
 
-class WeblateException(Exception):
+class WeblateException(Exception):  # ruff: ignore[error-suffix-on-exception-name]
     """Generic error."""
 
     def __init__(self, message: str | None = None) -> None:

@@ -160,4 +160,4 @@ class WeblateErrorTest(APITest):
         obj = Weblate().get_object("hello")
         self.assertEqual(obj.name, "Hello")
         with self.assertRaises(AttributeError):
-            print(obj.invalid_attribute)
+            print(obj.invalid_attribute)  # ruff: ignore[print]
