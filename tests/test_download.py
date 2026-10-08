@@ -18,7 +18,7 @@ import responses
 
 from wlc import WeblateException
 
-from .test_main import CLITestBase
+from .test_base import CLITestBase
 
 
 class TestDownloadSecurity(CLITestBase):
