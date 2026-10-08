@@ -168,7 +168,6 @@ ignore = [
   "read-whole-file", # TODO
   "COM", # CONFIG: No trailing commas
   "PT", # CONFIG: Not using pytest
-  "PTH", # TODO: Not using pathlib
   "EM", # TODO: Exception strings
   "FBT", # TODO: Boolean in function definition
   "ANN" # TODO: type annotations

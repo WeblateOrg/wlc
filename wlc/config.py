@@ -6,19 +6,17 @@
 
 from __future__ import annotations
 
-import os.path
+import os
 from configparser import NoOptionError, RawConfigParser
 from io import StringIO
-from typing import TYPE_CHECKING, Literal, TypeAlias, cast
+from pathlib import Path
+from typing import Literal, TypeAlias, cast
 
 from urllib3.exceptions import LocationParseError
 from urllib3.util import parse_url
 from xdg.BaseDirectory import load_first_config
 
 from .const import API_URL
-
-if TYPE_CHECKING:
-    from pathlib import Path
 
 __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
 
@@ -73,34 +71,34 @@ class WeblateConfig(RawConfigParser):
         self.set(self.section, "backoff_factor", "0")
 
     @staticmethod
-    def find_config() -> str | None:
-        """Find the first user configuration file."""
+    def find_config() -> Path | None:
+        """Return the first user configuration file as a Path, or None."""
         # Handle Windows specifically
         for envname in ("APPDATA", "LOCALAPPDATA"):
             if path := os.environ.get(envname):
-                win_path = os.path.join(path, "weblate.ini")
-                if os.path.exists(win_path):
+                win_path = Path(path) / "weblate.ini"
+                if win_path.exists():
                     return win_path
 
         # Generic XDG paths
         for filename in ("weblate", "weblate.ini"):
             if config := load_first_config(filename):
-                return config
+                return Path(config)
 
         return None
 
     @staticmethod
-    def find_project_config() -> str | None:
-        """Find the nearest project configuration file."""
-        cwd = os.path.abspath(".")
+    def find_project_config() -> Path | None:
+        """Return the nearest project configuration file as a Path, or None."""
+        cwd = Path.cwd()
         prev = None
         while cwd != prev:
             for name in (".weblate", ".weblate.ini", "weblate.ini"):
-                conf_name = os.path.join(cwd, name)
-                if os.path.isfile(conf_name):
+                conf_name = cwd / name
+                if conf_name.is_file():
                     return conf_name
             prev = cwd
-            cwd = os.path.dirname(cwd)
+            cwd = cwd.parent
 
         return None
 
@@ -140,7 +138,7 @@ class WeblateConfig(RawConfigParser):
             loaded = self._read_config(path, "explicit")
             if not loaded:
                 raise WLCConfigurationError(
-                    f"Could not read configuration file: {os.path.abspath(path)}"
+                    f"Could not read configuration file: {Path(path).absolute()}"
                 )
         else:
             if config := self.find_config():

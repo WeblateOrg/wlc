@@ -273,10 +273,10 @@ class WeblateTest(APITest):
             )
 
     def test_create_component_local_files(self) -> None:
-        test_file = os.path.join(
-            os.path.dirname(__file__), "test_data", "mock", "project-local-file.pot"
+        test_file = (
+            Path(__file__).parent / "test_data" / "mock" / "project-local-file.pot"
         )
-        with open(test_file, encoding="utf-8") as file:
+        with test_file.open(encoding="utf-8") as file:
             resp = Weblate().create_component(
                 docfile=file.read(),
                 project="hello",

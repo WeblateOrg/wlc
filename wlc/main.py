@@ -164,7 +164,7 @@ def _unlink_download_temporary(path: Path, temporary_name: str) -> None:
 
 def _replace_download_file(path: Path, temporary_name: str) -> None:
     """Atomically replace a download destination."""
-    os.replace(path.parent / temporary_name, path)
+    (path.parent / temporary_name).replace(path)
 
 
 def _write_existing_download_file(
@@ -1009,7 +1009,7 @@ class Upload(TranslationCommand):
                 kwargs[arg] = value
 
         if self.args.input and self.args.input != "-":
-            with open(self.args.input, "rb") as handle:
+            with Path(self.args.input).open("rb") as handle:
                 result = obj.upload(handle, **kwargs)
         else:
             result = obj.upload(self.stdin.buffer.read(), **kwargs)

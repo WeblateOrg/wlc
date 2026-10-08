@@ -20,6 +20,67 @@ TEST_CONFIG = TEST_DATA / "wlc"
 class WeblateConfigTestCase(TestCase):
     """Weblate Client configuration parsing tests."""
 
+    def test_find_config_windows(self) -> None:
+        """Windows config discovery returns a Path and honors precedence."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            appdata = root / "appdata"
+            localappdata = root / "localappdata"
+            appdata.mkdir()
+            localappdata.mkdir()
+            local_config = localappdata / "weblate.ini"
+            local_config.touch()
+            with patch.dict(
+                os.environ,
+                {"APPDATA": str(appdata), "LOCALAPPDATA": str(localappdata)},
+                clear=True,
+            ):
+                self.assertEqual(WeblateConfig.find_config(), local_config)
+                app_config = appdata / "weblate.ini"
+                app_config.touch()
+                self.assertEqual(WeblateConfig.find_config(), app_config)
+
+    def test_find_config_xdg(self) -> None:
+        """XDG discovery wraps filenames in Path and preserves search order."""
+        with patch.dict(os.environ, {}, clear=True):
+            for filename, results in (
+                ("user/weblate", ["user/weblate"]),
+                ("user/weblate.ini", [None, "user/weblate.ini"]),
+            ):
+                with (
+                    self.subTest(results=results),
+                    patch("wlc.config.load_first_config", side_effect=results) as load,
+                ):
+                    self.assertEqual(WeblateConfig.find_config(), Path(filename))
+                    self.assertEqual(
+                        [call.args[0] for call in load.call_args_list],
+                        ["weblate", "weblate.ini"][: len(results)],
+                    )
+            with patch("wlc.config.load_first_config", return_value=None):
+                self.assertIsNone(WeblateConfig.find_config())
+
+    def test_find_project_config_returns_path(self) -> None:
+        """Project discovery returns the nearest matching Path."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            nested = root / "nested"
+            nested.mkdir()
+            expected = root / ".weblate"
+            expected.touch()
+            with patch("wlc.config.Path.cwd", return_value=nested):
+                self.assertEqual(WeblateConfig.find_project_config(), expected)
+                nearest = nested / "weblate.ini"
+                nearest.touch()
+                self.assertEqual(WeblateConfig.find_project_config(), nearest)
+
+    def test_find_project_config_missing(self) -> None:
+        """Project discovery terminates at the filesystem root."""
+        with (
+            patch("wlc.config.Path.cwd", return_value=Path(Path.cwd().anchor)),
+            patch.object(Path, "is_file", return_value=False),
+        ):
+            self.assertIsNone(WeblateConfig.find_project_config())
+
     def test_valid(self) -> None:
         """Valid configuration parsing."""
         config = WeblateConfig()
@@ -214,7 +275,7 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = http://ancestor.example.com/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
@@ -255,12 +316,12 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = http://127.0.0.1:8000/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(global_config)
+                    WeblateConfig, "find_config", return_value=global_config
                 ):
                     config.load()
             finally:
@@ -290,12 +351,12 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://nearest.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(deep)
                 config = WeblateConfig()
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(global_config)
+                    WeblateConfig, "find_config", return_value=global_config
                 ):
                     config.load()
             finally:
@@ -320,7 +381,7 @@ class WeblateConfigTestCase(TestCase):
                 encoding="utf-8",
             )
             (nested / ".weblate").mkdir()
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(deep)
                 config = WeblateConfig()
@@ -361,12 +422,12 @@ class WeblateConfigTestCase(TestCase):
                 "https://repo.example.com:443 = yes\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(global_config)
+                    WeblateConfig, "find_config", return_value=global_config
                 ):
                     config.load()
             finally:
@@ -394,12 +455,12 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = http://user:password@repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(user_config)
+                    WeblateConfig, "find_config", return_value=user_config
                 ):
                     config.load()
             finally:
@@ -418,7 +479,7 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(root)
                 for attribute, option in (
@@ -496,12 +557,12 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = http://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(global_config)
+                    WeblateConfig, "find_config", return_value=global_config
                 ):
                     config.load()
             finally:
@@ -526,12 +587,12 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(global_config)
+                    WeblateConfig, "find_config", return_value=global_config
                 ):
                     config.load()
             finally:
@@ -557,12 +618,12 @@ class WeblateConfigTestCase(TestCase):
                 "allow_insecure_http = yes\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig(section="custom")
                 with patch.object(
-                    WeblateConfig, "find_config", return_value=str(global_config)
+                    WeblateConfig, "find_config", return_value=global_config
                 ):
                     config.load()
             finally:
@@ -581,7 +642,7 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
@@ -608,7 +669,7 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
@@ -639,7 +700,7 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
@@ -665,7 +726,7 @@ class WeblateConfigTestCase(TestCase):
                 "[weblate]\nurl = https://repo.example.com/api/\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
@@ -692,7 +753,7 @@ class WeblateConfigTestCase(TestCase):
                 "[keys]\nhttps://repo.example.com/api/ = scoped-api-key\n",
                 encoding="utf-8",
             )
-            current = os.getcwd()
+            current = Path.cwd()
             try:
                 os.chdir(nested)
                 config = WeblateConfig()
