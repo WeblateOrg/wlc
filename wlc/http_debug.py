@@ -113,7 +113,7 @@ def enable_debug_logging() -> tuple[logging.Handler, int, bool]:
 
 
 def disable_debug_logging(
-    handler: logging.Handler, previous_level: int, previous_propagate: bool
+    handler: logging.Handler, *, previous_level: int, previous_propagate: bool
 ) -> None:
     """Remove the temporary debug handler."""
     log.removeHandler(handler)

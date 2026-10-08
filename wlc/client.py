@@ -74,10 +74,10 @@ class Weblate:
 
     def __init__(
         self,
+        *,
         key: str = "",
         url: str = API_URL,
         config: WeblateConfig | None = None,
-        *,
         retries: int = 0,
         status_forcelist: Collection[int] | None = None,
         allowed_methods: Collection[str] | None = None,
@@ -256,8 +256,8 @@ class Weblate:
                 case 429:
                     headers = error.response.headers
                     raise WeblateThrottlingError(
-                        headers.get("X-RateLimit-Limit", "unknown"),
-                        headers.get("Retry-After", "unknown"),
+                        limit=headers.get("X-RateLimit-Limit", "unknown"),
+                        retry_after=headers.get("Retry-After", "unknown"),
                     ) from error
                 case 404:
                     msg = (
@@ -285,6 +285,7 @@ class Weblate:
         self,
         method: str,
         path: str,
+        *,
         data: RequestPayload | None = None,
         files: RequestPayload | None = None,
         params: RequestPayload | None = None,
@@ -300,6 +301,7 @@ class Weblate:
         self,
         method: str,
         path: str,
+        *,
         data: RequestPayload | None = None,
         files: RequestPayload | None = None,
         params: RequestPayload | None = None,
@@ -327,6 +329,7 @@ class Weblate:
         self,
         method: str,
         path: str,
+        *,
         data: RequestPayload | None = None,
         files: RequestPayload | None = None,
         params: RequestPayload | None = None,
@@ -383,6 +386,7 @@ class Weblate:
     def post(
         self,
         path: str,
+        *,
         files: RequestPayload | None = None,
         params: RequestPayload | None = None,
         **kwargs: Any,
@@ -394,7 +398,7 @@ class Weblate:
         """Create an object at the given API path."""
         return self.post(f"{prefix}/{path}/", **kwargs)
 
-    def get(self, path: str, params: RequestPayload | None = None) -> Any:
+    def get(self, path: str, *, params: RequestPayload | None = None) -> Any:
         """Perform GET request on the API."""
         return self.request("get", path, params=params)
 
@@ -402,6 +406,7 @@ class Weblate:
         self,
         path: str,
         parser: type[LazyObjectT],
+        *,
         params: RequestPayload | None = None,
     ) -> Iterator[LazyObjectT]:
         """Iterate over parsed objects across API result pages."""
@@ -475,7 +480,7 @@ class Weblate:
         return self.list_factory(path, Change)
 
     def list_units(
-        self, path: str, params: RequestPayload | None = None
+        self, path: str, *, params: RequestPayload | None = None
     ) -> Iterator[Unit]:
         """List units in the instance."""
         return self.list_factory(path, Unit, params=params)
@@ -494,6 +499,7 @@ class Weblate:
 
     def add_source_string(
         self,
+        *,
         project: str,
         component: str,
         msgid: str,
@@ -512,6 +518,7 @@ class Weblate:
 
     def create_project(
         self,
+        *,
         name: str,
         slug: str,
         website: str,
@@ -549,6 +556,7 @@ class Weblate:
 
     def create_language(
         self,
+        *,
         code: str,
         name: str,
         direction: str = "ltr",

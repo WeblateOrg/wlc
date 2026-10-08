@@ -167,7 +167,6 @@ ignore = [
   "too-many-public-methods", # TODO
   "COM", # CONFIG: No trailing commas
   "PT", # CONFIG: Not using pytest
-  "FBT", # TODO: Boolean in function definition
   "ANN" # TODO: type annotations
 ]
 preview = true

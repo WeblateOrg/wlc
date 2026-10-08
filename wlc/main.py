@@ -121,7 +121,7 @@ Invoke with --help to get more detailed help.
 class CommandError(Exception):
     """Generic error from command-line."""
 
-    def __init__(self, message: str, detail: str | None = None) -> None:
+    def __init__(self, message: str, *, detail: str | None = None) -> None:
         """Create CommandError exception."""
         if detail is not None:
             message = f"{message}\n{detail}"
@@ -280,6 +280,7 @@ class Command:
         self,
         args: Any,
         config: WeblateConfig,
+        *,
         stdout: Any = None,
         stdin: Any = None,
     ) -> None:
@@ -451,7 +452,7 @@ class ObjectCommand(Command, Generic[ObjectT]):
         )
         return parser
 
-    def get_object(self, blank: bool = False) -> ObjectT | None:
+    def get_object(self, *, blank: bool = False) -> ObjectT | None:
         """Return object."""
         if self.args.object:
             path = self.args.object[0]
@@ -492,7 +493,7 @@ class ObjectCommand(Command, Generic[ObjectT]):
         """Check result json data."""
         if not result["result"]:
             detail = result.get("detail")
-            raise CommandError(message, None if detail is None else str(detail))
+            raise CommandError(message, detail=None if detail is None else str(detail))
 
 
 class ProjectCommand(ObjectCommand[Project]):
@@ -693,7 +694,7 @@ class ListObjects(ObjectCommand[CommandObject]):
             self.print(list(obj.list()))
         else:
             # Called without params
-            lsproj = ListProjects(self.args, self.config, self.stdout)
+            lsproj = ListProjects(self.args, self.config, stdout=self.stdout)
             lsproj.run()
 
 
@@ -905,7 +906,7 @@ class Download(ObjectCommand[CommandObject]):
             msg = f"Output path is not a directory: {directory}"
             raise CommandError(msg)
 
-        content = component.download(self.args.convert)
+        content = component.download(convert=self.args.convert)
         file_path = directory / (
             f"{sanitize_slug(component.project.slug)}-{sanitize_slug(component.slug)}.zip"
         )
@@ -928,7 +929,7 @@ class Download(ObjectCommand[CommandObject]):
 
         # Translation locale for a component
         if isinstance(obj, Translation):
-            content = obj.download(self.args.convert)
+            content = obj.download(convert=self.args.convert)
             if self.args.output and self.args.output != "-":
                 _write_download_file(Path(self.args.output), content)
             else:
@@ -1027,7 +1028,7 @@ class Upload(TranslationCommand):
             msg = "Failed to upload translations!"
             raise CommandError(
                 msg,
-                result.get("detail", ""),
+                detail=result.get("detail", ""),
             )
 
 
@@ -1104,6 +1105,7 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
 
 
 def main(
+    *,
     settings: SettingsSource | None = None,
     stdout: Any = None,
     stdin: Any = None,
@@ -1129,7 +1131,9 @@ def main(
         return 1
 
     try:
-        command = COMMANDS[parsed_args.command](parsed_args, config, stdout, stdin)
+        command = COMMANDS[parsed_args.command](
+            parsed_args, config, stdout=stdout, stdin=stdin
+        )
         command.run()
     except WeblateDeniedError:
         url, key = config.get_url_key()
@@ -1156,5 +1160,7 @@ def main(
             and previous_wlc_propagate is not None
         ):
             disable_debug_logging(
-                debug_handler, previous_wlc_level, previous_wlc_propagate
+                debug_handler,
+                previous_level=previous_wlc_level,
+                previous_propagate=previous_wlc_propagate,
             )

@@ -369,7 +369,7 @@ class Component(RepoObjectMixin, LazyObject):
         self.weblate.raw_request("delete", self._url)
 
     def add_source_string(
-        self, msgid: str, msgstr: str | builtins.list[str]
+        self, *, msgid: str, msgstr: str | builtins.list[str]
     ) -> dict[str, Any]:
         """Add a source string to a monolingual base file."""
         return self.weblate.add_source_string(
@@ -380,7 +380,7 @@ class Component(RepoObjectMixin, LazyObject):
             source_language=self.source_language["code"],
         )
 
-    def download(self, convert: str | None = None) -> bytes:
+    def download(self, *, convert: str | None = None) -> bytes:
         """Download translation file from server."""
         self.ensure_loaded("repository_url")
         # Rewrite only the trailing /repository/ endpoint segment. A global
@@ -463,7 +463,7 @@ class Translation(RepoObjectMixin, LazyObject):
         """List changes in the translation."""
         return self.weblate.list_changes(self._get_stored("changes_list_url"))
 
-    def download(self, convert: str | None = None) -> bytes:
+    def download(self, *, convert: str | None = None) -> bytes:
         """Download translation file from server."""
         url = self._get_stored("file_url")
         if convert is not None:
@@ -474,6 +474,7 @@ class Translation(RepoObjectMixin, LazyObject):
     def upload(
         self,
         file: Any,
+        *,
         overwrite: bool | None = None,
         # pylint: disable-next=redefined-builtin
         format: str | None = None,  # ruff: ignore[builtin-argument-shadowing]

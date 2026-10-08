@@ -58,7 +58,7 @@ class TestInsecureSSLCLI(CLITestBase):
             output = self.execute(["--url", "https://localhost/api/", "list-projects"])
 
         self.assertEqual(output, "")
-        self.assertIs(request.call_args.kwargs["verify"], True)
+        self.assertIs(request.call_args.kwargs["verify"], expr2=True)
 
     def test_cli_can_explicitly_disable_tls_verification(self) -> None:
         """The command-line opt-in should disable verification for this run."""
@@ -79,7 +79,7 @@ class TestInsecureSSLCLI(CLITestBase):
             )
 
         self.assertEqual(output, "")
-        self.assertIs(request.call_args.kwargs["verify"], False)
+        self.assertIs(request.call_args.kwargs["verify"], expr2=False)
 
     def test_environment_can_explicitly_disable_tls_verification(self) -> None:
         """The environment opt-in should disable verification for its pinned URL."""
@@ -100,4 +100,4 @@ class TestInsecureSSLCLI(CLITestBase):
             output = self.execute(["list-projects"])
 
         self.assertEqual(output, "")
-        self.assertIs(request.call_args.kwargs["verify"], False)
+        self.assertIs(request.call_args.kwargs["verify"], expr2=False)

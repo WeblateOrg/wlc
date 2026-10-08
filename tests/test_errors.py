@@ -16,6 +16,7 @@ from wlc import (
     Weblate,
     WeblateException,
 )
+from wlc.exceptions import WeblateThrottlingError
 
 from .test_base import APITest, CLITestBase
 
@@ -105,10 +106,12 @@ class WeblateErrorTest(APITest):
     def test_throttled(self) -> None:
         """Test handling of throttling error when listing projects."""
         with self.assertRaisesRegex(
-            WeblateException,
+            WeblateThrottlingError,
             "Throttling.*Limit is 100 requests. Retry after 81818 seconds.",
-        ):
+        ) as error:
             Weblate().get_object("throttled")
+        self.assertEqual(error.exception.limit, "100")
+        self.assertEqual(error.exception.retry_after, "81818")
 
     def test_error(self) -> None:
         """Test general server error (HTTP 500) handling."""

@@ -31,7 +31,7 @@ TEST_SECTION = TEST_DATA / "section"
 class BufferedStringIO(StringIO):
     """StringIO with a writable binary buffer for CLI tests."""
 
-    def __init__(self, tty: bool = False) -> None:
+    def __init__(self, *, tty: bool = False) -> None:
         super().__init__()
         self._buffer = BytesIO()
         self._tty = tty
@@ -66,7 +66,7 @@ class AttributeDict(UserDict):
 class ResponseHandler:
     """responses response handler."""
 
-    def __init__(self, body: bytes, filename: Path, auth: bool = False) -> None:
+    def __init__(self, body: bytes, filename: Path, *, auth: bool = False) -> None:
         """Construct response handler object."""
         self.body = body
         self.filename = filename
@@ -160,7 +160,7 @@ class ResponseHandler:
 
 
 def register_uri(
-    path: str, domain: str = "http://127.0.0.1:8000/api", auth: bool = False
+    path: str, *, domain: str = "http://127.0.0.1:8000/api", auth: bool = False
 ) -> None:
     """Simplified URL registration."""
     filename = DATA_TEST_BASE / path.replace("/", "-")
@@ -169,31 +169,31 @@ def register_uri(
         responses.add_callback(
             responses.GET,
             url,
-            callback=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth=auth),
             content_type="application/json",
         )
         responses.add_callback(
             responses.POST,
             url,
-            callback=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth=auth),
             content_type="application/json",
         )
         responses.add_callback(
             responses.DELETE,
             url,
-            callback=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth=auth),
             content_type="application/json",
         )
         responses.add_callback(
             responses.PATCH,
             url,
-            callback=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth=auth),
             content_type="application/json",
         )
         responses.add_callback(
             responses.PUT,
             url,
-            callback=ResponseHandler(handle.read(), filename, auth),
+            callback=ResponseHandler(handle.read(), filename, auth=auth),
             content_type="application/json",
         )
 
