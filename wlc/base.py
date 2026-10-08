@@ -41,6 +41,7 @@ class LazyObject(UserDict[str, Any]):
         self._load_params(url=url)
 
     def __eq__(self, other: object) -> bool:
+        """Compare object state or loaded mapping data for equality."""
         if isinstance(other, LazyObject):
             return (
                 self.weblate == other.weblate
@@ -56,6 +57,7 @@ class LazyObject(UserDict[str, Any]):
         return NotImplemented
 
     def __ne__(self, other: object) -> bool:
+        """Negate equality while preserving unsupported comparisons."""
         result = self.__eq__(other)
         if result is NotImplemented:
             return NotImplemented
@@ -68,9 +70,11 @@ class LazyObject(UserDict[str, Any]):
         return copy(self.data)
 
     def __str__(self) -> str:
+        """Return the string form of the currently loaded data."""
         return str(self.data)
 
     def __repr__(self) -> str:
+        """Return the representation of the currently loaded data."""
         return repr(self.data)
 
     def _load_params(self, **kwargs: Any) -> None:
@@ -114,6 +118,7 @@ class LazyObject(UserDict[str, Any]):
         self._loaded = True
 
     def __getattr__(self, name: str) -> Any:
+        """Load and return a declared API attribute."""
         if name not in self.PARAMS:
             raise AttributeError(name)
         if name not in self.data:
@@ -133,6 +138,7 @@ class LazyObject(UserDict[str, Any]):
         self.data[name] = value
 
     def __getitem__(self, key: str) -> Any:
+        """Return an API attribute by key, loading it when needed."""
         return getattr(self, key)
 
     def get(self, key: Any, default: Any = None) -> Any:
@@ -158,6 +164,7 @@ class LazyObject(UserDict[str, Any]):
         self.data.clear()
 
     def __or__(self, other: object) -> Any:
+        """Merge loaded data with another mapping, preferring its values."""
         if isinstance(other, UserDict):
             other = other.data
         if isinstance(other, dict):
@@ -165,6 +172,7 @@ class LazyObject(UserDict[str, Any]):
         return NotImplemented
 
     def __ror__(self, other: object) -> Any:
+        """Merge another mapping with loaded data, preferring loaded values."""
         if isinstance(other, UserDict):
             other = other.data
         if isinstance(other, dict):
@@ -172,6 +180,7 @@ class LazyObject(UserDict[str, Any]):
         return NotImplemented
 
     def __len__(self) -> int:
+        """Return the number of exposed API attributes."""
         return len(list(self.keys()))
 
     def keys(self) -> Any:
@@ -184,7 +193,7 @@ class LazyObject(UserDict[str, Any]):
                 yield param
 
     def items(self) -> Any:
-        """Iterator over attributes."""
+        """Iterate over attribute names and values."""
         for key in self.keys():
             yield key, getattr(self, key)
 

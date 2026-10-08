@@ -431,7 +431,7 @@ class Command:
                 self.print_text(value, header)
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         raise NotImplementedError
 
 
@@ -485,7 +485,7 @@ class ObjectCommand(Command, Generic[ObjectT]):
         return obj
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         raise NotImplementedError
 
     @staticmethod
@@ -503,7 +503,7 @@ class ProjectCommand(ObjectCommand[Project]):
     object_error = "This command is supported only at project level"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         raise NotImplementedError
 
 
@@ -514,7 +514,7 @@ class ComponentCommand(ObjectCommand[Component]):
     object_error = "This command is supported only at component level"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         raise NotImplementedError
 
 
@@ -525,7 +525,7 @@ class TranslationCommand(ObjectCommand[Translation]):
     object_error = "This command is supported only at translation level"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         raise NotImplementedError
 
 
@@ -536,7 +536,7 @@ class UnitCommand(ObjectCommand[Unit]):
     object_error = "This command is supported only at unit level"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         raise NotImplementedError
 
 
@@ -555,7 +555,7 @@ class Version(Command):
         return parser
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         if self.args.bare:
             self.println(__version__)
         else:
@@ -570,7 +570,7 @@ class ListProjects(Command):
     description = "Lists all projects"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         self.print(list(self.wlc.list_projects()))
 
 
@@ -582,7 +582,7 @@ class ListComponents(ProjectCommand):
     description = "Lists all components (optionally per project)"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         if self.args.object:
             obj = self.require_object()
 
@@ -603,7 +603,7 @@ class ListLanguages(Command):
     description = "Lists all languages"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         self.print(list(self.wlc.list_languages()))
 
 
@@ -615,7 +615,7 @@ class ListTranslations(ComponentCommand):
     description = "Lists all translations (optionally per component)"
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         if self.args.object:
             obj = self.require_object()
 
@@ -648,7 +648,7 @@ class ListUnits(TranslationCommand):
         return parser
 
     def run(self) -> None:
-        """Main execution of the command."""
+        """Execute the command."""
         obj = self.require_object()
         kwargs = {}
         if self.args.query:
@@ -911,6 +911,7 @@ class Download(ObjectCommand[CommandObject]):
         _write_download_file(file_path, content, create_directory=True)
 
     def download_components(self, iterable: Iterable[Component]) -> None:
+        """Download components and report each completed archive."""
         for component in iterable:
             # Ignore glossary via --no-glossary
             if getattr(component, "is_glossary", False) and self.args.no_glossary:
@@ -1104,7 +1105,7 @@ def main(
     stdin: Any = None,
     args: list[str] | None = None,
 ) -> int:
-    """Execution entry point."""
+    """Parse arguments and execute the selected command."""
     parser = get_parser()
     argv = sys.argv[1:] if args is None else args
     parsed_args = parser.parse_args(argv)

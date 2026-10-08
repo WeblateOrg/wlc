@@ -49,6 +49,7 @@ class DateTimeEncoder(json.JSONEncoder):
     """JSON encoder with datetime and UserDict support."""
 
     def default(self, o: object) -> object:
+        """Encode datetimes and UserDict objects as JSON-compatible values."""
         if isinstance(o, datetime):
             return o.isoformat()
 

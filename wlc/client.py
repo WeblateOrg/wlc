@@ -383,7 +383,7 @@ class Weblate:
         return self.request("post", path, data=kwargs, files=files, params=params)
 
     def _post_factory(self, prefix: str, path: str, kwargs: RequestPayload) -> JSONDict:
-        """Wrapper for posting objects."""
+        """Create an object at the given API path."""
         return self.post(f"{prefix}/{path}/", **kwargs)
 
     def get(self, path: str, params: RequestPayload | None = None) -> Any:
@@ -396,7 +396,7 @@ class Weblate:
         parser: type[LazyObjectT],
         params: RequestPayload | None = None,
     ) -> Iterator[LazyObjectT]:
-        """Listing object wrapper."""
+        """Iterate over parsed objects across API result pages."""
         while path is not None:
             data = self.get(path, params=params)
             params = None
@@ -412,7 +412,7 @@ class Weblate:
     def _get_factory(
         self, prefix: str, path: str, parser: type[LazyObjectT]
     ) -> LazyObjectT:
-        """Wrapper for getting objects."""
+        """Fetch and parse an object at the given API path."""
         data = self.get(f"{prefix}/{path}/")
         return parser(weblate=self, **data)
 
@@ -491,7 +491,7 @@ class Weblate:
         msgstr: str | list[str],
         source_language: str | None = None,
     ) -> JSONDict:
-        """Adds a source string to a monolingual base file."""
+        """Add a source string to a monolingual base file."""
         if not source_language:
             component_obj = self.get_component(f"{project}/{component}")
             source_language = component_obj["source_language"]["code"]
