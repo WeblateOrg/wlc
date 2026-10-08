@@ -20,7 +20,7 @@ from argparse import ArgumentParser, Namespace
 from collections.abc import Iterable, Mapping
 from contextlib import suppress
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar, cast
+from typing import TYPE_CHECKING, Generic, Protocol, TypeAlias, TypeVar, cast
 
 import argcomplete
 from requests.exceptions import RequestException
@@ -48,12 +48,37 @@ from .utils import sanitize_slug
 
 if TYPE_CHECKING:
     import logging
+    from argparse import _SubParsersAction
+    from io import BufferedIOBase
+    from typing import BinaryIO, TextIO
 
 # Defer the union so Pylint does not infer UserDict.__or__ on model classes.
 CommandObject: TypeAlias = "Project|Component|Translation|Unit"  # ruff: ignore[quoted-type-alias]
 ObjectT = TypeVar("ObjectT", bound=CommandObject)
 SettingsEntry: TypeAlias = tuple[str, str, str]
 SettingsSource: TypeAlias = Iterable[SettingsEntry]
+
+
+# pylint: disable-next=too-few-public-methods
+class BufferedStream(Protocol):
+    """Stream exposing a binary buffer for file transfers."""
+
+    @property
+    def buffer(self) -> BinaryIO | BufferedIOBase:
+        """The underlying binary stream."""
+        ...
+
+
+class OutputStream(BufferedStream, Protocol):
+    """Text output stream with a binary buffer."""
+
+    def write(self, text: str, /) -> object:
+        """Write text to the stream."""
+        ...
+
+
+RowT = TypeVar("RowT", bound=Mapping[str, object])
+OutputValue: TypeAlias = Mapping[str, object] | list[RowT]
 
 
 COMMANDS: dict[str, type[Command]] = {}
@@ -278,11 +303,11 @@ class Command:
 
     def __init__(
         self,
-        args: Any,
+        args: Namespace,
         config: WeblateConfig,
         *,
-        stdout: Any = None,
-        stdin: Any = None,
+        stdout: OutputStream | TextIO | None = None,
+        stdin: BufferedStream | TextIO | None = None,
     ) -> None:
         """Construct Command object."""
         self.args = args
@@ -300,7 +325,7 @@ class Command:
         self.wlc = Weblate(config=config)
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         return subparser.add_parser(cls.name, description=cls.description)
 
@@ -345,23 +370,23 @@ class Command:
         """Format value for safe HTML rendering."""
         return html.escape(str(cls.format_value(value)), quote=True)
 
-    def print_csv(self, value: Any, header: list[str] | None) -> None:
+    def print_csv(self, value: OutputValue[RowT], header: list[str] | None) -> None:
         """CSV print."""
         writer = csv.writer(self.stdout)
         if header is not None:
             writer.writerow([self.format_csv_value(key) for key in header])
-            for row in value:
+            for row in cast("list[RowT]", value):
                 formatted_row = {
                     key: self.format_csv_value(data) for key, data in row.items()
                 }
                 writer.writerow([formatted_row.get(key, "") for key in header])
         else:
-            for key, data in sorted_items(value):
+            for key, data in sorted_items(cast("Mapping[str, object]", value)):
                 writer.writerow(
                     (self.format_csv_value(key), self.format_csv_value(data))
                 )
 
-    def print_html(self, value: Any, header: list[str] | None) -> None:
+    def print_html(self, value: OutputValue[RowT], header: list[str] | None) -> None:
         """HTML print."""
         if header is not None:
             self.println("<table>")
@@ -384,7 +409,7 @@ class Command:
             self.println("</table>")
         else:
             self.println("<table>")
-            for key, data in sorted_items(value):
+            for key, data in sorted_items(cast("Mapping[str, object]", value)):
                 self.println("  <tr>")
                 self.println(
                     "    "
@@ -394,7 +419,7 @@ class Command:
                 self.println("  </tr>")
             self.println("</table>")
 
-    def print_text(self, value: Any, header: list[str] | None) -> None:
+    def print_text(self, value: OutputValue[RowT], header: list[str] | None) -> None:
         """Text print."""
         if header is not None:
             for item in value:
@@ -405,12 +430,12 @@ class Command:
                     )
                 self.println("")
         else:
-            for key, data in sorted_items(value):
+            for key, data in sorted_items(cast("Mapping[str, object]", value)):
                 self.println(
                     f"{self.format_output_value(key)}: {self.format_output_value(data)}"
                 )
 
-    def print(self, value: Any) -> None:
+    def print(self, value: OutputValue[RowT]) -> None:
         """Print value."""
         header: list[str] | None = None
         if isinstance(value, list):
@@ -440,7 +465,7 @@ class ObjectCommand(Command, Generic[ObjectT]):
     object_error = "Not supported"
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
@@ -548,7 +573,7 @@ class Version(Command):
     description = "Prints program version"
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument("--bare", action="store_true", help="Print only version")
@@ -636,7 +661,7 @@ class ListUnits(TranslationCommand):
     description = "Lists units for a translation"
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
@@ -691,7 +716,8 @@ class ListObjects(ObjectCommand[CommandObject]):
         """Executor."""
         obj = self.get_object(blank=True)
         if obj:
-            self.print(list(obj.list()))
+            # The legacy list() API also returns self for leaf resources.
+            self.print(cast("list[Mapping[str, object]]", list(obj.list())))
         else:
             # Called without params
             lsproj = ListProjects(self.args, self.config, stdout=self.stdout)
@@ -875,7 +901,7 @@ class Download(ObjectCommand[CommandObject]):
     """
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
@@ -939,7 +965,7 @@ class Download(ObjectCommand[CommandObject]):
                         "Use --output or redirect stdout."
                     )
                     raise CommandError(msg)
-                self.stdout.buffer.write(content)
+                cast("BufferedStream", self.stdout).buffer.write(content)
             return
 
         # All translations for a component
@@ -964,7 +990,7 @@ class Upload(TranslationCommand):
     description = "Uploads translation file"
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument("-i", "--input", help="File to upload (defaults to stdin)")
@@ -1015,7 +1041,9 @@ class Upload(TranslationCommand):
             with Path(self.args.input).open("rb") as handle:
                 result = obj.upload(handle, **kwargs)
         else:
-            result = obj.upload(self.stdin.buffer.read(), **kwargs)
+            result = obj.upload(
+                cast("BufferedStream", self.stdin).buffer.read(), **kwargs
+            )
 
         if not (
             "count" in result
@@ -1040,7 +1068,7 @@ class EditUnit(UnitCommand):
     description = "Edits a unit"
 
     @classmethod
-    def add_parser(cls, subparser: Any) -> ArgumentParser:
+    def add_parser(cls, subparser: _SubParsersAction[ArgumentParser]) -> ArgumentParser:
         """Create parser for command-line."""
         parser = super().add_parser(subparser)
         parser.add_argument(
@@ -1107,8 +1135,8 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
 def main(
     *,
     settings: SettingsSource | None = None,
-    stdout: Any = None,
-    stdin: Any = None,
+    stdout: OutputStream | TextIO | None = None,
+    stdin: BufferedStream | TextIO | None = None,
     args: list[str] | None = None,
 ) -> int:
     """Parse arguments and execute the selected command."""

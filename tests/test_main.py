@@ -13,10 +13,10 @@ import html
 import json
 import os
 import sys
+from argparse import Namespace
 from io import BytesIO, StringIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
-from types import SimpleNamespace
 from unittest.mock import patch
 
 import wlc
@@ -394,7 +394,7 @@ class TestOutput(CLITestBase):
     def create_command(output: StringIO, format_name: str) -> Command:
         """Create command instance for direct rendering tests."""
         return Command(
-            args=SimpleNamespace(format=format_name),
+            args=Namespace(format=format_name),
             config=WeblateConfig(),
             stdout=output,
         )
@@ -640,7 +640,7 @@ class TestOutput(CLITestBase):
     def test_json_encoder(self) -> None:
         """Test JSON encoder."""
         output = StringIO()
-        cmd = Version(args=[], config=WeblateConfig(), stdout=output)
+        cmd = Version(args=Namespace(), config=WeblateConfig(), stdout=output)
         with self.assertRaises(TypeError):
             cmd.print_json(self)
 
@@ -961,7 +961,7 @@ class TestCommands(CLITestBase):
             self.assertEqual(f"Error: {missing_error}\n", output)
 
     @staticmethod
-    def get_text_io_wrapper(string):
+    def get_text_io_wrapper(string: str) -> TextIOWrapper[BytesIO]:
         """Create a text io wrapper from a string."""
         return TextIOWrapper(BytesIO(string.encode()), "utf8")
 

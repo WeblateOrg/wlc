@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import io
+import json
 import os
 import warnings
 from abc import ABC
@@ -15,7 +16,7 @@ from collections import UserDict
 from copy import copy
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from typing import ClassVar
+from typing import TYPE_CHECKING, ClassVar, Generic, TypeVar, cast
 from unittest.mock import patch
 from urllib.parse import urlencode
 
@@ -39,9 +40,81 @@ from wlc import (
 
 from .test_base import APITest
 
+if TYPE_CHECKING:
+    from collections.abc import Iterable
+
+    from wlc.base import LazyObject
+    from wlc.client import JSONDict, JSONValue
+
+ObjectT = TypeVar("ObjectT", Project, Component, Translation, Unit)
+
 
 class WeblateTest(APITest):
     """Testing of Weblate class."""
+
+    def test_low_level_json_values(self) -> None:
+        """Low-level request methods should preserve every JSON value shape."""
+        values: tuple[JSONValue, ...] = (
+            None,
+            True,
+            42,
+            1.5,
+            "value",
+            [None, False, 42, 1.5, "value"],
+            {"nested": [None, {"value": True}]},
+        )
+        weblate = Weblate()
+        for index, value in enumerate(values):
+            path = f"json/{index}/"
+            responses.add(
+                responses.GET,
+                f"http://127.0.0.1:8000/api/{path}",
+                body=json.dumps(value),
+                content_type="application/json",
+            )
+            for method in ("request", "get"):
+                with self.subTest(value=value, method=method):
+                    result = (
+                        weblate.request("get", path)
+                        if method == "request"
+                        else weblate.get(path)
+                    )
+                    self.assertEqual(result, value)
+                    self.assertIs(type(result), type(value))
+
+    def test_add_source_string_uses_post_override(self) -> None:
+        """Creation factories should dispatch through an overridden post method."""
+        calls: list[tuple[str, dict[str, object]]] = []
+        result = {"id": 123}
+
+        class CustomWeblate(Weblate):
+            """Client intercepting POST calls before HTTP dispatch."""
+
+            def post(self, path: str, **kwargs: object) -> JSONDict:
+                calls.append((path, kwargs))
+                return result
+
+        weblate = CustomWeblate()
+        self.assertIs(
+            weblate.add_source_string(
+                project="hello",
+                component="weblate",
+                source_language="en",
+                msgid="key",
+                msgstr="value",
+            ),
+            result,
+        )
+        self.assertEqual(
+            calls,
+            [
+                (
+                    "translations/hello/weblate/en/units/",
+                    {"key": "key", "value": ["value"]},
+                )
+            ],
+        )
+        self.assertFalse(responses.calls)
 
     def test_adapter_uses_configured_retries(self) -> None:
         """HTTP adapter should use the resolved Retry configuration."""
@@ -280,6 +353,28 @@ class WeblateTest(APITest):
                 filemask="po/*.po",
             )
 
+    def test_create_component_query_params(self) -> None:
+        """Project wrappers should forward query parameters separately from fields."""
+        fields = {
+            "name": "Typed component",
+            "slug": "typed",
+            "file_format": "po",
+            "filemask": "po/*.po",
+            "repo": "local:",
+        }
+        params = {"include": "statistics"}
+        responses.add(
+            responses.POST,
+            "http://127.0.0.1:8000/api/projects/typed/components/",
+            json={"id": 123},
+            match=[
+                responses.matchers.query_param_matcher(params),
+                responses.matchers.json_params_matcher(fields),
+            ],
+        )
+        project = Project(Weblate(), "projects/typed/", slug="typed")
+        self.assertEqual(project.create_component(params=params, **fields), {"id": 123})
+
     def test_create_component_local_files(self) -> None:
         test_file = (
             Path(__file__).parent / "test_data" / "mock" / "project-local-file.pot"
@@ -393,22 +488,22 @@ class WeblateTest(APITest):
         self.assertEqual([1, 2], [unit.id for unit in units])
 
 
-class ObjectTestBaseClass(APITest, ABC):
+class ObjectTestBaseClass(APITest, ABC, Generic[ObjectT]):
     """Base class for objects testing."""
 
     _name: str | None = None
     _cls: type[object] | None = None
 
-    def check_object(self, obj) -> None:
+    def check_object(self, obj: ObjectT) -> None:
         """Perform verification whether object is valid."""
         raise NotImplementedError
 
-    def get(self):
+    def get(self) -> ObjectT:
         """Return remote object."""
         name = self._name
         if name is None:
             self.fail("_name must be configured in object test cases")
-        return Weblate().get_object(name)
+        return cast("ObjectT", Weblate().get_object(name))
 
     def test_get(self) -> None:
         """Test getting project."""
@@ -419,7 +514,7 @@ class ObjectTestBaseClass(APITest, ABC):
         self.assertIsInstance(obj, expected_cls)
         self.check_object(obj)
 
-    def check_list(self, obj) -> None:
+    def check_list(self, obj: Iterable[LazyObject] | Translation | Unit) -> None:
         """Perform verification whether listing is valid."""
         raise NotImplementedError
 
@@ -429,7 +524,7 @@ class ObjectTestBaseClass(APITest, ABC):
         self.check_list(obj.list())
 
 
-class ObjectTest(ObjectTestBaseClass, ABC):
+class ObjectTest(ObjectTestBaseClass[ObjectT], ABC):
     """Additional tests for projects, components, and translations."""
 
     def test_refresh(self) -> None:
@@ -588,6 +683,55 @@ class LazyObjectEqualityTest(APITest):
 class LazyObjectMappingTest(APITest):
     """Mapping operations should use the loaded API fields."""
 
+    def test_stored_values_and_urls(self) -> None:
+        """Stored lookup should preserve values and avoid unnecessary fetches."""
+        # Exercise the internal lookup shared by the public API methods.
+        # pylint: disable=protected-access
+        obj = Component(
+            Weblate(),
+            "components/hello/weblate/",
+            priority=100,
+            extra={"enabled": True},
+            repository_url="components/hello/weblate/repository/",
+        )
+        with patch.object(obj, "refresh") as refresh:
+            self.assertEqual(
+                obj._get_stored("priority"),  # ruff: ignore[private-member-access]
+                100,
+            )
+            self.assertEqual(
+                obj._get_stored("extra"),  # ruff: ignore[private-member-access]
+                {"enabled": True},
+            )
+            self.assertEqual(
+                obj._get_stored_url("repository_url"),  # ruff: ignore[private-member-access]
+                "components/hello/weblate/repository/",
+            )
+            refresh.assert_not_called()
+
+    def test_mapping_lookups_preserve_dynamic_field_types(self) -> None:
+        """Typed callers should be able to use lookups as concrete field values."""
+
+        def get_name(project: Project) -> str:
+            return project.get("name", "")
+
+        def pop_name(project: Project) -> str:
+            return project.pop("name", "")
+
+        def setdefault_name(project: Project) -> str:
+            return project.setdefault("name", "Default")
+
+        obj = Project(Weblate(), "projects/hello/", name="Hello")
+        with patch.object(obj, "refresh") as refresh:
+            self.assertEqual(get_name(obj), "Hello")
+            self.assertEqual(setdefault_name(obj), "Hello")
+            self.assertEqual(pop_name(obj), "Hello")
+            self.assertEqual(get_name(obj), "")
+            self.assertEqual(pop_name(obj), "")
+            self.assertEqual(setdefault_name(obj), "Default")
+            self.assertEqual(get_name(obj), "Default")
+            refresh.assert_not_called()
+
     def test_mapping_operations_share_storage(self) -> None:
         """Mapping writes and attribute writes should share loaded fields."""
         obj = Project(Weblate(), "projects/hello/", name="Hello")
@@ -692,17 +836,17 @@ class LazyObjectMappingTest(APITest):
             refresh.assert_not_called()
 
 
-class ProjectTest(ObjectTest):
+class ProjectTest(ObjectTest[Project]):
     """Project object tests."""
 
     _name = "hello"
     _cls = Project
 
-    def check_object(self, obj) -> None:
+    def check_object(self, obj: Project) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Hello")
 
-    def check_list(self, obj) -> None:
+    def check_list(self, obj: Iterable[LazyObject] | Translation | Unit) -> None:
         """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(len(lst), 2)
@@ -752,7 +896,7 @@ class ProjectTest(ObjectTest):
         self.assertEqual("po", resp["file_format"])
 
 
-class ComponentTest(ObjectTest):
+class ComponentTest(ObjectTest[Component]):
     """Component object tests."""
 
     _name = "hello/weblate"
@@ -772,13 +916,13 @@ class ComponentTest(ObjectTest):
             source_language=obj.source_language["code"],
         )
 
-    def check_object(self, obj) -> None:
+    def check_object(self, obj: Component) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
         self.assertEqual(obj.agreement, "")
 
-    def check_list(self, obj) -> None:
+    def check_list(self, obj: Iterable[LazyObject] | Translation | Unit) -> None:
         """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(len(lst), 33)
@@ -886,19 +1030,19 @@ class ComponentTest(ObjectTest):
         self.assertNotIn(corrupted_url, requested)
 
 
-class ComponentCompatibilityTest(ObjectTest):
+class ComponentCompatibilityTest(ObjectTest[Component]):
     """Tests a component with lack of all optional fields in a response."""
 
     _name = "hello/olderweblate"
     _cls = Component
 
-    def check_object(self, obj) -> None:
+    def check_object(self, obj: Component) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.name, "Weblate")
         self.assertEqual(obj.priority, 100)
         self.assertEqual(obj.agreement, "")
 
-    def check_list(self, obj) -> None:
+    def check_list(self, obj: Iterable[LazyObject] | Translation | Unit) -> None:
         """Perform verification whether listing is valid."""
         lst = list(obj)
         self.assertEqual(len(lst), 33)
@@ -937,17 +1081,17 @@ class ComponentCompatibilityTest(ObjectTest):
         )
 
 
-class TranslationTest(ObjectTest):
+class TranslationTest(ObjectTest[Translation]):
     """Translation object tests."""
 
     _name = "hello/weblate/cs"
     _cls = Translation
 
-    def check_object(self, obj) -> None:
+    def check_object(self, obj: Translation) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.language.code, "cs")
 
-    def check_list(self, obj) -> None:
+    def check_list(self, obj: Iterable[LazyObject] | Translation | Unit) -> None:
         """Perform verification whether listing is valid."""
         self.assertIsInstance(obj, Translation)
 
@@ -1043,7 +1187,7 @@ class TranslationTest(ObjectTest):
         self.assertTrue(obj.units_list_url.endswith("/units/"))
 
 
-class UnitTest(ObjectTestBaseClass):
+class UnitTest(ObjectTestBaseClass[Unit]):
     """Unit model testing."""
 
     _name = "123"
@@ -1053,11 +1197,11 @@ class UnitTest(ObjectTestBaseClass):
         "state": 30,
     }
 
-    def check_object(self, obj) -> None:
+    def check_object(self, obj: Unit) -> None:
         """Perform verification whether object is valid."""
         self.assertEqual(obj.id, 123)
 
-    def check_list(self, obj) -> None:
+    def check_list(self, obj: Iterable[LazyObject] | Translation | Unit) -> None:
         """Perform verification whether listing is valid."""
         self.assertIsInstance(obj, Unit)
 
