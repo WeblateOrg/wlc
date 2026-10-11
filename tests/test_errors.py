@@ -9,6 +9,7 @@ from __future__ import annotations
 import os
 from unittest.mock import patch
 
+import responses
 from requests.exceptions import InvalidHeader, RequestException
 
 from wlc import (
@@ -18,11 +19,21 @@ from wlc import (
 )
 from wlc.exceptions import WeblateThrottlingError
 
-from .test_base import APITest, CLITestBase
+from .test_base import APITest, CLITestBase, register_error
 
 
 class CLIErrorTest(CLITestBase):
     """Testing CLI error handling."""
+
+    API_KEY = "reflected-api-key"
+
+    def assert_api_key_redacted(self, args: list[str], expected_message: str) -> None:
+        """Verify that a CLI error does not disclose the configured API key."""
+        output = self.execute(["--key", self.API_KEY, *args], expected=1)
+
+        self.assertIn(expected_message, output)
+        self.assertIn("<redacted>", output)
+        self.assertNotIn(self.API_KEY, output)
 
     def test_rejects_api_keys_with_line_breaks(self) -> None:
         """CLI and environment keys with line breaks should not be disclosed."""
@@ -64,6 +75,75 @@ class CLIErrorTest(CLITestBase):
 
         self.assertIn("Request failed: Invalid Authorization: <redacted>", output)
         self.assertNotIn(key, output)
+
+    def test_permission_error_redacts_reflected_api_key(self) -> None:
+        """Permission error details should mask a reflected API key."""
+        register_error(
+            "projects/reflected-permission",
+            403,
+            json={"detail": f"Authentication failed for {self.API_KEY}"},
+        )
+
+        self.assert_api_key_redacted(
+            ["show", "reflected-permission"], "Authentication failed"
+        )
+
+    def test_server_error_redacts_reflected_api_key(self) -> None:
+        """Generic HTTP response bodies should mask a reflected API key."""
+        register_error(
+            "projects/reflected-server-error",
+            500,
+            json={"detail": f"token={self.API_KEY}"},
+        )
+
+        self.assert_api_key_redacted(
+            ["show", "reflected-server-error"], "HTTP error 500"
+        )
+
+    def test_throttling_error_redacts_reflected_api_key(self) -> None:
+        """Throttling response headers should mask a reflected API key."""
+        register_error(
+            "projects/reflected-throttling",
+            429,
+            headers={
+                "X-RateLimit-Limit": f"{self.API_KEY}-via-header",
+                "Retry-After": "60",
+            },
+        )
+
+        self.assert_api_key_redacted(
+            ["show", "reflected-throttling"], "Throttling on the server"
+        )
+
+    def test_command_error_redacts_reflected_api_key(self) -> None:
+        """Unsuccessful command details should mask a reflected API key."""
+        project_url = "http://127.0.0.1:8000/api/projects/reflected-command/"
+        repository_url = f"{project_url}repository/"
+        register_error(
+            "projects/reflected-command",
+            200,
+            json={
+                "url": project_url,
+                "web_url": "http://127.0.0.1:8000/projects/reflected-command/",
+                "name": "Reflected command",
+                "slug": "reflected-command",
+                "web": "",
+                "repository_url": repository_url,
+            },
+        )
+        register_error(
+            "projects/reflected-command/repository",
+            200,
+            method=responses.POST,
+            json={
+                "result": False,
+                "detail": f"Retry with token {self.API_KEY}",
+            },
+        )
+
+        self.assert_api_key_redacted(
+            ["commit", "reflected-command"], "Failed to commit changes"
+        )
 
 
 class WeblateErrorTest(APITest):

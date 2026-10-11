@@ -288,8 +288,8 @@ def print_stderr(message: str) -> None:
     print(format_for_stream(message, sys.stderr), file=sys.stderr)  # ruff: ignore[print]
 
 
-def _redact_request_error(error: RequestException, config: WeblateConfig) -> str:
-    """Remove the configured authorization value from a request error."""
+def _redact_cli_error(error: Exception, config: WeblateConfig) -> str:
+    """Remove the configured authorization value from a CLI error."""
     _url, key = config.get_url_key()
     headers = {"Authorization": f"Token {key}"} if key else {}
     return redact_sensitive_values(str(error), headers)
@@ -1174,10 +1174,10 @@ def main(
             )
         return 1
     except RequestException as error:
-        print_stderr(f"Request failed: {_redact_request_error(error, config)}")
+        print_stderr(f"Request failed: {_redact_cli_error(error, config)}")
         return 10
     except (CommandError, WeblateException, OSError) as error:
-        print_stderr(f"Error: {error}")
+        print_stderr(f"Error: {_redact_cli_error(error, config)}")
         return 1
     else:
         return 0
