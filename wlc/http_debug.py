@@ -74,13 +74,18 @@ def log_response_debug(response: Response) -> None:
 
 
 def redact_sensitive_values(message: str, headers: Mapping[str, str]) -> str:
-    """Redact sensitive header values embedded in a message."""
+    """Redact sensitive header values and credentials embedded in a message."""
     for key, value in headers.items():
         if key.lower() not in SENSITIVE_HEADERS or not value:
             continue
         # Requests can include either the value itself or its repr in exceptions.
-        message = message.replace(repr(value), "<redacted>")
-        message = message.replace(value, "<redacted>")
+        # Server-provided diagnostics can also repeat just the credential without
+        # its authentication scheme.
+        _scheme, separator, credential = value.partition(" ")
+        sensitive_values = (value, credential) if separator and credential else (value,)
+        for sensitive_value in sensitive_values:
+            message = message.replace(repr(sensitive_value), "<redacted>")
+            message = message.replace(sensitive_value, "<redacted>")
     return message
 
 

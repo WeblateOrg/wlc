@@ -3,10 +3,9 @@
 Project: wlc (Weblate command-line client and Python API client)
 
 Last reviewed for wlc 3.0.0 at base commit
-`3f09f18c634b8925b90df518f6fbd56af42d3381`, including the accompanying
-release changes in this revision.
+`8552eb491c1ef2ad1c6aa7d8f25d0bc11df65f69`.
 
-Date: 2026-10-08.
+Date: 2026-10-11.
 
 Status: Accepted, 2026-09-01.
 
@@ -29,7 +28,7 @@ documentation; `*(maintainer)*` means it was stated by a maintainer during this
 threat-model process; `*(inferred)*` means it was reasoned from the current
 project shape and needs maintainer confirmation.
 
-Provenance summary: 53 documented / 78 maintainer / 0 inferred claims.
+Provenance summary: 53 documented / 79 maintainer / 0 inferred claims.
 
 wlc is a command-line utility and Python library for making requests to the
 [Weblate REST API][api-docs]. It resolves an API endpoint and optional API key,
@@ -282,7 +281,7 @@ code, Python runtime, or operating system. *(maintainer)*
 | An unscoped CLI or environment key cannot be paired with a project-selected URL unless that same source also pins the URL. | Automatic project discovery supplied the otherwise-effective URL. | `--key` is accepted without `--url`, or `WLC_KEY` is accepted without `WLC_URL`. | High. | *(documented)* (source: [configuration implementation](wlc/config.py), [configuration tests](tests/test_config.py)) |
 | Authentication is accepted only from configured API-key sources; Requests does not automatically add credentials from `.netrc` or the file named by `NETRC`, and credentials embedded in URLs are rejected. | The request goes through the `Weblate` client. | A repository-selected host causes Requests to add or replace authentication using a netrc file, or a URL containing userinfo produces an HTTP request. | High. | *(documented)* (source: [configuration documentation][configuration-docs], [client implementation](wlc/client.py), [client tests](tests/test_wlc.py), [URL tests](tests/test_urls.py)) |
 | An explicit `--config` file prevents automatic user and project configuration discovery. | The CLI successfully reads the explicit file. CLI/environment overrides still apply normally. | Settings from a discovered user or project file affect the configuration. | Medium. | *(documented)* (source: [configuration implementation](wlc/config.py), [configuration tests](tests/test_config.py)) |
-| wlc CLI request errors and debug logging redact authorization values, and debug logging does not include request bodies or uploaded file contents. | Requests use the `Weblate` client and errors are rendered by the wlc CLI or debug helpers. Parameter values can still be logged and must not be used for secrets. | A CLI request error or generated debug entry contains an API token, JSON/body values, or uploaded contents supplied only through the corresponding request fields. | High for credentials; otherwise Medium. | *(documented)* (source: [CLI implementation](wlc/main.py), [debug implementation](wlc/http_debug.py), [debug tests](tests/test_errors.py), [CLI tests](tests/test_main.py)) |
+| wlc debug logging redacts sensitive request headers and does not include request bodies or uploaded file contents. | Logging uses wlc's debug helpers. Parameter values can still be logged and must not be used for secrets. | A generated debug entry contains an authorization value, JSON/body value, or uploaded content supplied only through the corresponding outgoing request field. | High for credentials; otherwise Medium. | *(documented)* (source: [debug implementation](wlc/http_debug.py), [debug tests](tests/test_errors.py), [CLI debug tests](tests/test_main.py)) |
 | Automatically generated component archive filenames cannot use server-provided slugs for path traversal. | wlc chooses the project/component download filename inside a user-selected directory. | A server-provided project or component slug writes outside that directory. | High. | *(documented)* (source: [filename helper](wlc/utils.py), [CLI implementation](wlc/main.py), [download tests](tests/test_download.py)) |
 | Download writes do not follow destination symlinks or overwrite non-regular or multiply linked targets, and destination replacement is checked against races. | The CLI writes a downloaded translation or automatically named archive through its download helper. The containing directory remains under local-user control. | A preplanted or racing symlink, hard link, changed inode, or non-regular destination redirects downloaded bytes to another file or device. | High. | *(documented)* (source: [CLI implementation](wlc/main.py), [download tests](tests/test_download.py)) |
 | Raw translation bytes are not written to an interactive terminal. | A translation download would use standard output and that stream reports itself as a TTY. | Binary translation data is emitted to the interactive terminal instead of being refused. | Medium. | *(documented)* (source: [CLI implementation](wlc/main.py), [CLI tests](tests/test_main.py)) |
@@ -308,8 +307,10 @@ code, Python runtime, or operating system. *(maintainer)*
   *(maintainer)*
 - Debug output is diagnostic data rather than a supported structured renderer.
   Header and request-body redaction does not imply terminal-control escaping or
-  secrecy for request parameter values, URLs, response reason phrases, or error
-  messages included in diagnostics other than configured authorization values.
+  secrecy for request parameter values, URLs, response reason phrases, or
+  server-provided response content. CLI errors best-effort mask exact configured
+  authorization values and credentials, but this is not a confidentiality
+  boundary: a selected server can reflect them in successful or error output.
   *(maintainer)*
 - wlc does not enforce a response-size, pagination-count, aggregate-time,
   memory, disk-usage, or retry-cost limit against the selected server. The
@@ -434,6 +435,7 @@ The following report patterns are already resolved by this model:
 | A checked-out repository's automatically discovered project configuration silently replaces the user API URL and supplies or replaces the matching `[keys]` entry. | `BY-DESIGN / property-disclaimed`. Repository-driven endpoint, default, request-policy, and URL-scoped-key selection is an intended workflow. No warning or opt-in is promised. Reopen as `VALID` only if the behavior also violates a claimed secret, transport, origin, path, or output property. *(maintainer)* |
 | Commands, uploads, or downloads use the server selected by project configuration rather than the endpoint in global user configuration. | `BY-DESIGN / property-disclaimed`. All commands use the same effective configuration. The selected server is the intended recipient and response source. *(maintainer)* |
 | An attacker-controlled selected server returns false project information or malicious translation content. | `OUT-OF-MODEL / trusted-input` for truthfulness and content trust. Response containment remains in scope, so a cross-origin request, automatic path escape, or active supported CLI output payload can still be `VALID`. *(maintainer)* |
+| A selected server repeats its configured API key in a successful response field, error body, reason, or response header and the CLI renders it. | `BY-DESIGN / property-disclaimed` for response confidentiality. The server is the intended credential recipient and can return arbitrary response content. Exact credential masking in CLI errors is defense in depth, not a security boundary. Reopen as `VALID` if the value came only from another protected source or a separate origin, path, or active-output property is violated. *(maintainer)* |
 | wlc refuses `WLC_KEY` without `WLC_URL`, or `--key` without `--url`, when project configuration selects the endpoint. | `KNOWN-NON-FINDING`. This is enforcement of the unscoped-secret destination property. *(documented)* (source: [configuration implementation](wlc/config.py)) |
 | An unauthenticated command is accepted when no API key is configured. | `BY-DESIGN / property-disclaimed`. Public API access is determined by the selected Weblate server. *(documented)* (source: [Weblate API documentation][api-docs]) |
 | An explicitly enabled insecure HTTP connection exposes its API key or contents, or explicitly disabled TLS verification permits interception. | `OUT-OF-MODEL / trusted-input`. The trusted caller deliberately removed the default transport protection for the selected destination. A project configuration bypassing the opt-in or origin restriction remains `VALID`. *(maintainer)* |
