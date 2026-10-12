@@ -191,6 +191,53 @@ class WeblateTest(APITest):
 
         self.assertEqual([1, 2], [unit.id for unit in units])
 
+    def test_paginated_listing_accepts_terminal_next_values(self) -> None:
+        """Empty, null, and absent pagination links terminate the listing."""
+        terminal_values = (("empty", ""), ("null", None), ("absent", ...))
+        for unit_id, (name, next_url) in enumerate(terminal_values, start=1):
+            with self.subTest(next_url=name):
+                path = f"terminal-{name}-units/"
+                response_data: dict[str, object] = {
+                    "results": [
+                        {
+                            "id": unit_id,
+                            "url": f"http://127.0.0.1:8000/api/units/{unit_id}/",
+                        }
+                    ]
+                }
+                if next_url is not ...:
+                    response_data["next"] = next_url
+                responses.add(
+                    responses.GET,
+                    f"http://127.0.0.1:8000/api/{path}",
+                    json=response_data,
+                )
+                previous_call_count = len(responses.calls)
+
+                units = list(Weblate().list_units(path))
+
+                self.assertEqual([unit_id], [unit.id for unit in units])
+                self.assertEqual(len(responses.calls), previous_call_count + 1)
+
+    def test_paginated_listing_rejects_invalid_next_values(self) -> None:
+        """Non-string pagination links are rejected before another request."""
+        for index, next_url in enumerate((0, False, [], {})):
+            with self.subTest(next_url=next_url):
+                path = f"invalid-next-{index}-units/"
+                responses.add(
+                    responses.GET,
+                    f"http://127.0.0.1:8000/api/{path}",
+                    json={"next": next_url, "results": []},
+                )
+                previous_call_count = len(responses.calls)
+
+                with self.assertRaisesRegex(
+                    WeblateException, "invalid pagination link"
+                ):
+                    list(Weblate().list_units(path))
+
+                self.assertEqual(len(responses.calls), previous_call_count + 1)
+
 
 class WeblateAuthenticationTest(APITest):
     """Test API credentials and netrc isolation."""

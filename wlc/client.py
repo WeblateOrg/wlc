@@ -444,7 +444,15 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
             for item in data["results"]:
                 yield parser(weblate=self, **item)
 
-            path = data["next"]
+            next_url = data.get("next")
+            if next_url is None:
+                break
+            if not isinstance(next_url, str):
+                msg = "Server returned an invalid pagination link."
+                raise WeblateException(msg)
+            if not next_url:
+                break
+            path = next_url
 
     def _get_factory(
         self, prefix: str, path: str, parser: type[LazyObjectT]
