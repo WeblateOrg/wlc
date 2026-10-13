@@ -3,9 +3,9 @@
 Project: wlc (Weblate command-line client and Python API client)
 
 Last reviewed for wlc 3.0.0 at base commit
-`8552eb491c1ef2ad1c6aa7d8f25d0bc11df65f69`.
+`42c3627de97775bab9de6f854cd22911f995ca78`.
 
-Date: 2026-10-11.
+Date: 2026-10-13.
 
 Status: Accepted, 2026-09-01.
 
@@ -215,10 +215,11 @@ prompt. *(maintainer)*
   (source: [configuration documentation][configuration-docs],
   [client implementation](wlc/client.py))
 - Text, JSON, CSV, and HTML outputs have different serialization properties.
-  Terminal control escaping is conditional on an interactive stream; CSV
-  formula neutralization and HTML escaping are format-specific.
+  Terminal control and selected Unicode display-control escaping is conditional
+  on an interactive stream; CSV formula neutralization and HTML escaping are
+  format-specific.
   *(documented)* (source: [CLI implementation](wlc/main.py),
-  [output tests](tests/test_main.py))
+  [output tests](tests/test_output.py))
 
 ## Input assumptions
 
@@ -248,8 +249,9 @@ The model considers these relevant adversaries:
   bytes, object fields, error messages, pagination links, download links, and
   timing behavior. It can observe requests and upload data sent to it. It must
   not cause wlc to follow a response URL to another origin, escape an automatic
-  download directory through a server-derived slug, or emit active control
-  sequences to an interactive terminal through supported CLI renderers.
+  download directory through a server-derived slug, emit active control
+  sequences, or emit supported Unicode bidi and invisible controls to an
+  interactive terminal through supported CLI renderers.
   *(maintainer)*
 - An on-path network attacker is relevant when HTTPS is used. wlc relies on the
   CA bundle selected by Requests and refuses to send an API key over
@@ -285,7 +287,7 @@ code, Python runtime, or operating system. *(maintainer)*
 | Automatically generated component archive filenames cannot use server-provided slugs for path traversal. | wlc chooses the project/component download filename inside a user-selected directory. | A server-provided project or component slug writes outside that directory. | High. | *(documented)* (source: [filename helper](wlc/utils.py), [CLI implementation](wlc/main.py), [download tests](tests/test_download.py)) |
 | Download writes do not follow destination symlinks or overwrite non-regular or multiply linked targets, and destination replacement is checked against races. | The CLI writes a downloaded translation or automatically named archive through its download helper. The containing directory remains under local-user control. | A preplanted or racing symlink, hard link, changed inode, or non-regular destination redirects downloaded bytes to another file or device. | High. | *(documented)* (source: [CLI implementation](wlc/main.py), [download tests](tests/test_download.py)) |
 | Raw translation bytes are not written to an interactive terminal. | A translation download would use standard output and that stream reports itself as a TTY. | Binary translation data is emitted to the interactive terminal instead of being refused. | Medium. | *(documented)* (source: [CLI implementation](wlc/main.py), [CLI tests](tests/test_main.py)) |
-| Supported CLI rendering contains common active-output payloads in their intended context. | Text and CSV values are converted to text before C0/C1 controls are escaped for a TTY, including structured values; HTML keys and values are HTML-escaped; CSV cells beginning with formula markers, including markers hidden behind leading whitespace, are neutralized. | Supported rendering emits an active terminal control sequence, unescaped HTML value, or active CSV formula under these conditions. | Medium. | *(documented)* (source: [output implementation](wlc/output.py), [CLI implementation](wlc/main.py), [output tests](tests/test_main.py)) |
+| Supported CLI rendering contains common active-output payloads in their intended context. | Text and CSV values are converted to text before C0/C1 controls and the explicitly supported Unicode bidi and invisible controls are escaped for a TTY, including structured values; HTML keys and values are HTML-escaped; CSV cells beginning with formula markers, including markers hidden behind leading whitespace, are neutralized. | Supported rendering emits an active terminal control sequence, a supported raw Unicode display control, an unescaped HTML value, or an active CSV formula under these conditions. | Medium. | *(documented)* (source: [output implementation](wlc/output.py), [CLI implementation](wlc/main.py), [output tests](tests/test_output.py)) |
 
 ## Security properties wlc does not provide
 
@@ -316,9 +318,13 @@ code, Python runtime, or operating system. *(maintainer)*
   memory, disk-usage, or retry-cost limit against the selected server. The
   configured per-request timeout and retry policy are operational controls, not
   a general malicious-server availability guarantee. *(maintainer)*
-- Downloaded translations and arbitrary API values are not scanned for
-  malicious or misleading content. Filename and output containment do not imply
-  content trust. *(maintainer)*
+- Except for the explicitly supported terminal controls, Unicode bidi and
+  invisible controls, HTML metacharacters, and CSV formula prefixes, downloaded
+  translations and arbitrary API values are not scanned for malicious or
+  misleading content. Homoglyphs, general Unicode confusables, and Unicode
+  formatting characters outside the supported set remain content rather than
+  control boundaries. Filename and output containment do not imply content
+  trust. *(maintainer)*
 - Terminal escaping does not promise that redirected text or JSON is safe to
   reinterpret as shell, HTML, markup, source code, a terminal stream, or any
   other active format. Each downstream consumer must escape for its own

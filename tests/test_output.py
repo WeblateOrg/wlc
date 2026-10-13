@@ -12,10 +12,11 @@ import json
 from argparse import Namespace
 from datetime import datetime, timezone
 from io import StringIO
+from unittest.mock import patch
 
 import wlc
 from wlc.config import WeblateConfig
-from wlc.main import Command, Version, format_for_stream
+from wlc.main import Command, Version, format_for_stream, print_stderr
 
 from .test_base import AttributeDict, CLITestBase, TTYStringIO
 
@@ -104,16 +105,68 @@ class TestTextOutput(OutputTestBase):
             r"hello\x1b[31m\r\nworld",
         )
 
+    def test_format_for_stream_escapes_unicode_display_controls(self) -> None:
+        """Terminal output should visibly render selected Unicode controls."""
+        codepoints = (
+            0x00AD,
+            0x061C,
+            0x200B,
+            0x200E,
+            0x200F,
+            0x202A,
+            0x202B,
+            0x202C,
+            0x202D,
+            0x202E,
+            0x2060,
+            0x2061,
+            0x2062,
+            0x2063,
+            0x2064,
+            0x2066,
+            0x2067,
+            0x2068,
+            0x2069,
+            0xFEFF,
+        )
+        for codepoint in codepoints:
+            with self.subTest(codepoint=f"U+{codepoint:04X}"):
+                self.assertEqual(
+                    format_for_stream(chr(codepoint), TTYStringIO()),
+                    f"\\u{codepoint:04x}",
+                )
+
+    def test_format_for_stream_preserves_non_terminal_unicode(self) -> None:
+        """Data streams and ordinary RTL text should preserve Unicode."""
+        value = "עברית العربية harmless\u202egnp.suriv\u202c"
+        self.assertEqual(format_for_stream(value, StringIO()), value)
+        self.assertEqual(format_for_stream(value, object()), value)
+        self.assertEqual(
+            format_for_stream("עברית العربية", TTYStringIO()),
+            "עברית العربية",
+        )
+        joining_text = "می\u200cروم 👩\u200d💻"
+        self.assertEqual(format_for_stream(joining_text, TTYStringIO()), joining_text)
+
+    def test_stderr_escapes_unicode_display_controls(self) -> None:
+        """Interactive error output should visibly render Unicode controls."""
+        output = TTYStringIO()
+        with patch("wlc.main.sys.stderr", output):
+            print_stderr("harmless\u202egnp.suriv\u202c")
+
+        self.assertEqual(output.getvalue(), "harmless\\u202egnp.suriv\\u202c\n")
+
     def test_text_output_escapes_terminal_control_characters(self) -> None:
         """Text output should not emit raw terminal control characters."""
         output = TTYStringIO()
         cmd = self.create_command(output, "text")
 
-        cmd.print({"name": "hello\x1b[31m\r\nworld"})
+        cmd.print({"name": "hello\x1b[31m\r\nworld\u202espoof\u202c"})
 
         rendered = output.getvalue()
-        self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
+        self.assertIn(r"hello\x1b[31m\r\nworld\u202espoof\u202c", rendered)
         self.assertNotIn("\x1b", rendered)
+        self.assertNotIn("\u202e", rendered)
 
     def test_text_output_escapes_controls_in_structured_values(self) -> None:
         """Text output should escape controls after converting structured values."""
@@ -203,7 +256,11 @@ class TestCSVOutput(OutputTestBase):
 
     def test_csv_output_escapes_controls_in_structured_values(self) -> None:
         """CSV output should escape controls after converting structured values."""
-        aliases = [RawControlValue("escape\x1b[31m nul\x00byte c1\x85byte")]
+        aliases = [
+            RawControlValue(
+                "escape\x1b[31m nul\x00byte c1\x85byte bidi\u2066text\u2069"
+            )
+        ]
         values = (
             ("detail", {"aliases": aliases}),
             ("tabular", [AttributeDict({"aliases": aliases})]),
@@ -220,9 +277,12 @@ class TestCSVOutput(OutputTestBase):
                 self.assertIn(r"escape\x1b[31m", rendered)
                 self.assertIn(r"nul\x00byte", rendered)
                 self.assertIn(r"c1\x85byte", rendered)
+                self.assertIn(r"bidi\u2066text\u2069", rendered)
                 self.assertNotIn("\x1b", rendered)
                 self.assertNotIn("\x00", rendered)
                 self.assertNotIn("\x85", rendered)
+                self.assertNotIn("\u2066", rendered)
+                self.assertNotIn("\u2069", rendered)
 
     def test_csv_output_allows_missing_optional_fields(self) -> None:
         """CSV output should leave blank cells for missing optional fields."""
@@ -271,11 +331,12 @@ class TestHTMLOutput(OutputTestBase):
         output = TTYStringIO()
         cmd = self.create_command(output, "html")
 
-        cmd.print({"name": "hello\x1b[31m\r\nworld"})
+        cmd.print({"name": "hello\x1b[31m\r\nworld zero\u200bwidth"})
 
         rendered = output.getvalue()
-        self.assertIn(r"hello\x1b[31m\r\nworld", rendered)
+        self.assertIn(r"hello\x1b[31m\r\nworld zero\u200bwidth", rendered)
         self.assertNotIn("\x1b", rendered)
+        self.assertNotIn("\u200b", rendered)
 
     def test_html_escapes_list_output(self) -> None:
         """HTML list output escapes headers and values."""
@@ -328,6 +389,16 @@ class TestJSONOutput(OutputTestBase):
         output = self.execute(["--format", "json", "version"])
         values = json.loads(output)
         self.assertEqual({"version": wlc.__version__}, values)
+
+    def test_json_preserves_unicode_display_controls(self) -> None:
+        """JSON should preserve Unicode controls as structured data."""
+        output = TTYStringIO()
+        cmd = self.create_command(output, "json")
+        value = {"name": "harmless\u202egnp.suriv\u202c"}
+
+        cmd.print(value)
+
+        self.assertEqual(json.loads(output.getvalue()), value)
 
     def test_projects_json(self) -> None:
         """Test projects printing."""
