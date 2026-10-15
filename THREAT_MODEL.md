@@ -310,10 +310,17 @@ code, Python runtime, or operating system. *(maintainer)*
 - Debug output is diagnostic data rather than a supported structured renderer.
   Header and request-body redaction does not imply terminal-control escaping or
   secrecy for request parameter values, URLs, response reason phrases, or
-  server-provided response content. CLI errors best-effort mask exact configured
-  authorization values and credentials, but this is not a confidentiality
-  boundary: a selected server can reflect them in successful or error output.
-  *(maintainer)*
+  server-provided response content. Handled CLI errors make a best-effort
+  replacement of exact configured authorization values and credentials. This
+  defense-in-depth behavior is not a confidentiality boundary against the
+  selected server and does not recognize transformed, encoded, fragmented, or
+  partial credentials. Successful command output and Python API results can
+  contain arbitrary server-provided values, subject only to the documented
+  output-containment properties. *(maintainer)*
+- wlc writes command output and diagnostics to caller-selected streams or the
+  process standard streams; it does not create or manage CI logs, terminal
+  transcripts, screenshots, or copied diagnostics. Retention and access control
+  for those downstream records are the operator's responsibility. *(maintainer)*
 - wlc does not enforce a response-size, pagination-count, aggregate-time,
   memory, disk-usage, or retry-cost limit against the selected server. The
   configured per-request timeout and retry policy are operational controls, not
@@ -441,7 +448,8 @@ The following report patterns are already resolved by this model:
 | A checked-out repository's automatically discovered project configuration silently replaces the user API URL and supplies or replaces the matching `[keys]` entry. | `BY-DESIGN / property-disclaimed`. Repository-driven endpoint, default, request-policy, and URL-scoped-key selection is an intended workflow. No warning or opt-in is promised. Reopen as `VALID` only if the behavior also violates a claimed secret, transport, origin, path, or output property. *(maintainer)* |
 | Commands, uploads, or downloads use the server selected by project configuration rather than the endpoint in global user configuration. | `BY-DESIGN / property-disclaimed`. All commands use the same effective configuration. The selected server is the intended recipient and response source. *(maintainer)* |
 | An attacker-controlled selected server returns false project information or malicious translation content. | `OUT-OF-MODEL / trusted-input` for truthfulness and content trust. Response containment remains in scope, so a cross-origin request, automatic path escape, or active supported CLI output payload can still be `VALID`. *(maintainer)* |
-| A selected server repeats its configured API key in a successful response field, error body, reason, or response header and the CLI renders it. | `BY-DESIGN / property-disclaimed` for response confidentiality. The server is the intended credential recipient and can return arbitrary response content. Exact credential masking in CLI errors is defense in depth, not a security boundary. Reopen as `VALID` if the value came only from another protected source or a separate origin, path, or active-output property is violated. *(maintainer)* |
+| A selected server returns its configured API key, or a transformed, encoded, fragmented, or partial form of it, in successful output or Python API data. | `BY-DESIGN / property-disclaimed` for response confidentiality. The server is the intended credential recipient and can return arbitrary response content. Reopen as `VALID` if the value came only from another protected source or a separate origin, path, or active-output property is violated. *(maintainer)* |
+| A handled CLI error fails to replace an exact configured authorization value or credential contained in server-provided error content. | `VALID-HARDENING`. Exact-value masking is expected defense-in-depth behavior and its absence is a functional regression, but it does not establish a confidentiality boundary against the selected server. Reopen as `VALID` if the value came from another protected source or a separate origin, path, or active-output property is violated. *(maintainer)* |
 | wlc refuses `WLC_KEY` without `WLC_URL`, or `--key` without `--url`, when project configuration selects the endpoint. | `KNOWN-NON-FINDING`. This is enforcement of the unscoped-secret destination property. *(documented)* (source: [configuration implementation](wlc/config.py)) |
 | An unauthenticated command is accepted when no API key is configured. | `BY-DESIGN / property-disclaimed`. Public API access is determined by the selected Weblate server. *(documented)* (source: [Weblate API documentation][api-docs]) |
 | An explicitly enabled insecure HTTP connection exposes its API key or contents, or explicitly disabled TLS verification permits interception. | `OUT-OF-MODEL / trusted-input`. The trusted caller deliberately removed the default transport protection for the selected destination. A project configuration bypassing the opt-in or origin restriction remains `VALID`. *(maintainer)* |
