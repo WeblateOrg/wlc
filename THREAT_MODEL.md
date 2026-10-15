@@ -449,7 +449,6 @@ The following report patterns are already resolved by this model:
 | Commands, uploads, or downloads use the server selected by project configuration rather than the endpoint in global user configuration. | `BY-DESIGN / property-disclaimed`. All commands use the same effective configuration. The selected server is the intended recipient and response source. *(maintainer)* |
 | An attacker-controlled selected server returns false project information or malicious translation content. | `OUT-OF-MODEL / trusted-input` for truthfulness and content trust. Response containment remains in scope, so a cross-origin request, automatic path escape, or active supported CLI output payload can still be `VALID`. *(maintainer)* |
 | A selected server returns its configured API key, or a transformed, encoded, fragmented, or partial form of it, in successful output or Python API data. | `BY-DESIGN / property-disclaimed` for response confidentiality. The server is the intended credential recipient and can return arbitrary response content. Reopen as `VALID` if the value came only from another protected source or a separate origin, path, or active-output property is violated. *(maintainer)* |
-| A handled CLI error fails to replace an exact configured authorization value or credential contained in server-provided error content. | `VALID-HARDENING`. Exact-value masking is expected defense-in-depth behavior and its absence is a functional regression, but it does not establish a confidentiality boundary against the selected server. Reopen as `VALID` if the value came from another protected source or a separate origin, path, or active-output property is violated. *(maintainer)* |
 | wlc refuses `WLC_KEY` without `WLC_URL`, or `--key` without `--url`, when project configuration selects the endpoint. | `KNOWN-NON-FINDING`. This is enforcement of the unscoped-secret destination property. *(documented)* (source: [configuration implementation](wlc/config.py)) |
 | An unauthenticated command is accepted when no API key is configured. | `BY-DESIGN / property-disclaimed`. Public API access is determined by the selected Weblate server. *(documented)* (source: [Weblate API documentation][api-docs]) |
 | An explicitly enabled insecure HTTP connection exposes its API key or contents, or explicitly disabled TLS verification permits interception. | `OUT-OF-MODEL / trusted-input`. The trusted caller deliberately removed the default transport protection for the selected destination. A project configuration bypassing the opt-in or origin restriction remains `VALID`. *(maintainer)* |
@@ -517,6 +516,14 @@ Use these closed dispositions when evaluating a report:
 - `MODEL-GAP`: The report is security-relevant but this model neither promises
   nor disclaims the affected boundary. Maintainers must update the model and
   then assign a substantive disposition. *(maintainer)*
+
+A handled CLI error that fails to replace an exact configured authorization
+value or credential contained in server-provided error content is
+`VALID-HARDENING`. Exact-value masking is expected defense-in-depth behavior and
+its absence is a functional regression, but it does not establish a
+confidentiality boundary against the selected server. Classify the report as
+`VALID` instead if the value came from another protected source or a separate
+origin, path, or active-output property is violated. *(maintainer)*
 
 Triage must evaluate demonstrated data flow and boundary impact, not only the
 report's vulnerability-class label. In particular, selecting an attacker-owned
