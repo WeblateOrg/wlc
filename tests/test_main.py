@@ -15,6 +15,8 @@ from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from unittest.mock import patch
 
+import responses
+
 import wlc
 from wlc.config import WeblateConfig
 
@@ -256,6 +258,41 @@ class TestSettings(CLITestBase):
 
 class TestProjectSettings(CLITestBase):
     """Test project configuration credential precedence."""
+
+    def test_project_default_rejects_object_path_traversal(self) -> None:
+        """Repository defaults can not steer authenticated object requests."""
+        current = Path.cwd()
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            user_config = root / "user.ini"
+            user_config.write_text(
+                "[weblate]\nurl = http://127.0.0.1:8000/api/\n"
+                "\n"
+                "[keys]\nhttp://127.0.0.1:8000/api/ = KEY\n",
+                encoding="utf-8",
+            )
+            repo = root / "repo"
+            repo.mkdir()
+            (repo / ".weblate").write_text(
+                "[weblate]\ntranslation = ../projects/hello\n", encoding="utf-8"
+            )
+
+            try:
+                os.chdir(repo)
+                with (
+                    patch.object(
+                        WeblateConfig, "find_config", return_value=user_config
+                    ),
+                    patch.dict(os.environ, {}, clear=True),
+                ):
+                    for command in ("show", "delete"):
+                        with self.subTest(command=command):
+                            output = self.execute([command], settings=False, expected=1)
+                            self.assertIn("Error: Invalid object path.", output)
+            finally:
+                os.chdir(current)
+
+        self.assertFalse(responses.calls)
 
     def test_project_config_with_env_key_reports_error(self) -> None:
         """WLC_KEY can not use a URL from discovered project config."""

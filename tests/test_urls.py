@@ -29,6 +29,73 @@ class WeblateURLValidationTest(APITest):
 
     evil_domain = "http://evil.example.com/api"
 
+    def assert_object_path_rejected(self, action: Callable[[], object]) -> None:
+        """Assert an invalid object path is rejected before HTTP dispatch."""
+        call_count = len(responses.calls)
+
+        with self.assertRaisesRegex(WeblateException, "Invalid object path"):
+            action()
+
+        self.assertEqual(len(responses.calls), call_count)
+
+    def test_rejects_unsafe_object_paths(self) -> None:
+        """Object paths must not alter the selected API collection."""
+        paths = (
+            "../users",
+            "../../users",
+            "a/../../users",
+            "/abs",
+            "abs/",
+            "users//admin",
+            "./users",
+            r"..\users",
+            "users?admin=true",
+            "users#admin",
+            "%2e%2e/users",
+            "%252e%252e/users",
+            "users%2525252541",
+            "a/%2e%2e/%2e%2e/users",
+            "%2fusers",
+            "..%5cusers",
+            "users%3fadmin=true",
+            "users%23admin",
+        )
+
+        for path in paths:
+            with self.subTest(path=path):
+                self.assert_object_path_rejected(
+                    lambda path=path: Weblate(key="KEY").get_component(path)
+                )
+
+    def test_rejects_unsafe_paths_across_object_operations(self) -> None:
+        """Every client-constructed object endpoint should validate its path."""
+        actions = (
+            lambda: Weblate().get_project("../users"),
+            lambda: Weblate().get_component("../users"),
+            lambda: Weblate().get_translation("../users/cs"),
+            lambda: Weblate().get_unit("../users"),
+            lambda: Weblate().add_source_string(
+                project="../users",
+                component="weblate",
+                source_language="en",
+                msgid="key",
+                msgstr="value",
+            ),
+            lambda: Weblate().create_component(
+                "../users",
+                name="Weblate",
+                slug="weblate",
+                file_format="po",
+                filemask="po/*.po",
+                repo="local:",
+            ),
+            lambda: Weblate().get_translation("../users/cs").download(),
+        )
+
+        for action in actions:
+            with self.subTest(action=action):
+                self.assert_object_path_rejected(action)
+
     def test_rejects_api_key_with_non_local_http_url(self) -> None:
         """API keys should not be sent over cleartext non-local HTTP."""
         with self.assertRaisesRegex(WeblateException, "insecure HTTP"):
