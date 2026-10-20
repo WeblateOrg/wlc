@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
 # Leading whitespace/control characters can be used to obscure a formula prefix
 # in some CSV consumers; treat these as dangerous when checking cell content.
-CSV_DANGEROUS_LEADING = " \t\r\n"
+CSV_DANGEROUS_LEADING = " \t\r\n\x0b\x0c"
 TERMINAL_CONTROL_REPLACEMENTS = {
     "\a": r"\a",
     "\b": r"\b",

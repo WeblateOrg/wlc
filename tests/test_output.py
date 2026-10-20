@@ -243,6 +243,40 @@ class TestCSVOutput(OutputTestBase):
         self.assertEqual(rows[0], ["'=name"])
         self.assertEqual(rows[1], ["'=Hello"])
 
+    def test_csv_escapes_formulas_after_control_whitespace(self) -> None:
+        """Harden formula markers after VT, FF, and mixed leading whitespace."""
+        for leading in ("\v", "\f", " \t\r\n\v\f", "\v \f\t"):
+            for prefix in ("=", "+", "-", "@"):
+                for stream in (StringIO, TTYStringIO):
+                    with self.subTest(leading=leading, prefix=prefix, stream=stream):
+                        output = stream()
+                        cmd = self.create_command(output, "csv")
+                        value = f"{leading}{prefix}1+1"
+                        expected = format_for_stream(f"'{value}", output)
+
+                        self.assertEqual(cmd.format_csv_value(value), expected)
+                        cmd.print_csv([AttributeDict({value: value})], [value])
+                        cmd.print_csv({value: value}, None)
+
+                        rows = list(csv.reader(StringIO(output.getvalue())))
+                        self.assertEqual(
+                            rows, [[expected], [expected], [expected, expected]]
+                        )
+
+    def test_csv_preserves_non_formula_control_whitespace(self) -> None:
+        """Preserve VT and FF when they do not obscure a formula marker."""
+        output = StringIO()
+        cmd = self.create_command(output, "csv")
+        values = ("\v", "\f", "\vHello", "\fHello", "Hello\v=1+1", "Hello\f=1+1")
+
+        for value in values:
+            with self.subTest(value=value):
+                self.assertEqual(cmd.format_csv_value(value), value)
+
+        cmd.print_csv([AttributeDict({"value": value}) for value in values], ["value"])
+        rows = list(csv.reader(StringIO(output.getvalue())))
+        self.assertEqual(rows, [["value"], *[[value] for value in values]])
+
     def test_csv_output_escapes_terminal_control_characters(self) -> None:
         """CSV output should not emit raw terminal control characters to a tty."""
         output = TTYStringIO()
