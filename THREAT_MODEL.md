@@ -334,6 +334,13 @@ the output promise to arbitrary debug logs or Python API consumers. *(maintainer
   memory, disk-usage, or retry-cost limit against the selected server. The
   configured per-request timeout and retry policy are operational controls, not
   a general malicious-server availability guarantee. *(maintainer)*
+- CLI listings render rows incrementally in all output formats rather than
+  retaining the complete listing. Individual response pages and rendered rows
+  are still buffered, and normal output-stream buffering applies. A later
+  failure can leave partial output, including incomplete JSON or HTML; callers
+  must check the exit status before treating output as complete. This does not
+  bound requests or resources consumed by the selected server. *(documented)*
+  (source: [CLI implementation](wlc/main.py), [output tests](tests/test_output.py))
 - Except for the explicitly supported terminal controls, Unicode bidi and
   invisible controls, HTML metacharacters, and CSV formula prefixes, downloaded
   translations and arbitrary API values are not scanned for malicious or

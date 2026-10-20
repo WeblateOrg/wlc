@@ -19,6 +19,7 @@ import sys
 from argparse import ArgumentParser, Namespace
 from collections.abc import Iterable, Mapping
 from contextlib import suppress
+from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, Generic, Protocol, TypeAlias, TypeVar, cast
 
@@ -78,7 +79,7 @@ class OutputStream(BufferedStream, Protocol):
 
 
 RowT = TypeVar("RowT", bound=Mapping[str, object])
-OutputValue: TypeAlias = Mapping[str, object] | list[RowT]
+OutputValue: TypeAlias = Mapping[str, object] | Iterable[RowT]
 
 
 COMMANDS: dict[str, type[Command]] = {}
@@ -337,6 +338,16 @@ class Command:
         """JSON print."""
         json.dump(value, self.stdout, cls=DateTimeEncoder, indent=2)
 
+    def print_json_rows(self, rows: Iterable[RowT]) -> None:
+        """Print rows incrementally using the existing JSON array formatting."""
+        separator = "[\n"
+        for row in rows:
+            encoded = json.dumps(row, cls=DateTimeEncoder, indent=2)
+            self.stdout.write(separator)
+            self.stdout.write("  " + encoded.replace("\n", "\n  "))
+            separator = ",\n"
+        self.stdout.write("\n]")
+
     @staticmethod
     def format_value(value: object) -> object:
         """Format value for rendering."""
@@ -375,7 +386,7 @@ class Command:
         writer = csv.writer(self.stdout)
         if header is not None:
             writer.writerow([self.format_csv_value(key) for key in header])
-            for row in cast("list[RowT]", value):
+            for row in cast("Iterable[RowT]", value):
                 formatted_row = {
                     key: self.format_csv_value(data) for key, data in row.items()
                 }
@@ -438,14 +449,21 @@ class Command:
     def print(self, value: OutputValue[RowT]) -> None:
         """Print value."""
         header: list[str] | None = None
-        if isinstance(value, list):
-            if len(value) == 0:
+        if not isinstance(value, Mapping):
+            rows = iter(value)
+            try:
+                first = next(rows)
+            except StopIteration:
                 return
-            header = sorted(value[0].keys())
+            header = sorted(first.keys())
+            value = chain((first,), rows)
 
         match self.args.format:
             case "json":
-                self.print_json(value)
+                if header is None:
+                    self.print_json(value)
+                else:
+                    self.print_json_rows(cast("Iterable[RowT]", value))
             case "csv":
                 self.print_csv(value, header)
             case "html":
@@ -596,7 +614,7 @@ class ListProjects(Command):
 
     def run(self) -> None:
         """Execute the command."""
-        self.print(list(self.wlc.list_projects()))
+        self.print(self.wlc.list_projects())
 
 
 @register_command
@@ -611,13 +629,14 @@ class ListComponents(ProjectCommand):
         if self.args.object:
             obj = self.require_object()
 
-            component_list = list(obj.list())
-            for component in component_list:
-                component.setattrvalue("project", obj)
+            def components() -> Iterable[Component]:
+                for component in obj.list():
+                    component.setattrvalue("project", obj)
+                    yield component
 
-            self.print(component_list)
+            self.print(components())
         else:
-            self.print(list(self.wlc.list_components()))
+            self.print(self.wlc.list_components())
 
 
 @register_command
@@ -629,7 +648,7 @@ class ListLanguages(Command):
 
     def run(self) -> None:
         """Execute the command."""
-        self.print(list(self.wlc.list_languages()))
+        self.print(self.wlc.list_languages())
 
 
 @register_command
@@ -644,13 +663,14 @@ class ListTranslations(ComponentCommand):
         if self.args.object:
             obj = self.require_object()
 
-            translation_list = list(obj.list())
-            for translation in translation_list:
-                translation.setattrvalue("component", obj)
+            def translations() -> Iterable[Translation]:
+                for translation in obj.list():
+                    translation.setattrvalue("component", obj)
+                    yield translation
 
-            self.print(translation_list)
+            self.print(translations())
         else:
-            self.print(list(self.wlc.list_translations()))
+            self.print(self.wlc.list_translations())
 
 
 @register_command
@@ -678,7 +698,7 @@ class ListUnits(TranslationCommand):
         kwargs = {}
         if self.args.query:
             kwargs["q"] = self.args.query
-        self.print(list(obj.units(**kwargs)))
+        self.print(obj.units(**kwargs))
 
 
 @register_command
@@ -717,7 +737,11 @@ class ListObjects(ObjectCommand[CommandObject]):
         obj = self.get_object(blank=True)
         if obj:
             # The legacy list() API also returns self for leaf resources.
-            self.print(cast("list[Mapping[str, object]]", list(obj.list())))
+            content = obj.list()
+            if isinstance(content, (Translation, Unit)):
+                self.print(cast("list[Mapping[str, object]]", list(content)))
+            else:
+                self.print(content)
         else:
             # Called without params
             lsproj = ListProjects(self.args, self.config, stdout=self.stdout)
@@ -830,7 +854,7 @@ class Changes(ObjectCommand[CommandObject]):
     def run(self) -> None:
         """Executor."""
         obj = self.require_object()
-        self.print(list(obj.changes()))
+        self.print(obj.changes())
 
 
 @register_command
@@ -843,12 +867,7 @@ class Stats(ObjectCommand[CommandObject]):
     def run(self) -> None:
         """Executor."""
         obj = self.require_object()
-        if isinstance(obj, Project):
-            self.print(obj.statistics())
-        elif isinstance(obj, Component):
-            self.print(list(obj.statistics()))
-        else:
-            self.print(obj.statistics())
+        self.print(obj.statistics())
 
 
 @register_command
