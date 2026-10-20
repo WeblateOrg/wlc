@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import errno
+import json
 import os
 import sys
 from io import BytesIO, TextIOWrapper
@@ -479,6 +480,37 @@ class TestCommands(CLITestBase):
         self.execute(["show", "io"], expected=10)
         with self.assertRaises(RuntimeError):
             self.execute(["show", "bug"])
+
+    def test_invalid_server_timestamp_does_not_reach_terminal(self) -> None:
+        """Malformed API dates should be handled without terminal controls."""
+        payload = "\x1b]8;;https://evil.example\x07CLICK-ME\x1b]8;;\x07"
+        for command, path, fixture in (
+            (
+                ["show", "hello/weblate/cs"],
+                "translations/hello/weblate/cs",
+                "translations-hello-weblate-cs",
+            ),
+            (
+                ["stats", "hello"],
+                "projects/hello/statistics",
+                "projects-hello-statistics",
+            ),
+        ):
+            with self.subTest(command=command):
+                data = json.loads((TEST_DATA / "api" / fixture).read_text())
+                data["last_change"] = payload
+                responses.replace(
+                    responses.GET,
+                    f"http://127.0.0.1:8000/api/{path}/",
+                    json=data,
+                )
+
+                output = self.execute(command, expected=1, tty=True)
+
+                self.assertIn("Error: Invalid last_change timestamp", output)
+                self.assertNotIn("Traceback", output)
+                self.assertNotIn("\x1b", output)
+                self.assertNotIn("evil.example", output)
 
     def test_delete(self) -> None:
         """Project delete."""

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from collections import UserDict
 from copy import copy
+from datetime import datetime
 from unittest.mock import patch
 
 from wlc import (
@@ -15,6 +16,7 @@ from wlc import (
     Project,
     Statistics,
     Weblate,
+    WeblateException,
 )
 
 from .test_base import APITest
@@ -42,6 +44,27 @@ class LazyObjectTest(APITest):
         obj = Weblate().get_object("hello")
         self.assertIn("'slug': 'hello'", repr(obj))
         self.assertIn("'slug': 'hello'", str(obj))
+
+    def test_invalid_server_timestamp(self) -> None:
+        """Malformed timestamps raise a stable error without response content."""
+        for value, cause in (
+            ("bad\x1b]0;title\x07", ValueError),
+            ({"unexpected": "value"}, TypeError),
+            ("999999999999999999999-01-01", OverflowError),
+        ):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(
+                    WeblateException, "Invalid last_change timestamp in server response"
+                ) as raised:
+                    Statistics(Weblate(), last_change=value)
+                self.assertIsInstance(raised.exception.__cause__, cause)
+                self.assertNotIn("\x1b", str(raised.exception))
+
+    def test_valid_server_timestamp(self) -> None:
+        """Valid timestamps still become datetime values; null stays null."""
+        parsed = Statistics(Weblate(), last_change="2024-01-02T03:04:05Z")
+        self.assertIsInstance(parsed.last_change, datetime)
+        self.assertIsNone(Statistics(Weblate(), last_change=None).last_change)
 
 
 class LazyObjectEqualityTest(APITest):

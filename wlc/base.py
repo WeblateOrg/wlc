@@ -13,6 +13,7 @@ from typing import TYPE_CHECKING, Any, ClassVar, cast
 import dateutil.parser
 
 from .const import TIMESTAMPS
+from .exceptions import WeblateException
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
@@ -95,7 +96,11 @@ class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
                             self.weblate, **cast("Mapping[str, Any]", value)
                         )
                 elif value is not None and param in TIMESTAMPS:
-                    self.data[param] = dateutil.parser.parse(cast("str", value))
+                    try:
+                        self.data[param] = dateutil.parser.parse(cast("str", value))
+                    except (ValueError, TypeError, OverflowError) as error:
+                        msg = f"Invalid {param} timestamp in server response"
+                        raise WeblateException(msg) from error
                 else:
                     self.data[param] = value
                 del kwargs[param]

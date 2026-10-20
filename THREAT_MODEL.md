@@ -7,6 +7,8 @@ Last reviewed for wlc 3.0.0 at base commit
 
 Date: 2026-10-13.
 
+Updated: 2026-10-20 to cover malformed server timestamps in CLI diagnostics.
+
 Status: Accepted, 2026-09-01.
 
 Version binding: This model is versioned with wlc releases and included in
@@ -28,7 +30,7 @@ documentation; `*(maintainer)*` means it was stated by a maintainer during this
 threat-model process; `*(inferred)*` means it was reasoned from the current
 project shape and needs maintainer confirmation.
 
-Provenance summary: 53 documented / 79 maintainer / 0 inferred claims.
+Provenance summary: 54 documented / 80 maintainer / 0 inferred claims.
 
 wlc is a command-line utility and Python library for making requests to the
 [Weblate REST API][api-docs]. It resolves an API endpoint and optional API key,
@@ -289,6 +291,12 @@ code, Python runtime, or operating system. *(maintainer)*
 | Download writes do not follow destination symlinks or overwrite non-regular or multiply linked targets, and destination replacement is checked against races. | The CLI writes a downloaded translation or automatically named archive through its download helper. The containing directory remains under local-user control. | A preplanted or racing symlink, hard link, changed inode, or non-regular destination redirects downloaded bytes to another file or device. | High. | *(documented)* (source: [CLI implementation](wlc/main.py), [download tests](tests/test_download.py)) |
 | Raw translation bytes are not written to an interactive terminal. | A translation download would use standard output and that stream reports itself as a TTY. | Binary translation data is emitted to the interactive terminal instead of being refused. | Medium. | *(documented)* (source: [CLI implementation](wlc/main.py), [CLI tests](tests/test_main.py)) |
 | Supported CLI rendering contains common active-output payloads in their intended context. | Text and CSV values are converted to text before C0/C1 controls and the explicitly supported Unicode bidi and invisible controls are escaped for a TTY, including structured values; HTML keys and values are HTML-escaped; CSV cells beginning with formula markers, including markers hidden behind leading whitespace, are neutralized. | Supported rendering emits an active terminal control sequence, a supported raw Unicode display control, an unescaped HTML value, or an active CSV formula under these conditions. | Medium. | *(documented)* (source: [output implementation](wlc/output.py), [CLI implementation](wlc/main.py), [output tests](tests/test_output.py)) |
+| Malformed server-provided timestamps are contained in CLI diagnostics. | A supported CLI command constructs a translation or statistics model from a response with an invalid `last_change` value. The CLI reports the failure on a TTY. | The timestamp value reaches the terminal as an active control sequence through an unhandled traceback or error message. | Medium. | *(documented)* (source: [model implementation](wlc/base.py), [CLI implementation](wlc/main.py), [CLI tests](tests/test_main.py)) |
+
+Before this update, unhandled timestamp parsing failures fell outside the
+supported CLI rendering property, leaving terminal diagnostics as a model gap.
+The new property covers this response-to-diagnostic path; it does not extend
+the output promise to arbitrary debug logs or Python API consumers. *(maintainer)*
 
 ## Security properties wlc does not provide
 
