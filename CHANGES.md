@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+* Stream CLI listings in all output formats to reduce memory use for large
+  listings. A later failure can leave partial output, including incomplete JSON
+  or HTML; check the command's exit status before treating output as complete.
+
 ## 3.0.0
 
 * Released on 8th October 2026.

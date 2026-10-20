@@ -8,24 +8,34 @@
 from __future__ import annotations
 
 import errno
+import json
 import os
 import sys
 from io import BytesIO, TextIOWrapper
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
+from typing import TYPE_CHECKING
 from unittest.mock import patch
 
 import responses
 
 import wlc
 from wlc.config import WeblateConfig
+from wlc.main import main
 
 from .test_base import (
+    DATA_TEST_BASE,
     TEST_CONFIG,
     TEST_DATA,
     TEST_SECTION,
+    BufferedStringIO,
     CLITestBase,
 )
+
+if TYPE_CHECKING:
+    from collections.abc import Iterator
+
+    from wlc.client import LazyObjectT, RequestParams
 
 
 class TestSettings(CLITestBase):
@@ -426,6 +436,87 @@ class TestCommands(CLITestBase):
         self.assertIn("Weblate", output)
         output = self.execute(["ls", "empty"])
         self.assertEqual("", output)
+
+    def test_listing_commands_stream(self) -> None:
+        """Each listing command writes a row before advancing its API iterator."""
+        # Use complete rows so JSON does not need unrelated lazy-object fixtures.
+        translation = json.loads(
+            (DATA_TEST_BASE / "translations-hello-weblate-cs").read_text(
+                encoding="utf-8"
+            )
+        )
+        for path in ("translations/", "components/hello/weblate/translations/"):
+            responses.replace(
+                responses.GET,
+                f"http://127.0.0.1:8000/api/{path}",
+                json={"next": None, "results": [translation]},
+            )
+        change = json.loads(
+            (DATA_TEST_BASE / "projects-hello-changes").read_text(encoding="utf-8")
+        )["results"][0]
+        change["component"] = None
+        responses.replace(
+            responses.GET,
+            "http://127.0.0.1:8000/api/projects/hello/changes/",
+            json={"next": None, "results": [change]},
+        )
+        commands = (
+            ["list-projects"],
+            ["list-components"],
+            ["list-components", "hello"],
+            ["list-languages"],
+            ["list-translations"],
+            ["list-translations", "hello/weblate"],
+            ["list-units", "hello/weblate/cs"],
+            ["ls"],
+            ["ls", "hello"],
+            ["ls", "hello/weblate"],
+            ["changes", "hello"],
+            ["stats", "hello/weblate"],
+        )
+        for format_name in ("text", "csv", "html", "json"):
+            for command in commands:
+                with self.subTest(format=format_name, command=command):
+                    self.check_listing_command_stream(command, format_name)
+
+    def check_listing_command_stream(
+        self, command: list[str], format_name: str
+    ) -> None:
+        """Observe row delivery through a command's real API iterator."""
+        original = wlc.Weblate.list_factory
+        output = BufferedStringIO()
+        emitted = []
+
+        def listing(
+            client: wlc.Weblate,
+            path: str,
+            parser: type[LazyObjectT],
+            *,
+            params: RequestParams | None = None,
+        ) -> Iterator[LazyObjectT]:
+            for row in original(client, path, parser, params=params):
+                previous = output.tell()
+                yield row
+                self.assertGreater(output.tell(), previous)
+                emitted.append(row)
+
+        with patch.object(wlc.Weblate, "list_factory", listing):
+            result = main(
+                args=["--format", format_name, *command],
+                settings=(),
+                stdout=output,
+            )
+        self.assertEqual(result, 0)
+        self.assertTrue(emitted)
+
+    def test_ls_leaf_legacy_behavior(self) -> None:
+        """Streaming should not change the legacy leaf-listing behavior."""
+        for path in ("hello/weblate/cs", "123"):
+            with (
+                self.subTest(path=path),
+                self.assertRaisesRegex(AttributeError, "keys"),
+            ):
+                self.execute(["ls", path])
 
     def test_list_languages(self) -> None:
         """Language listing."""
