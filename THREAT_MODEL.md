@@ -26,9 +26,10 @@ CLI output, or downloaded files.
   then the nearest project configuration in the current directory or a parent.
   Project configuration is intentionally trusted to select the endpoint,
   repository defaults, request parameters, and a matching URL-scoped key. It
-  cannot acquire an unrelated unscoped CLI/environment key or weaken transport
-  security. Running inside a repository can change the selected server without
-  a warning or confirmation, for both read-only and state-changing commands.
+  cannot acquire an unrelated unscoped CLI/environment key or supply transport
+  security exceptions. Running inside a repository can change the selected
+  server without a warning or confirmation, for both read-only and
+  state-changing commands.
 - **Selected server:** The server is the intended recipient of authentication,
   requested operations, and uploaded content. Its responses, including URLs,
   object fields, error messages, and downloaded bytes, remain untrusted. The
@@ -103,10 +104,10 @@ and [TLS policy tests](tests/test_insecure_ssl.py).
 
 - Server-derived project and component archive names are sanitized so they
   cannot escape the user-selected download directory.
-- CLI download writes refuse destination symlinks, non-regular files, and
-  multiply linked files, and check destination replacement against races.
-  These protections require the containing directory to remain under trusted
-  local control.
+- CLI download writes refuse destination symlinks and non-regular files, safely
+  replace hard-linked destination entries without modifying other links, and
+  check destination replacement against races. These protections require the
+  containing directory to remain under trusted local control.
 
 An explicit regular output file may be overwritten, and sanitized automatic
 names may collide. Callers must choose and protect output directories; entry
@@ -201,7 +202,7 @@ and report-specific triage belong in tests, commits, or issue discussions.
 Add detail here only when needed to define a guarantee or meaningful exception.
 See [repository guidance](AGENTS.md) for contributor instructions.
 
-Report security issues through the [Weblate security policy](SECURITY.md).
+Report security issues through the [Weblate security policy][security-policy].
 Evaluate demonstrated attacker control, data flow, and boundary impact against
 the affected release's model. Intended endpoint selection or a deliberately
 weakened trusted setting alone does not establish a boundary violation. A
@@ -210,3 +211,4 @@ uncovered security boundary may expose a model gap. Investigate such gaps and
 update the model rather than treating omission as evidence of safety.
 
 [configuration-docs]: https://docs.weblate.org/en/latest/wlc.html#configuration-files
+[security-policy]: https://docs.weblate.org/en/latest/security/issues.html
