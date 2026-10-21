@@ -1,10 +1,21 @@
 # Changelog
 
-## Unreleased
+## 3.1.0
 
+* Released on 21st October 2026.
 * Stream CLI listings in all output formats to reduce memory use for large
   listings. A later failure can leave partial output, including incomplete JSON
   or HTML; check the command's exit status before treating output as complete.
+* Constrain client-constructed object paths to the selected API collection and
+  reject traversal and URL syntax.
+* Handle missing or empty pagination links and reject malformed link values.
+* Mask configured API keys in handled CLI errors.
+* Escape Unicode display controls on terminals and safely report malformed
+  server timestamps and unsupported object paths.
+* Neutralize CSV formula prefixes hidden behind leading vertical tabs or form
+  feeds.
+* Updated the CA certificate bundle and clarified the threat model.
+* Updated development dependencies, CI actions, and Docker base images.
 
 ## 3.0.0
 
