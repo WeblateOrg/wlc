@@ -234,9 +234,21 @@ class WeblateErrorTest(APITest):
             Weblate().get_object("invalid")
 
     def test_too_long(self) -> None:
-        """Test that too-long object paths raise ValueError."""
-        with self.assertRaises(ValueError):
-            Weblate().get_object("a/b/c/d")
+        """Unsupported object paths raise a handled error without echoing input."""
+        for path in (
+            "a/b/c/d",
+            "a/b/c/d/e",
+            "a/b/c/d\x1b]0;title\x07",
+            "a/b/c/d/e\x1b]52;c;cHJlZmVyZW5jZQ==\x07",
+            "a/b/c/d\x1b[2J",
+        ):
+            with (
+                self.subTest(path=path),
+                self.assertRaisesRegex(WeblateException, r"^Invalid object path\.$"),
+            ):
+                Weblate().get_object(path)
+
+            self.assertFalse(responses.calls)
 
     def test_invalid_attribute(self) -> None:
         """Test attributes getting."""

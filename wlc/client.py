@@ -515,8 +515,8 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
                 return self.get_component(path)
             case 1:
                 return self.get_project(path)
-        msg = f"Not supported path: {path}"
-        raise ValueError(msg)
+        msg = "Invalid object path."
+        raise WeblateException(msg)
 
     def get_project(self, path: str) -> Project:
         """Return project of given path."""
