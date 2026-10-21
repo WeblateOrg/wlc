@@ -12,6 +12,7 @@ import json
 import os
 import sys
 from io import BytesIO, TextIOWrapper
+from itertools import product
 from pathlib import Path
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 from typing import TYPE_CHECKING
@@ -268,6 +269,38 @@ class TestSettings(CLITestBase):
 
 class TestProjectSettings(CLITestBase):
     """Test project configuration credential precedence."""
+
+    def test_project_default_unsupported_path_is_terminal_safe(self) -> None:
+        """Unsupported repository defaults must produce handled diagnostics."""
+        current = Path.cwd()
+        with (
+            TemporaryDirectory() as tmpdirname,
+            patch.object(WeblateConfig, "find_config", return_value=None),
+            patch.dict(os.environ, {}, clear=True),
+        ):
+            repo = Path(tmpdirname)
+            paths = (
+                "a/b/c/d",
+                "a/b/c/d\x1b]0;title\x07",
+                "a/b/c/d/e\x1b]52;c;cHJlZmVyZW5jZQ==\x07",
+                "a/b/c/d\x1b[2J",
+            )
+            try:
+                os.chdir(repo)
+                for path, command, tty in product(paths, ("ls", "show"), (False, True)):
+                    with self.subTest(path=path, command=command, tty=tty):
+                        (repo / ".weblate").write_text(
+                            "[weblate]\nurl = http://127.0.0.1:8000/api/\n"
+                            f"translation = {path}\n",
+                            encoding="utf-8",
+                        )
+                        output = self.execute(
+                            [command], settings=False, expected=1, tty=tty
+                        )
+                        self.assertEqual(output, "Error: Invalid object path.\n")
+                        self.assertFalse(responses.calls)
+            finally:
+                os.chdir(current)
 
     def test_project_default_rejects_object_path_traversal(self) -> None:
         """Repository defaults can not steer authenticated object requests."""
