@@ -38,9 +38,8 @@ from .http_debug import (
 )
 from .models import Component, Project, Translation, Unit
 from .output import (
-    CSV_DANGEROUS_LEADING,
-    CSV_FORMULA_PREFIXES,
     DateTimeEncoder,
+    csv_starts_with_formula,
     format_for_stream,
     sorted_items,
     stream_isatty,
@@ -366,8 +365,7 @@ class Command:
         """Format value for CSV output and harden dangerous spreadsheet cells."""
         formatted = str(self.format_value(value))
 
-        stripped = formatted.lstrip(CSV_DANGEROUS_LEADING)
-        if stripped and stripped[0] in CSV_FORMULA_PREFIXES:
+        if csv_starts_with_formula(formatted):
             formatted = f"'{formatted}"
 
         return format_for_stream(formatted, self.stdout)

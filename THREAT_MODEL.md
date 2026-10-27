@@ -124,9 +124,10 @@ Coverage: [download tests](tests/test_download.py).
   server data. It does not promise protection against all Unicode confusables
   or misleading text.
 - HTML rendering escapes keys and values. CSV rendering neutralizes formula
-  prefixes, including those hidden behind leading whitespace. CSV protection
-  applies to cells produced by wlc, without guaranteeing every spreadsheet's
-  behavior or protection after downstream transformations.
+  prefixes, including Unicode compatibility forms and those hidden behind
+  leading controls, whitespace, marks, or common invisible characters. CSV
+  protection applies to cells produced by wlc, without guaranteeing every
+  spreadsheet's behavior or protection after downstream transformations.
 - Raw downloaded translation bytes are refused when standard output is an
   interactive terminal.
 - wlc's debug helpers redact sensitive outgoing request headers and omit request
