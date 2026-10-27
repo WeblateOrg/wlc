@@ -117,6 +117,11 @@ class WeblateConfig(RawConfigParser):
             if parser.has_section(self.section):
                 for option in ("allow_insecure_http", "allow_insecure_ssl"):
                     parser.remove_option(self.section, option)
+            project_url = parser.get(self.section, "url", fallback=None)
+            if parser.has_section("keys"):
+                for key_url in parser.options("keys"):
+                    if key_url != parser.optionxform(project_url or ""):
+                        parser.remove_option("keys", key_url)
         config_data = StringIO()
         parser.write(config_data)
         config_data.seek(0)
@@ -247,7 +252,7 @@ class WeblateConfig(RawConfigParser):
             key = env_key
             key_source = "env"
         else:
-            key = cast("str", self.get("keys", url, fallback=""))
+            key = self._direct_section_items("keys").get(self.optionxform(url)) or ""
             key_source = "keys" if key else "none"
 
         if url_source == "project":

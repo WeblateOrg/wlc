@@ -164,7 +164,9 @@ Implementation and coverage: [output implementation](wlc/output.py),
   the installed CLI.
 - **Repository and server selection:** Review project configuration before
   relying on its endpoint and defaults; use a trusted explicit `--config` to
-  disable discovery. Do not commit valuable keys to project configuration.
+  disable discovery. A CLI or environment URL can still use a matching key from
+  discovered project configuration; supply a trusted key explicitly when its
+  identity matters. Do not commit valuable keys to project configuration.
   Choose a server appropriate for the data and operations sent to it. Server
   honesty, confidentiality, and authorization are outside wlc's guarantees.
 - **Transport choices:** Prefer HTTPS and narrowly scoped exceptions. Review
