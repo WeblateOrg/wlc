@@ -410,6 +410,89 @@ class WeblateConfigLoadingTestCase(TestCase):
 class WeblateProjectConfigTestCase(TestCase):
     """Test project configuration trust boundaries."""
 
+    def test_project_keys_only_apply_to_own_url(self) -> None:
+        """A project key cannot replace a user key for an unrelated URL."""
+        company_url = "https://company.example.com/api/"
+        project_url = "https://repo.example.com/api/"
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            user_config = root / "user.ini"
+            user_config.write_text(
+                f"[weblate]\nurl = {company_url}\n[keys]\n{company_url} = user-key\n",
+                encoding="utf-8",
+            )
+            project_config = root / ".weblate"
+            project_config.write_text(
+                f"[weblate]\nurl = {project_url}\n"
+                f"[keys]\n{company_url} = attacker-key\n"
+                f"{project_url} = project-key\n",
+                encoding="utf-8",
+            )
+            config = WeblateConfig()
+            with (
+                patch.object(WeblateConfig, "find_config", return_value=user_config),
+                patch.object(
+                    WeblateConfig, "find_project_config", return_value=project_config
+                ),
+                patch.dict(os.environ, {}, clear=True),
+            ):
+                config.load()
+                self.assertEqual(config.get_url_key(), (project_url, "project-key"))
+                config.cli_url = company_url
+                self.assertEqual(config.get_url_key(), (company_url, "user-key"))
+                config.cli_url = None
+                with patch.dict(os.environ, {"WLC_URL": company_url}, clear=True):
+                    self.assertEqual(config.get_url_key(), (company_url, "user-key"))
+
+    def test_project_keys_require_project_url(self) -> None:
+        """A project without a URL cannot replace user keys."""
+        company_url = "https://company.example.com/api/"
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            user_config = root / "user.ini"
+            user_config.write_text(
+                f"[weblate]\nurl = {company_url}\n[keys]\n{company_url} = user-key\n",
+                encoding="utf-8",
+            )
+            project_config = root / ".weblate"
+            project_config.write_text(
+                f"[keys]\n{company_url} = attacker-key\n", encoding="utf-8"
+            )
+            config = WeblateConfig()
+            with (
+                patch.object(WeblateConfig, "find_config", return_value=user_config),
+                patch.object(
+                    WeblateConfig, "find_project_config", return_value=project_config
+                ),
+                patch.dict(os.environ, {}, clear=True),
+            ):
+                config.load()
+                self.assertEqual(config.get_url_key(), (company_url, "user-key"))
+
+    def test_project_default_entries_are_not_api_keys(self) -> None:
+        """Project DEFAULT entries cannot supply inherited API keys."""
+        company_url = "https://company.example.com/api/"
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            project_config = root / ".weblate"
+            project_config.write_text(
+                f"[DEFAULT]\n{company_url} = attacker-key\n"
+                "[weblate]\nurl = https://repo.example.com/api/\n"
+                "[keys]\n",
+                encoding="utf-8",
+            )
+            config = WeblateConfig()
+            with (
+                patch.object(WeblateConfig, "find_config", return_value=None),
+                patch.object(
+                    WeblateConfig, "find_project_config", return_value=project_config
+                ),
+                patch.dict(os.environ, {}, clear=True),
+            ):
+                config.load()
+                config.cli_url = company_url
+                self.assertEqual(config.get_url_key(), (company_url, ""))
+
     def test_project_config_cannot_allow_insecure_http(self) -> None:
         """Project config can not opt users into insecure transport."""
         with TemporaryDirectory() as tmpdirname:
