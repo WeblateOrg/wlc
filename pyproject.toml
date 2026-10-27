@@ -21,7 +21,7 @@ pylint = [
 test = [
   "pytest-cov==7.1.0",
   "pytest-github-actions-annotate-failures==0.4.2",
-  "pytest==9.1.1",
+  "pytest==9.2.0",
   "responses==0.26.3"
 ]
 types = [
