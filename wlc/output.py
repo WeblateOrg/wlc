@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 from collections import UserDict
 from datetime import datetime
 from typing import TYPE_CHECKING, TypeVar, overload
@@ -15,12 +16,15 @@ if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
 
 # CSV injection mitigation: spreadsheet tools can interpret cells starting with
-# these characters as formulas. Use this allowlist/denylist marker set when
-# deciding whether to neutralize a cell value before CSV export.
+# these characters, or their Unicode compatibility forms, as formulas.
 CSV_FORMULA_PREFIXES = ("=", "+", "-", "@")
-# Leading whitespace/control characters can be used to obscure a formula prefix
-# in some CSV consumers; treat these as dangerous when checking cell content.
-CSV_DANGEROUS_LEADING = " \t\r\n\x0b\x0c"
+# Check past leading controls, whitespace, marks, and unassigned characters.
+# Some invisible characters are letters or symbols rather than one of those
+# categories. This check only identifies a formula; it never removes content.
+CSV_IGNORABLE_CATEGORIES = frozenset(
+    {"Cc", "Cf", "Cn", "Cs", "Zs", "Zl", "Zp", "Mn", "Mc", "Me"}
+)
+CSV_IGNORABLE_CHARACTERS = frozenset("\u115f\u1160\u3164\uffa0\u2800")
 TERMINAL_CONTROL_REPLACEMENTS = {
     "\a": r"\a",
     "\b": r"\b",
@@ -52,6 +56,18 @@ TERMINAL_UNICODE_CONTROL_CODEPOINTS = frozenset(
 )
 
 ValueT = TypeVar("ValueT")
+
+
+def csv_starts_with_formula(value: str) -> bool:
+    """Detect formula signs behind leading invisible or spacing characters."""
+    for char in value:
+        if (
+            unicodedata.category(char) in CSV_IGNORABLE_CATEGORIES
+            or char in CSV_IGNORABLE_CHARACTERS
+        ):
+            continue
+        return unicodedata.normalize("NFKC", char) in CSV_FORMULA_PREFIXES
+    return False
 
 
 def sorted_items(value: Mapping[str, object]) -> Iterator[tuple[str, object]]:

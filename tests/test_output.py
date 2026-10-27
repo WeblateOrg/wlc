@@ -415,6 +415,97 @@ class TestCSVOutput(OutputTestBase):
                             rows, [[expected], [expected], [expected, expected]]
                         )
 
+    def test_csv_escapes_formulas_after_unicode_ignorable_characters(self) -> None:
+        """Guard formulas behind controls, separators, marks, and fillers."""
+        leading_values = (
+            "\x01",  # C0 control
+            "\x7f",  # DEL
+            "\x85",  # C1 control
+            "\u00a0",  # no-break space
+            "\u2028",  # line separator
+            "\u2029",  # paragraph separator
+            "\u200b",  # zero-width space
+            "\ufeff",  # byte-order mark
+            "\u034f",  # combining grapheme joiner
+            "\ufe0f",  # variation selector
+            "\U000e0100",  # supplementary variation selector
+            "\u0903",  # spacing combining mark
+            "\u0488",  # enclosing combining mark
+            "\u115f",  # Hangul filler
+            "\u1160",  # Hangul filler
+            "\u3164",  # Hangul filler
+            "\uffa0",  # halfwidth Hangul filler
+            "\u2800",  # Braille blank
+            "\u2065",  # unassigned default-ignorable code point
+            " \u200b\u034f\x01\u00a0",  # mixed leading run
+        )
+        for leading in leading_values:
+            for prefix in ("=", "+", "-", "@"):
+                for stream in (StringIO, TTYStringIO):
+                    with self.subTest(leading=leading, prefix=prefix, stream=stream):
+                        output = stream()
+                        cmd = self.create_command(output, "csv")
+                        value = f"{leading}{prefix}1+1"
+                        expected = format_for_stream(f"'{value}", output)
+
+                        self.assertEqual(cmd.format_csv_value(value), expected)
+                        cmd.print_csv([AttributeDict({value: value})], [value])
+                        cmd.print_csv({value: value}, None)
+
+                        rows = list(csv.reader(StringIO(output.getvalue())))
+                        self.assertEqual(
+                            rows, [[expected], [expected], [expected, expected]]
+                        )
+
+    def test_csv_escapes_compatibility_formula_signs(self) -> None:
+        """Guard compatibility signs without changing the exported characters."""
+        for prefix in (
+            "\uff1d",
+            "\uff0b",
+            "\uff0d",
+            "\uff20",  # fullwidth
+            "\ufe66",
+            "\ufe62",
+            "\ufe63",
+            "\ufe6b",  # small forms
+        ):
+            for leading in ("", "\u200b"):
+                with self.subTest(prefix=prefix, leading=leading):
+                    output = StringIO()
+                    cmd = self.create_command(output, "csv")
+                    value = f"{leading}{prefix}1+1"
+
+                    cmd.print_csv({value: value}, None)
+
+                    self.assertEqual(
+                        list(csv.reader(StringIO(output.getvalue()))),
+                        [[f"'{value}", f"'{value}"]],
+                    )
+
+    def test_csv_preserves_non_formula_unicode_values(self) -> None:
+        """Keep ordinary text and invisible characters away from formula signs."""
+        output = StringIO()
+        cmd = self.create_command(output, "csv")
+        values = (
+            "hello",
+            "a-b",
+            "\u200b",
+            "\u034fHello",
+            "\u2800Hello",
+            "Hello\u200b=1+1",
+            "Hello\uff1d1+1",
+        )
+
+        for value in values:
+            with self.subTest(value=value):
+                self.assertEqual(cmd.format_csv_value(value), value)
+
+        cmd.print_csv([AttributeDict({"value": value}) for value in values], ["value"])
+        self.assertEqual(
+            list(csv.reader(StringIO(output.getvalue()))),
+            [["value"], *[[value] for value in values]],
+        )
+
     def test_csv_preserves_non_formula_control_whitespace(self) -> None:
         """Preserve VT and FF when they do not obscure a formula marker."""
         output = StringIO()
