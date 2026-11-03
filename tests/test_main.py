@@ -743,6 +743,21 @@ class TestRepositoryCommands(CLITestBase):
         output = self.execute(["lock-status", "hello/weblate/cs"], expected=1)
         self.assertIn("This command is supported only at component level", output)
 
+    def test_lock_status_rejects_terminal_control_response(self) -> None:
+        """Malformed lock status must produce a terminal-safe diagnostic."""
+        payload = "\x1b]52;c;YXR0YWNrZXI=\x07"
+        responses.replace(
+            responses.GET,
+            "http://127.0.0.1:8000/api/components/hello/weblate/lock/",
+            json=[{payload: "value"}],
+        )
+
+        output = self.execute(["lock-status", "hello/weblate"], expected=1, tty=True)
+
+        self.assertEqual(output, "Error: Server returned an invalid lock status.\n")
+        self.assertNotIn("Traceback", output)
+        self.assertNotIn("\x1b", output)
+
     def test_changes(self) -> None:
         """Project changes."""
         output = self.execute(["changes", "hello"])

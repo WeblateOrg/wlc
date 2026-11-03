@@ -457,6 +457,19 @@ class ComponentTest(ObjectTest[Component]):
         obj = self.get()
         self.assertEqual({"locked": False}, obj.lock_status())
 
+    def test_lock_status_rejects_non_mapping_response(self) -> None:
+        """Component lock status rejects an unexpected response shape."""
+        responses.replace(
+            responses.GET,
+            "http://127.0.0.1:8000/api/components/hello/weblate/lock/",
+            json=[],
+        )
+
+        with self.assertRaisesRegex(
+            WeblateException, r"^Server returned an invalid lock status\.$"
+        ):
+            self.get().lock_status()
+
     def test_lock(self) -> None:
         """Component lock test."""
         obj = self.get()

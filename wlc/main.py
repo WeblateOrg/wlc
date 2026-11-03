@@ -27,6 +27,7 @@ import argcomplete
 from requests.exceptions import RequestException
 
 from . import __version__
+from .base import LazyObject
 from .client import Weblate
 from .config import NoOptionError, WeblateConfig, WLCConfigurationError
 from .const import DEVEL_URL, URL
@@ -295,6 +296,13 @@ def _redact_cli_error(error: Exception, config: WeblateConfig) -> str:
     return redact_sensitive_values(str(error), headers)
 
 
+def _row_value(item: Mapping[str, object], key: str) -> object:
+    """Read a rendered row while preserving lazy model loading."""
+    if isinstance(item, LazyObject):
+        return getattr(item, key)
+    return item.get(key, "")
+
+
 class Command:
     """Basic command object."""
 
@@ -407,11 +415,11 @@ class Command:
             self.println("  </thead>")
             self.println("  <tbody>")
 
-            for item in value:
+            for item in cast("Iterable[RowT]", value):
                 self.println("    <tr>")
                 for key in header:
                     self.println(
-                        f"      <td>{self.format_html_value(getattr(item, key))}</td>"
+                        f"      <td>{self.format_html_value(_row_value(item, key))}</td>"
                     )
                 self.println("    </tr>")
             self.println("  </tbody>")
@@ -431,11 +439,11 @@ class Command:
     def print_text(self, value: OutputValue[RowT], header: list[str] | None) -> None:
         """Text print."""
         if header is not None:
-            for item in value:
+            for item in cast("Iterable[RowT]", value):
                 for key in header:
                     self.println(
                         f"{self.format_output_value(key)}: "
-                        f"{self.format_output_value(getattr(item, key))}"
+                        f"{self.format_output_value(_row_value(item, key))}"
                     )
                 self.println("")
         else:
