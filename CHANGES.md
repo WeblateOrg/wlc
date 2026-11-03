@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.2.0
+
+* Released on 3rd November 2026.
+* Added a typed Python activity API through `Weblate.get_activity()`, returning
+  daily activity and statistics for recently active projects.
+* Restrict API keys from discovered project configuration to the project's URL
+  and ignore inherited defaults when resolving URL-scoped keys.
+* Neutralize CSV formula prefixes hidden behind Unicode controls, whitespace,
+  marks, and common invisible characters, including compatibility forms of
+  formula signs.
+* Escape additional Unicode format controls on interactive terminals.
+* Validate component lock-status responses and fix text and HTML rendering of
+  plain mapping rows.
+* Updated the CA certificate bundle and clarified the threat model.
+* Updated development dependencies, CI actions, and Docker base images.
+
 ## 3.1.0
 
 * Released on 21st October 2026.
