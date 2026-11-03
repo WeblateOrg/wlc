@@ -30,7 +30,17 @@ from .exceptions import (
     WeblateThrottlingError,
 )
 from .http_debug import log_failure_debug, log_request_debug, log_response_debug
-from .models import Category, Change, Component, Language, Project, Translation, Unit
+from .models import (
+    Activity,
+    Category,
+    Change,
+    Component,
+    Language,
+    Project,
+    Statistics,
+    Translation,
+    Unit,
+)
 
 if TYPE_CHECKING:
     from .config import WeblateConfig
@@ -533,6 +543,40 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
     def get_unit(self, path: str) -> Unit:
         """Return unit of given path."""
         return self._get_factory("units", path, Unit)
+
+    def get_activity(self) -> Activity:
+        """Fetch daily activity and up to ten recently active projects."""
+        data = self.get("activity/")
+        message = "Invalid activity response."
+        if not isinstance(data, dict):
+            raise WeblateException(message)
+        daily = data.get("daily_activity")
+        projects = data.get("projects")
+        if (
+            not isinstance(daily, list)
+            or not daily
+            or any(
+                not isinstance(value, int) or isinstance(value, bool) or value < 0
+                for value in daily
+            )
+            or not isinstance(projects, list)
+        ):
+            raise WeblateException(message)
+        parsed = []
+        for project in projects:
+            if not isinstance(project, dict):
+                raise WeblateException(message)
+            recent = project.get("recent_changes")
+            if not isinstance(recent, int) or isinstance(recent, bool) or recent <= 0:
+                raise WeblateException(message)
+            if (
+                not isinstance(project.get("name"), str)
+                or not isinstance(project.get("url"), str)
+                or not isinstance(project.get("last_change"), str)
+            ):
+                raise WeblateException(message)
+            parsed.append(Statistics(self, **cast("JSONDict", project)))
+        return Activity(daily_activity=cast("list[int]", daily), projects=parsed)
 
     def list_projects(self, path: str = "projects/") -> Iterator[Project]:
         """List projects in the instance."""

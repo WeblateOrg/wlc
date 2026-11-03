@@ -21,6 +21,7 @@ from .exceptions import (
     WeblateThrottlingError,
 )
 from .models import (
+    Activity,
     Category,
     Change,
     Component,
@@ -42,6 +43,7 @@ __all__ = [
     "TIMESTAMPS",
     "URL",
     "USER_AGENT",
+    "Activity",
     "Category",
     "Change",
     "Component",

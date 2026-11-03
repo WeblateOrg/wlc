@@ -36,6 +36,53 @@ if TYPE_CHECKING:
 class WeblateTest(APITest):
     """Test Weblate requests and resource listing."""
 
+    def test_activity(self) -> None:
+        responses.get(
+            "http://127.0.0.1:8000/api/activity/",
+            json={
+                "daily_activity": [0, 12],
+                "projects": [
+                    {
+                        "name": "Hello",
+                        "url": "https://example.com/engage/hello/",
+                        "last_change": "2026-01-01T00:00:00Z",
+                        "recent_changes": 12,
+                    }
+                ],
+            },
+        )
+        activity = Weblate().get_activity()
+        self.assertEqual(activity.daily_activity, [0, 12])
+        self.assertEqual(activity.projects[0].last_change.year, 2026)
+        self.assertEqual(activity.projects[0].recent_changes, 12)
+        self.assertEqual(len(responses.calls), 1)
+
+    def test_activity_invalid(self) -> None:
+        project = {
+            "name": "Hello",
+            "url": "https://example.com/",
+            "last_change": "invalid",
+            "recent_changes": 1,
+        }
+        for payload in (
+            None,
+            {},
+            {"daily_activity": [], "projects": []},
+            {"daily_activity": [True], "projects": []},
+            {"daily_activity": [-1], "projects": []},
+            {"daily_activity": [1], "projects": None},
+            {"daily_activity": [1], "projects": [None]},
+            {"daily_activity": [1], "projects": [project]},
+            {"daily_activity": [1], "projects": [{**project, "recent_changes": 0}]},
+            {"daily_activity": [1], "projects": [{**project, "recent_changes": True}]},
+            {"daily_activity": [1], "projects": [{**project, "recent_changes": "1"}]},
+            {"daily_activity": [1], "projects": [{**project, "name": None}]},
+        ):
+            with self.subTest(payload=payload):
+                responses.get("http://127.0.0.1:8000/api/activity/", json=payload)
+                with self.assertRaises(WeblateException):
+                    Weblate().get_activity()
+
     def test_low_level_json_values(self) -> None:
         """Low-level request methods should preserve every JSON value shape."""
         values: tuple[JSONValue, ...] = (
