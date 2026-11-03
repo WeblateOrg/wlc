@@ -275,10 +275,17 @@ class TestTextOutput(OutputTestBase):
             0x2062,
             0x2063,
             0x2064,
+            0x2065,
             0x2066,
             0x2067,
             0x2068,
             0x2069,
+            0x206A,
+            0x206B,
+            0x206C,
+            0x206D,
+            0x206E,
+            0x206F,
             0xFEFF,
         )
         for codepoint in codepoints:
