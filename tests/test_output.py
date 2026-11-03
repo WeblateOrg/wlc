@@ -352,6 +352,19 @@ class TestTextOutput(OutputTestBase):
 
         self.assertEqual(output.getvalue(), "alpha: first\nzeta: last\n\n")
 
+    def test_text_output_supports_plain_mapping_rows(self) -> None:
+        """Text list output safely reads rows backed by plain mappings."""
+        payload = "field\x1b]52;c;YXR0YWNrZXI=\x07"
+        output = TTYStringIO()
+        cmd = self.create_command(output, "text")
+
+        cmd.print([{payload: "value"}])
+
+        self.assertEqual(
+            output.getvalue(), "field\\x1b]52;c;YXR0YWNrZXI=\\a: value\n\n"
+        )
+        self.assertNotIn("\x1b", output.getvalue())
+
 
 class TestCSVOutput(OutputTestBase):
     """Test CSV output formatting."""
@@ -622,7 +635,7 @@ class TestHTMLOutput(OutputTestBase):
         output = StringIO()
         cmd = self.create_command(output, "html")
 
-        cmd.print([AttributeDict({payload_key: payload_value})])
+        cmd.print([{payload_key: payload_value}])
 
         rendered = output.getvalue()
         self.assertIn(html.escape(payload_key), rendered)
