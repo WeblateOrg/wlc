@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from contextlib import suppress
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, BinaryIO, ClassVar, TextIO, cast
 from urllib.parse import urlencode
 
@@ -620,3 +621,11 @@ class Unit(LazyObject):
     def delete(self) -> bytes:
         """Delete the unit."""
         return self.weblate.raw_request("delete", self._url)
+
+
+@dataclass
+class Activity:
+    """Global daily activity and recently active project statistics."""
+
+    daily_activity: list[int]
+    projects: list[Statistics]
