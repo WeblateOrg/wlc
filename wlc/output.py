@@ -49,8 +49,7 @@ TERMINAL_UNICODE_CONTROL_CODEPOINTS = frozenset(
         0x200B,
         *range(0x200E, 0x2010),
         *range(0x202A, 0x202F),
-        *range(0x2060, 0x2065),
-        *range(0x2066, 0x206A),
+        *range(0x2060, 0x2070),
         0xFEFF,
     }
 )
