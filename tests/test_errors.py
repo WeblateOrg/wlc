@@ -35,17 +35,17 @@ class CLIErrorTest(CLITestBase):
         self.assertIn("<redacted>", output)
         self.assertNotIn(self.API_KEY, output)
 
-    def test_rejects_api_keys_with_line_breaks(self) -> None:
-        """CLI and environment keys with line breaks should not be disclosed."""
+    def test_rejects_api_keys_with_unsafe_characters(self) -> None:
+        """CLI and environment keys with unsafe characters should not be disclosed."""
         for source in ("environment", "command-line"):
-            for line_break in ("\r", "\n"):
+            for character in ("\r", "\n", "\x1b"):
                 for debug in (False, True):
                     with self.subTest(
                         source=source,
-                        line_break=repr(line_break),
+                        character=repr(character),
                         debug=debug,
                     ):
-                        key = f"invalid-secret{line_break}continuation"
+                        key = f"invalid-secret{character}continuation"
                         args = ["--debug"] if debug else []
                         environment = {}
                         if source == "environment":
@@ -57,7 +57,7 @@ class CLIErrorTest(CLITestBase):
                         with patch.dict(os.environ, environment, clear=True):
                             output = self.execute(args, expected=1)
 
-                        self.assertIn("must not contain", output)
+                        self.assertIn("printable ASCII", output)
                         self.assertNotIn("invalid-secret", output)
                         self.assertNotIn("continuation", output)
 

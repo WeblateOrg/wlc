@@ -296,18 +296,30 @@ class WeblateAuthenticationTest(APITest):
         obj = Weblate(key="KEY").get_object("acl")
         self.assertEqual(obj.name, "ACL")
 
-    def test_api_key_rejects_line_breaks(self) -> None:
-        """API keys with line breaks should be rejected without disclosure."""
-        for line_break in ("\r", "\n"):
-            with self.subTest(line_break=repr(line_break)):
-                key = f"invalid-secret{line_break}continuation"
+    def test_api_key_rejects_unsafe_characters(self) -> None:
+        """API keys unsafe in a header should be rejected without disclosure."""
+        for code in (
+            *range(0x20),  # C0 controls and line breaks
+            *range(0x7F, 0xA0),  # DEL and C1 controls
+            0xA0,  # Encodable as Latin-1, but not ASCII
+            0xE9,
+            0x2028,  # Not encodable as Latin-1
+            0x1F511,
+        ):
+            with self.subTest(code=hex(code)):
+                key = f"invalid-secret{chr(code)}continuation"
                 with self.assertRaises(WeblateException) as raised:
                     Weblate(key=key)
 
                 message = str(raised.exception)
-                self.assertIn("must not contain", message)
+                self.assertIn("printable ASCII", message)
                 self.assertNotIn("invalid-secret", message)
                 self.assertNotIn("continuation", message)
+
+    def test_api_key_accepts_printable_ascii(self) -> None:
+        """Every printable ASCII character should remain usable in an API key."""
+        key = "".join(chr(code) for code in range(0x20, 0x7F))
+        self.assertEqual(Weblate(key=key).key, key)
 
     def assert_netrc_authentication_is_ignored(self) -> None:
         """Assert netrc credentials are not added or used over an API token."""
