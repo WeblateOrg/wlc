@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 from collections.abc import Collection, Iterable, Iterator, Mapping
 from http import HTTPStatus
 from ipaddress import ip_address
@@ -68,31 +69,38 @@ LazyObjectT = TypeVar("LazyObjectT", bound=LazyObject)
 _OBJECT_PATH_DECODE_LIMIT = 4
 
 
+def _has_unsafe_object_path_syntax(candidate: str) -> bool:
+    """Check a single decoded form of an object path for unsafe syntax."""
+    return (
+        not candidate
+        or candidate.startswith("/")
+        or candidate.endswith("/")
+        or any(segment in {"", ".", ".."} for segment in candidate.split("/"))
+        or any(character in candidate for character in "\\?#")
+        or not candidate.isprintable()
+    )
+
+
 def _validate_object_path(path: str) -> None:
-    """Reject object paths that can change the constructed API endpoint."""
+    """
+    Reject object paths that can change the constructed API endpoint.
+
+    Checks the raw, NFKC-normalized, and percent-decoded forms of the path.
+    """
     candidate = path
     for _decode_depth in range(_OBJECT_PATH_DECODE_LIMIT):
-        segments = candidate.split("/")
-        invalid_boundary = (
-            not candidate or candidate.startswith("/") or candidate.endswith("/")
-        )
-        invalid_segment = any(segment in {"", ".", ".."} for segment in segments)
-        invalid_syntax = any(character in candidate for character in "\\?#")
+        normalized = unicodedata.normalize("NFKC", candidate)
+        decoded = unquote(normalized)
         if (
-            invalid_boundary
-            or invalid_segment
-            or invalid_syntax
-            or not candidate.isprintable()
+            _has_unsafe_object_path_syntax(candidate)
+            or _has_unsafe_object_path_syntax(normalized)
+            or not candidate.count("/") == normalized.count("/") == decoded.count("/")
         ):
             msg = "Invalid object path."
             raise WeblateException(msg)
 
-        decoded = unquote(candidate)
-        if decoded == candidate:
+        if decoded == normalized:
             return
-        if decoded.count("/") != candidate.count("/"):
-            msg = "Invalid object path."
-            raise WeblateException(msg)
         candidate = decoded
 
     msg = "Invalid object path."
