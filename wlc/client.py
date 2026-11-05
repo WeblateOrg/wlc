@@ -85,11 +85,13 @@ def _validate_object_path(path: str) -> None:
     """
     Reject object paths that can change the constructed API endpoint.
 
-    Checks the raw, NFKC-normalized, and percent-decoded forms of the path.
+    Checks the raw, NFKD-normalized, and percent-decoded forms of the path.
+    NFKD is deliberate: composing forms can merge the last digit of an escape with
+    a following combining mark and hide the escape from decoding.
     """
     candidate = path
     for _decode_depth in range(_OBJECT_PATH_DECODE_LIMIT):
-        normalized = unicodedata.normalize("NFKC", candidate)
+        normalized = unicodedata.normalize("NFKD", candidate)
         decoded = unquote(normalized)
         if (
             _has_unsafe_object_path_syntax(candidate)

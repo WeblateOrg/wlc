@@ -39,6 +39,8 @@ class ObjectPathValidationTest(TestCase):
             "hello%20world/weblate",
             "h\N{LATIN SMALL LETTER E WITH ACUTE}llo/\N{FULLWIDTH LATIN SMALL LETTER W}eblate",
             "hello/\N{HORIZONTAL ELLIPSIS}",
+            "he\N{COMBINING ACUTE ACCENT}llo%20world",
+            "%66\N{COMBINING DOT ABOVE}oo/weblate",
         ):
             with (
                 self.subTest(path=path),
@@ -122,6 +124,13 @@ class WeblateURLValidationTest(APITest):
             # Non-printable characters normalizing to a printable space
             "a\N{NO-BREAK SPACE}b",
             "a\N{IDEOGRAPHIC SPACE}b",
+            # Combining marks composing with the last digit of an escape
+            "..%2f\N{COMBINING DOT ABOVE}users",
+            "a%2F\N{COMBINING DOT ABOVE}b",
+            "%252f\N{COMBINING DOT ABOVE}users",
+            "a%5c\N{COMBINING DOT ABOVE}b",
+            # Precomposed letters decomposing into the last digit of an escape
+            "a%2\N{LATIN SMALL LETTER F WITH DOT ABOVE}b",
         )
 
         for path in paths:
