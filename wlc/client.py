@@ -206,8 +206,8 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
 
     def _validate_api_key(self) -> None:
         """Reject API keys that can not be safely used in an HTTP header."""
-        if "\r" in self.key or "\n" in self.key:
-            msg = "API key must not contain carriage returns or line feeds."
+        if not (self.key.isascii() and self.key.isprintable()):
+            msg = "API key must contain only printable ASCII characters."
             raise WeblateException(msg)
 
     @staticmethod

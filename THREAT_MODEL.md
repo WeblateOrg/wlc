@@ -66,8 +66,8 @@ See the [configuration documentation][configuration-docs] and
   unscoped CLI/environment exception cannot be combined with a project URL.
 - Authentication comes only from configured API-key sources. Automatic
   `.netrc`/`NETRC` authentication is disabled, URL-embedded credentials are
-  rejected, and keys containing carriage returns or line feeds are rejected
-  before HTTP request construction.
+  rejected, and keys containing anything other than printable ASCII are
+  rejected before HTTP request construction.
 
 These rules protect credential sources and transport policy while preserving
 repository-driven endpoint selection. A key supplied by a repository for its
