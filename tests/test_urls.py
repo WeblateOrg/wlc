@@ -8,6 +8,8 @@ from __future__ import annotations
 
 import io
 from typing import TYPE_CHECKING
+from unittest import TestCase
+from unittest.mock import patch
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -22,6 +24,30 @@ from wlc import (
 )
 
 from .test_base import APITest
+
+
+class ObjectPathValidationTest(TestCase):
+    """Tests object path validation without HTTP dispatch."""
+
+    def test_accepts_safe_object_paths(self) -> None:
+        """Safe paths must be accepted and requested without being normalized."""
+        weblate = Weblate()
+        for path in (
+            "hello",
+            "hello/weblate/cs",
+            "zh_Hans/pt-BR",
+            "hello%20world/weblate",
+            "h\N{LATIN SMALL LETTER E WITH ACUTE}llo/\N{FULLWIDTH LATIN SMALL LETTER W}eblate",
+            "hello/\N{HORIZONTAL ELLIPSIS}",
+            "he\N{COMBINING ACUTE ACCENT}llo%20world",
+            "%66\N{COMBINING DOT ABOVE}oo/weblate",
+        ):
+            with (
+                self.subTest(path=path),
+                patch.object(weblate, "get", return_value={"url": ""}) as mocked_get,
+            ):
+                weblate.get_component(path)
+                mocked_get.assert_called_once_with(f"components/{path}/")
 
 
 class WeblateURLValidationTest(APITest):
@@ -59,6 +85,52 @@ class WeblateURLValidationTest(APITest):
             "..%5cusers",
             "users%3fadmin=true",
             "users%23admin",
+        )
+
+        for path in paths:
+            with self.subTest(path=path):
+                self.assert_object_path_rejected(
+                    lambda path=path: Weblate(key="KEY").get_component(path)
+                )
+
+    def test_rejects_unicode_compatibility_object_paths(self) -> None:
+        """Characters normalizing to URL or traversal syntax must be rejected."""
+        paths = (
+            # Fullwidth full stop and solidus
+            "\N{FULLWIDTH FULL STOP}\N{FULLWIDTH FULL STOP}\N{FULLWIDTH SOLIDUS}users",
+            "a/\N{FULLWIDTH FULL STOP}\N{FULLWIDTH FULL STOP}/users",
+            "\N{FULLWIDTH FULL STOP}/users",
+            # Percent-encoded fullwidth forms
+            "%EF%BC%8E%EF%BC%8E/users",
+            "%25EF%25BC%258E%25EF%25BC%258E/users",
+            # One and two dot leaders, small full stop
+            "a/\N{ONE DOT LEADER}\N{ONE DOT LEADER}/users",
+            "a/\N{TWO DOT LEADER}/users",
+            "a/\N{SMALL FULL STOP}\N{SMALL FULL STOP}/users",
+            # Additional segments introduced by normalization
+            "a\N{FULLWIDTH SOLIDUS}b",
+            "a%EF%BC%8Fb",
+            "\N{ACCOUNT OF}",
+            # Fullwidth percent sign revealing percent-encoded syntax
+            "\N{FULLWIDTH PERCENT SIGN}2e\N{FULLWIDTH PERCENT SIGN}2e/users",
+            "a\N{FULLWIDTH PERCENT SIGN}2fb",
+            # Fullwidth and small reverse solidus, question mark and number sign
+            "a\N{FULLWIDTH REVERSE SOLIDUS}users",
+            "a\N{SMALL REVERSE SOLIDUS}users",
+            "users\N{FULLWIDTH QUESTION MARK}admin=true",
+            "users\N{SMALL QUESTION MARK}admin=true",
+            "users\N{FULLWIDTH NUMBER SIGN}admin",
+            "users\N{SMALL NUMBER SIGN}admin",
+            # Non-printable characters normalizing to a printable space
+            "a\N{NO-BREAK SPACE}b",
+            "a\N{IDEOGRAPHIC SPACE}b",
+            # Combining marks composing with the last digit of an escape
+            "..%2f\N{COMBINING DOT ABOVE}users",
+            "a%2F\N{COMBINING DOT ABOVE}b",
+            "%252f\N{COMBINING DOT ABOVE}users",
+            "a%5c\N{COMBINING DOT ABOVE}b",
+            # Precomposed letters decomposing into the last digit of an escape
+            "a%2\N{LATIN SMALL LETTER F WITH DOT ABOVE}b",
         )
 
         for path in paths:
