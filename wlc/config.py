@@ -28,6 +28,7 @@ Origin: TypeAlias = tuple[str, str, int]
 INSECURE_HTTP_SECTION = "insecure_http"
 INSECURE_SSL_SECTION = "insecure_ssl"
 INSECURE_ENV_VALUES = {"1", "true", "yes", "on"}
+DEFAULT_SCHEME_PORTS = {("http", 80), ("https", 443)}
 
 
 class WLCConfigurationError(Exception):
@@ -119,8 +120,9 @@ class WeblateConfig(RawConfigParser):
                     parser.remove_option(self.section, option)
             project_url = parser.get(self.section, "url", fallback=None)
             if parser.has_section("keys"):
+                project_key_url = self._normalize_key_url(project_url or "")
                 for key_url in parser.options("keys"):
-                    if key_url != parser.optionxform(project_url or ""):
+                    if self._normalize_key_url(key_url) != project_key_url:
                         parser.remove_option("keys", key_url)
         config_data = StringIO()
         parser.write(config_data)
@@ -190,6 +192,35 @@ class WeblateConfig(RawConfigParser):
         )
         return expected_scheme, url.host.strip("[]").lower(), port
 
+    def _normalize_key_url(self, value: str) -> str:
+        """
+        Return the form of a URL used to match it against [keys] entries.
+
+        This uses the HTTP transport's URL parser and removes the default port
+        of the scheme. Values it can not parse are only matched literally.
+        """
+        option = self.optionxform(value)
+        try:
+            url = parse_url(option)
+        except LocationParseError:
+            return option
+        if (url.scheme, url.port) in DEFAULT_SCHEME_PORTS:
+            url = url._replace(port=None)
+        return url.url
+
+    def _get_scoped_key(self, url: str) -> str:
+        """
+        Return the [keys] entry for a URL, or an empty string.
+
+        An entry spelled like the URL takes precedence. Otherwise the most
+        recently added equivalent entry is used, so that later configuration
+        files win as they do for identically spelled entries.
+        """
+        keys = self._direct_section_items("keys")
+        equivalent = {self._normalize_key_url(k): v for k, v in keys.items()}
+        fallback = equivalent.get(self._normalize_key_url(url))
+        return keys.get(self.optionxform(url), fallback) or ""
+
     @classmethod
     def _parse_boolean(cls, section: str, option: str, value: str | None) -> bool:
         """Parse a boolean security setting and fail closed on invalid values."""
@@ -252,7 +283,7 @@ class WeblateConfig(RawConfigParser):
             key = env_key
             key_source = "env"
         else:
-            key = self._direct_section_items("keys").get(self.optionxform(url)) or ""
+            key = self._get_scoped_key(url)
             key_source = "keys" if key else "none"
 
         if url_source == "project":

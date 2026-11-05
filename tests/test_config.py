@@ -407,8 +407,116 @@ class WeblateConfigLoadingTestCase(TestCase):
         )
 
 
+class WeblateKeyLookupTestCase(TestCase):
+    """Test matching of the selected URL against [keys] entries."""
+
+    @staticmethod
+    def lookup(url: str, keys: dict[str, str]) -> str:
+        """Return the key selected for a URL with the given [keys] entries."""
+        config = WeblateConfig()
+        for key_url, key in keys.items():
+            config.set("keys", key_url, key)
+        config.cli_url = url
+        with patch.dict(os.environ, {}, clear=True):
+            return config.get_url_key()[1]
+
+    def test_default_port_is_equivalent(self) -> None:
+        """Spelling out the default port of the scheme selects the same key."""
+        for stored, url in (
+            ("https://example.com/api/", "https://example.com:443/api/"),
+            ("https://example.com:443/api/", "https://example.com/api/"),
+            ("https://example.com:443/api/", "https://EXAMPLE.com:0443/api/"),
+            ("https://example.com/api/", "https://example.com:/api/"),
+            ("http://example.com/api/", "http://example.com:80/api/"),
+            ("http://example.com:80/api/", "http://example.com/api/"),
+            ("https://[::1]/api/", "https://[::1]:443/api/"),
+        ):
+            with self.subTest(stored=stored, url=url):
+                self.assertEqual(self.lookup(url, {stored: "key"}), "key")
+
+    def test_different_targets_are_not_equivalent(self) -> None:
+        """Only the default port of the same scheme is removed."""
+        for stored, url in (
+            ("https://example.com/api/", "https://example.com:8443/api/"),
+            ("https://example.com/api/", "https://example.com:80/api/"),
+            ("https://example.com/api/", "http://example.com:443/api/"),
+            ("https://example.com/api/", "http://example.com/api/"),
+            ("http://example.com/api/", "http://example.com:443/api/"),
+            ("https://example.com/api/", "https://other.example.com:443/api/"),
+            ("https://example.com/api/", "https://example.com:443/other/"),
+            ("https://example.com/api/", "https://example.com:443/api"),
+            ("https://example.com/api/", "https://example.com:443/api/?page=1"),
+            ("https://example.com/api/", "https://user@example.com:443/api/"),
+            ("example.com/api/", "https://example.com:443/api/"),
+            ("example.com:443/api/", "example.com/api/"),
+        ):
+            with self.subTest(stored=stored, url=url):
+                self.assertEqual(self.lookup(url, {stored: "key"}), "")
+
+    def test_exact_spelling_takes_precedence(self) -> None:
+        """An entry spelled like the URL wins over equivalent entries."""
+        plain = "https://example.com/api/"
+        explicit = "https://example.com:443/api/"
+        keys = {plain: "plain-key", explicit: "explicit-key"}
+        self.assertEqual(self.lookup(plain, keys), "plain-key")
+        self.assertEqual(self.lookup(explicit, keys), "explicit-key")
+
+    def test_last_equivalent_entry_wins(self) -> None:
+        """Without an identically spelled entry, the last equivalent one is used."""
+        self.assertEqual(
+            self.lookup(
+                "https://example.com:0443/api/",
+                {
+                    "https://example.com/api/": "first-key",
+                    "https://example.com:443/api/": "last-key",
+                },
+            ),
+            "last-key",
+        )
+
+    def test_unparsable_urls_match_literally(self) -> None:
+        """Invalid URLs do not break the lookup and are not treated as equivalent."""
+        invalid = "https://example.com:99999/api/"
+        self.assertEqual(self.lookup(invalid, {invalid: "key"}), "key")
+        self.assertEqual(self.lookup("https://example.com/api/", {invalid: "key"}), "")
+        self.assertEqual(self.lookup(invalid, {"https://example.com/api/": "key"}), "")
+
+
 class WeblateProjectConfigTestCase(TestCase):
     """Test project configuration trust boundaries."""
+
+    def test_project_keys_match_own_url_with_default_port(self) -> None:
+        """A project key scope accepts its own URL but no other server."""
+        company_url = "https://company.example.com/api/"
+        project_url = "https://repo.example.com/api/"
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            user_config = root / "user.ini"
+            user_config.write_text(
+                f"[keys]\n{company_url} = user-key\n", encoding="utf-8"
+            )
+            project_config = root / ".weblate"
+            project_config.write_text(
+                f"[weblate]\nurl = {project_url}\n"
+                "[keys]\n"
+                "https://company.example.com:443/api/ = attacker-key\n"
+                "https://repo.example.com:443/api/ = project-key\n",
+                encoding="utf-8",
+            )
+            config = WeblateConfig()
+            with (
+                patch.object(WeblateConfig, "find_config", return_value=user_config),
+                patch.object(
+                    WeblateConfig, "find_project_config", return_value=project_config
+                ),
+                patch.dict(os.environ, {}, clear=True),
+            ):
+                config.load()
+                self.assertEqual(config.get_url_key(), (project_url, "project-key"))
+                config.cli_url = company_url
+                self.assertEqual(config.get_url_key(), (company_url, "user-key"))
+                config.cli_url = "https://company.example.com:443/api/"
+                self.assertEqual(config.get_url_key()[1], "user-key")
 
     def test_project_keys_only_apply_to_own_url(self) -> None:
         """A project key cannot replace a user key for an unrelated URL."""
