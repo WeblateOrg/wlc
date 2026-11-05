@@ -103,6 +103,22 @@ class WeblateConfig(RawConfigParser):
 
         return None
 
+    def _restrict_project_config(self, parser: RawConfigParser) -> None:
+        """Drop settings that discovered project configuration can not supply."""
+        parser.remove_section(INSECURE_HTTP_SECTION)
+        parser.remove_section(INSECURE_SSL_SECTION)
+        for option in ("allow_insecure_http", "allow_insecure_ssl"):
+            parser.remove_option(parser.default_section, option)
+        if parser.has_section(self.section):
+            for option in ("allow_insecure_http", "allow_insecure_ssl"):
+                parser.remove_option(self.section, option)
+        project_url = parser.get(self.section, "url", fallback=None)
+        if parser.has_section("keys"):
+            project_key_url = self._normalize_key_url(project_url or "")
+            for key_url in parser.options("keys"):
+                if self._normalize_key_url(key_url) != project_key_url:
+                    parser.remove_option("keys", key_url)
+
     def _read_config(self, path: Path | str, url_source: URLSource) -> list[str]:
         """Read configuration and remember whether it supplied the API URL."""
         parser = RawConfigParser(delimiters=("=",))
@@ -111,19 +127,11 @@ class WeblateConfig(RawConfigParser):
             return loaded
 
         if url_source == "project":
-            parser.remove_section(INSECURE_HTTP_SECTION)
-            parser.remove_section(INSECURE_SSL_SECTION)
-            for option in ("allow_insecure_http", "allow_insecure_ssl"):
-                parser.remove_option(parser.default_section, option)
-            if parser.has_section(self.section):
-                for option in ("allow_insecure_http", "allow_insecure_ssl"):
-                    parser.remove_option(self.section, option)
-            project_url = parser.get(self.section, "url", fallback=None)
-            if parser.has_section("keys"):
-                project_key_url = self._normalize_key_url(project_url or "")
-                for key_url in parser.options("keys"):
-                    if self._normalize_key_url(key_url) != project_key_url:
-                        parser.remove_option("keys", key_url)
+            self._restrict_project_config(parser)
+        # Updating an option keeps its position, so drop the entries this file
+        # sets to keep [keys] ordered by the file that last set each of them.
+        for key_url in self._local_section_items(parser, "keys"):
+            self.remove_option("keys", key_url)
         config_data = StringIO()
         parser.write(config_data)
         config_data.seek(0)
@@ -212,9 +220,9 @@ class WeblateConfig(RawConfigParser):
         """
         Return the [keys] entry for a URL, or an empty string.
 
-        An entry spelled like the URL takes precedence. Otherwise the most
-        recently added equivalent entry is used, so that later configuration
-        files win as they do for identically spelled entries.
+        An entry spelled like the URL takes precedence. Otherwise the equivalent
+        entry loaded last is used, so that later configuration files win as they
+        do for identically spelled entries.
         """
         keys = self._direct_section_items("keys")
         equivalent = {self._normalize_key_url(k): v for k, v in keys.items()}
@@ -242,10 +250,17 @@ class WeblateConfig(RawConfigParser):
             )
             raise WLCConfigurationError(msg)
 
+    @staticmethod
+    def _local_section_items(
+        parser: RawConfigParser, section: str
+    ) -> dict[str, str | None]:
+        """Return a parser's entries without ConfigParser DEFAULT inheritance."""
+        sections = cast("dict[str, dict[str, str | None]]", vars(parser)["_sections"])
+        return sections.get(section, {})
+
     def _direct_section_items(self, section: str) -> dict[str, str | None]:
         """Return section-local entries without ConfigParser DEFAULT inheritance."""
-        sections = cast("dict[str, dict[str, str | None]]", vars(self)["_sections"])
-        return sections.get(section, {})
+        return self._local_section_items(self, section)
 
     def _validate_insecure_section(self, section: str, scheme: str) -> None:
         """Validate all entries in an origin-scoped insecure section."""
