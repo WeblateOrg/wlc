@@ -23,7 +23,13 @@ CLI output, or downloaded files.
   user-selected output paths are trusted instructions. The operating system,
   runtime, installed package, and these trusted sources are assumed intact.
 - **Checked-out repository:** Automatic discovery loads user configuration and
-  then the nearest project configuration in the current directory or a parent.
+  then the nearest eligible project configuration in the current directory or
+  a parent, stopping at the nearest repository root. On POSIX systems discovery
+  also stops at directories owned by another non-root user or writable by
+  everyone; discovered files must meet the same permission rules. Group-writable
+  locations remain trusted. Symlink targets must stay within these discovery
+  boundaries. Windows uses repository boundaries without POSIX permission
+  checks; access is governed by Windows ACLs.
   Project configuration is intentionally trusted to select the endpoint,
   repository defaults, request parameters, and a matching URL-scoped key. It
   cannot acquire an unrelated unscoped CLI/environment key or supply transport
@@ -44,7 +50,10 @@ CLI output, or downloaded files.
   validate and escape data for their own use.
 
 An explicit `--config` loads only the named file and disables user and project
-configuration discovery; CLI/environment overrides still apply. Direct
+configuration discovery. `--project-config` loads user configuration and the
+explicitly selected project file, bypassing discovery location checks while
+retaining project credential and transport restrictions. `--no-config` disables
+all configuration-file loading; CLI/environment overrides still apply. Direct
 construction of `Weblate` does not discover project configuration. Python
 callers opt into configuration resolution by passing a `WeblateConfig`.
 
@@ -55,14 +64,14 @@ See the [configuration documentation][configuration-docs] and
 
 ### Configuration and credentials
 
-- When project discovery supplies the otherwise-effective URL, a CLI or
+- When project configuration supplies the otherwise-effective URL, a CLI or
   environment key must be paired with a URL from the same source: `--key` with
   `--url`, or `WLC_KEY` with `WLC_URL`. Repository-selected destinations cannot
   silently receive these unscoped secrets.
-- Automatically discovered project configuration cannot enable authenticated
+- Project configuration cannot enable authenticated
   insecure HTTP, disable TLS verification, or supply insecure origin entries.
   Transport exceptions require a CLI/environment setting paired with its own
-  URL, or a matching origin in trusted user or explicit configuration. An
+  URL, or a matching origin in trusted user or complete explicit configuration. An
   unscoped CLI/environment exception cannot be combined with a project URL.
 - Authentication comes only from configured API-key sources. Automatic
   `.netrc`/`NETRC` authentication is disabled, URL-embedded credentials are
@@ -167,7 +176,10 @@ Implementation and coverage: [output implementation](wlc/output.py),
   the installed CLI.
 - **Repository and server selection:** Review project configuration before
   relying on its endpoint and defaults; use a trusted explicit `--config` to
-  disable discovery. A CLI or environment URL can still use a matching key from
+  replace discovery or `--no-config` to avoid file loading. Discovery checks do
+  not secure a namespace being concurrently replaced, evaluate additional ACL
+  grants, or protect against members of a trusted writable group. A CLI or
+  environment URL can still use a matching key from
   discovered project configuration; supply a trusted key explicitly when its
   identity matters. Do not commit valuable keys to project configuration.
   Choose a server appropriate for the data and operations sent to it. Server

@@ -110,7 +110,14 @@ def get_parser() -> ArgumentParser:
     parser.add_argument(
         "--debug", "-D", action="store_true", help="Print verbose HTTP communication"
     )
-    parser.add_argument("--config", "-c", help="Path to configuration file")
+    config_group = parser.add_mutually_exclusive_group()
+    config_group.add_argument("--config", "-c", help="Path to configuration file")
+    config_group.add_argument(
+        "--project-config", help="Load personal configuration and this project file"
+    )
+    config_group.add_argument(
+        "--no-config", action="store_true", help="Do not load configuration files"
+    )
     parser.add_argument(
         "--config-section", "-s", default="weblate", help="Configuration section to use"
     )
@@ -1138,7 +1145,8 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
     """Read settings based on command-line params."""
     config = WeblateConfig(args.config_section)
     if settings is None:
-        config.load(args.config)
+        if not args.no_config:
+            config.load(args.config, project_path=args.project_config)
     else:
         for section, key, value in settings:
             config.set(section, key, value)

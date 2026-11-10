@@ -7,11 +7,13 @@
 from __future__ import annotations
 
 import os
+import stat
 from configparser import Error as ConfigParserError
 from configparser import NoOptionError, ParsingError, RawConfigParser
+from errno import ELOOP
 from io import StringIO
 from pathlib import Path
-from typing import Literal, TypeAlias, cast
+from typing import Literal, NoReturn, TypeAlias, cast
 
 from urllib3.exceptions import LocationParseError
 from urllib3.util import parse_url
@@ -30,6 +32,8 @@ INSECURE_HTTP_SECTION = "insecure_http"
 INSECURE_SSL_SECTION = "insecure_ssl"
 INSECURE_ENV_VALUES = {"1", "true", "yes", "on"}
 DEFAULT_SCHEME_PORTS = {("http", 80), ("https", 443)}
+PROJECT_CONFIG_NAMES = (".weblate", ".weblate.ini", "weblate.ini")
+CHECK_PROJECT_PERMISSIONS = os.name == "posix" and hasattr(os, "geteuid")
 
 
 class WLCConfigurationError(Exception):
@@ -90,19 +94,128 @@ class WeblateConfig(RawConfigParser):
         return None
 
     @staticmethod
-    def find_project_config() -> Path | None:
-        """Return the nearest project configuration file as a Path, or None."""
-        cwd = Path.cwd()
-        prev = None
-        while cwd != prev:
-            for name in (".weblate", ".weblate.ini", "weblate.ini"):
-                conf_name = cwd / name
-                if conf_name.is_file():
-                    return conf_name
-            prev = cwd
-            cwd = cwd.parent
+    def _project_stat(path: Path) -> os.stat_result | None:
+        """Inspect an optional discovery entry without hiding access failures."""
+        try:
+            return path.stat()
+        except FileNotFoundError:
+            return None
 
+    @staticmethod
+    def _safe_project_permissions(info: os.stat_result) -> bool:
+        """Apply POSIX permission checks only where the platform supports them."""
+        return not CHECK_PROJECT_PERMISSIONS or (
+            info.st_uid in {0, os.geteuid()} and not info.st_mode & stat.S_IWOTH
+        )
+
+    @classmethod
+    def _is_repository_root(cls, directory: Path) -> bool:
+        """Recognize repository and worktree markers without running VCS tools."""
+        for name in (".git", ".hg", ".svn"):
+            info = cls._project_stat(directory / name)
+            if info is not None and (
+                stat.S_ISDIR(info.st_mode)
+                or (name == ".git" and stat.S_ISREG(info.st_mode))
+            ):
+                return True
+        return False
+
+    @staticmethod
+    def _unsafe_project_config(path: Path) -> NoReturn:
+        """Reject an automatically selected file without changing endpoints."""
+        msg = (
+            f"Unsafe project configuration: {path}. "
+            "Use --project-config PATH to select it explicitly."
+        )
+        raise WLCConfigurationError(msg)
+
+    @classmethod
+    def find_project_config(cls) -> Path | None:
+        """Find the nearest configuration within repository and trust boundaries."""
+        try:
+            return cls._discover_project_config()
+        except (OSError, RuntimeError) as error:
+            msg = f"Could not inspect project configuration: {error}"
+            raise WLCConfigurationError(msg) from None
+
+    @classmethod
+    def _project_file_in(cls, directory: Path, *, safe_directory: bool) -> Path | None:
+        """Select the first regular configuration file, rejecting unsafe inputs."""
+        for name in PROJECT_CONFIG_NAMES:
+            path = directory / name
+            info = cls._project_stat(path)
+            if info is not None and stat.S_ISREG(info.st_mode):
+                if not safe_directory or not cls._safe_project_permissions(info):
+                    cls._unsafe_project_config(path)
+                return path
         return None
+
+    @staticmethod
+    def _project_link_target(path: Path) -> Path:
+        """Read a link, normalizing Windows' extended drive and UNC prefixes."""
+        target = path.readlink()
+        if target.drive.startswith("\\\\?\\"):
+            value = str(target)[4:]
+            if value[:4].upper() == "UNC\\":
+                value = "\\\\" + value[4:]
+            return Path(value)
+        return target
+
+    @classmethod
+    def _resolve_project_path(
+        cls, path: Path, boundary: Path, active: frozenset[Path]
+    ) -> Path:
+        """Validate each component before following another link or parent."""
+        if not path.is_relative_to(boundary):
+            cls._unsafe_project_config(path)
+        current = boundary
+        for part in path.relative_to(boundary).parts:
+            if part == "..":
+                if current == boundary:
+                    cls._unsafe_project_config(path)
+                current = current.parent
+                continue
+            current /= part
+            info = current.lstat()
+            # Junctions are directory reparse points rather than POSIX symlinks.
+            junction = getattr(info, "st_reparse_tag", 0) == getattr(
+                stat, "IO_REPARSE_TAG_MOUNT_POINT", -1
+            )
+            if stat.S_ISLNK(info.st_mode) or junction:
+                if current in active:
+                    raise OSError(ELOOP, "Symbolic link loop", str(current))
+                target = cls._project_link_target(current)
+                if not target.is_absolute():
+                    target = current.parent / target
+                current = cls._resolve_project_path(
+                    target, boundary, active | {current}
+                )
+            elif not cls._safe_project_permissions(info):
+                cls._unsafe_project_config(current)
+        return current
+
+    @classmethod
+    def _discover_project_config(cls) -> Path | None:
+        """Walk trusted directories and validate the selected file's target."""
+        directory = Path.cwd()
+        directories = []
+        candidate = None
+        while True:
+            safe = cls._safe_project_permissions(directory.stat())
+            if candidate is None:
+                candidate = cls._project_file_in(directory, safe_directory=safe)
+            if not safe:
+                break
+            directories.append(directory)
+            if cls._is_repository_root(directory) or directory == directory.parent:
+                break
+            directory = directory.parent
+
+        if candidate is None:
+            return None
+
+        cls._resolve_project_path(candidate, directories[-1], frozenset())
+        return candidate
 
     def _restrict_project_config(self, parser: RawConfigParser) -> None:
         """Drop settings that discovered project configuration can not supply."""
@@ -154,14 +267,24 @@ class WeblateConfig(RawConfigParser):
 
         return loaded
 
-    def load(self, path: Path | str | None = None) -> None:
+    def load(
+        self,
+        path: Path | str | None = None,
+        *,
+        project_path: Path | str | None = None,
+    ) -> None:
         """
         Load configuration from an explicit path or discovered locations.
 
         When ``path`` is specified, only that file is loaded. Otherwise the user
         configuration is loaded first, followed by the nearest project
-        configuration file from the current directory or its parents.
+        configuration file within discovery boundaries. ``project_path`` selects
+        a project file explicitly while retaining user configuration and project
+        restrictions. It cannot be combined with ``path``.
         """
+        if path is not None and project_path is not None:
+            msg = "Cannot combine explicit configuration and project configuration."
+            raise WLCConfigurationError(msg)
         if path:
             loaded = self._read_config(path, "explicit")
             if not loaded:
@@ -170,8 +293,16 @@ class WeblateConfig(RawConfigParser):
         else:
             if config := self.find_config():
                 self._read_config(config, "user")
-            if config := self.find_project_config():
-                self._read_config(config, "project")
+            config = (
+                Path(project_path)
+                if project_path is not None
+                else self.find_project_config()
+            )
+            if config is not None:
+                loaded = self._read_config(config, "project")
+                if not loaded and project_path is not None:
+                    msg = f"Could not read configuration file: {config.absolute()}"
+                    raise WLCConfigurationError(msg)
 
         if self.has_option(self.section, "key"):
             msg = "Using 'key' in settings is insecure, use [keys] section instead."
@@ -352,8 +483,8 @@ class WeblateConfig(RawConfigParser):
         """
         Validate URL and key source combination.
 
-        When the API URL comes from automatically discovered project
-        configuration, unscoped keys must pin the destination explicitly:
+        When the API URL comes from project configuration, unscoped keys must
+        pin the destination explicitly:
         ``WLC_KEY`` requires ``WLC_URL``, and a command-line key requires a
         command-line URL.
         """
