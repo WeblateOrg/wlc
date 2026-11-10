@@ -137,7 +137,9 @@ Coverage: [download tests](tests/test_download.py).
   guarantee. Do not put secrets in request parameters.
 
 Handled CLI errors also mask exact configured authorization values and
-credentials as defense in depth. This does not provide confidentiality against
+credentials as defense in depth. Configuration syntax diagnostics omit file
+contents, including when Python callers format the resulting exception.
+This does not provide confidentiality against
 the selected server, which already receives the key and can return arbitrary
 content, including transformed or partial secrets. Successful output and Python
 results can likewise contain server-provided secrets. A failure of exact-value
