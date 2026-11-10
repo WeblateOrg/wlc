@@ -185,7 +185,7 @@ class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
 
     # These operators return plain dicts; UserDict's annotations require UserDict.
     # pylint: disable-next=line-too-long
-    def __or__(self, other: object) -> dict[str, object] | NotImplementedType:  # type: ignore[override]  # ty: ignore[invalid-method-override]
+    def __or__(self, other: object) -> dict[str, object] | NotImplementedType:  # type: ignore[override]  # ty: ignore[incompatible-method-override]
         """Merge loaded data with another mapping, preferring its values."""
         if isinstance(other, UserDict):
             other = other.data
@@ -194,7 +194,7 @@ class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
         return NotImplemented
 
     # pylint: disable-next=line-too-long
-    def __ror__(self, other: object) -> dict[str, object] | NotImplementedType:  # type: ignore[override]  # ty: ignore[invalid-method-override]
+    def __ror__(self, other: object) -> dict[str, object] | NotImplementedType:  # type: ignore[override]  # ty: ignore[incompatible-method-override]
         """Merge another mapping with loaded data, preferring loaded values."""
         if isinstance(other, UserDict):
             other = other.data
@@ -207,7 +207,7 @@ class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
         return len(list(self.keys()))
 
     # The public API historically returns iterators instead of mapping views.
-    def keys(self) -> Iterator[str]:  # type: ignore[override]  # ty: ignore[invalid-method-override]
+    def keys(self) -> Iterator[str]:  # type: ignore[override]  # ty: ignore[incompatible-method-override]
         """Return list of attributes."""
         # There is always at least url present
         if len(self.data) <= 1:
@@ -216,7 +216,7 @@ class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
             if param not in self.OPTIONALS or param in self.data or param in self.NULLS:
                 yield param
 
-    def items(self) -> Iterator[tuple[str, object]]:  # type: ignore[override]  # ty: ignore[invalid-method-override]
+    def items(self) -> Iterator[tuple[str, object]]:  # type: ignore[override]  # ty: ignore[incompatible-method-override]
         """Iterate over attribute names and values."""
         for key in self.keys():
             yield key, getattr(self, key)
