@@ -81,7 +81,7 @@ class WeblateConfigTestCase(TestCase):
         """Project discovery terminates at the filesystem root."""
         with (
             patch("wlc.config.Path.cwd", return_value=Path(Path.cwd().anchor)),
-            patch.object(Path, "is_file", return_value=False),
+            patch.object(WeblateConfig, "_project_stat", return_value=None),
         ):
             self.assertIsNone(WeblateConfig.find_project_config())
 
