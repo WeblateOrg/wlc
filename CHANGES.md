@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.3.0
+
+* Released on 10th November 2026.
+* Bound automatic project configuration discovery to the nearest repository
+  root and, on POSIX systems, trusted ownership and permissions, including
+  symlink targets.
+* Added `--project-config` to explicitly select project configuration and
+  `--no-config` to disable configuration-file loading.
+* Prevented malformed configuration errors from exposing file contents,
+  including API keys, in CLI diagnostics and Python exceptions.
+* Reject API keys containing anything other than printable ASCII.
+* Match URL-scoped API keys regardless of whether the default port is explicit,
+  while preserving precedence for exact URL matches.
+* Reject Unicode compatibility forms of traversal and URL syntax in object
+  paths.
+* Updated the threat model to clarify configuration and credential boundaries.
+* Updated development dependencies, CI actions, and Docker base images.
+
 ## 3.2.0
 
 * Released on 3rd November 2026.
