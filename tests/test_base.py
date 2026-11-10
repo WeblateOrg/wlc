@@ -35,6 +35,19 @@ DATA_TEST_BASE = TEST_DATA / "api"
 TEST_CONFIG = TEST_DATA / "wlc"
 TEST_SECTION = TEST_DATA / "section"
 BODY_HASH_THRESHOLD = 100
+CONFIG_PARSE_MARKER = "synthetic-config-secret"
+CONFIG_PARSE_ERRORS = (
+    (f"[keys]\n{CONFIG_PARSE_MARKER}\n", "ParsingError at line 2"),
+    (f"key = {CONFIG_PARSE_MARKER}\n", "MissingSectionHeaderError at line 1"),
+    (
+        f"[keys]\n{CONFIG_PARSE_MARKER} = first\n{CONFIG_PARSE_MARKER} = second\n",
+        "DuplicateOptionError at line 3",
+    ),
+    (
+        f"[{CONFIG_PARSE_MARKER}]\n[{CONFIG_PARSE_MARKER}]\n",
+        "DuplicateSectionError at line 2",
+    ),
+)
 
 
 class BufferedStringIO(StringIO):

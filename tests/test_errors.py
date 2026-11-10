@@ -7,6 +7,9 @@
 from __future__ import annotations
 
 import os
+from itertools import product
+from pathlib import Path
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import responses
@@ -17,15 +20,56 @@ from wlc import (
     Weblate,
     WeblateException,
 )
+from wlc.config import WeblateConfig
 from wlc.exceptions import WeblateThrottlingError
 
-from .test_base import APITest, CLITestBase, register_error
+from .test_base import (
+    CONFIG_PARSE_ERRORS,
+    CONFIG_PARSE_MARKER,
+    APITest,
+    CLITestBase,
+    register_error,
+)
 
 
 class CLIErrorTest(CLITestBase):
     """Testing CLI error handling."""
 
     API_KEY = "reflected-api-key"
+
+    def test_malformed_config_hides_contents(self) -> None:
+        """Explicit and discovered configuration errors never echo file contents."""
+        for source, (content, detail) in product(
+            ("explicit", "user", "project"), CONFIG_PARSE_ERRORS
+        ):
+            with (
+                self.subTest(source=source, content=content),
+                TemporaryDirectory() as tmpdirname,
+            ):
+                path = Path(tmpdirname) / "invalid.ini"
+                path.write_text(content, encoding="utf-8")
+                args = ["list-projects"]
+                if source == "explicit":
+                    args = ["--config", str(path), *args]
+                with (
+                    patch.object(
+                        WeblateConfig,
+                        "find_config",
+                        return_value=path if source == "user" else None,
+                    ),
+                    patch.object(
+                        WeblateConfig,
+                        "find_project_config",
+                        return_value=path if source == "project" else None,
+                    ),
+                ):
+                    output = self.execute(args, settings=False, expected=1)
+                self.assertEqual(
+                    output, f"Error: Invalid configuration file: {path} ({detail})\n"
+                )
+                self.assertNotIn(CONFIG_PARSE_MARKER, output)
+                self.assertNotIn("Traceback", output)
+                self.assertEqual(len(responses.calls), 0)
 
     def assert_api_key_redacted(self, args: list[str], expected_message: str) -> None:
         """Verify that a CLI error does not disclose the configured API key."""

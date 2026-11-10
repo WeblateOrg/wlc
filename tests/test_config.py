@@ -5,13 +5,17 @@
 """Configuration parsing tests."""
 
 import os
+from configparser import Error as ConfigParserError
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from traceback import format_exception
 from unittest import TestCase
 from unittest.mock import patch
 
 import wlc
 from wlc.config import WeblateConfig, WLCConfigurationError
+
+from .test_base import CONFIG_PARSE_ERRORS, CONFIG_PARSE_MARKER
 
 TEST_DATA = Path(__file__).parent / "test_data"
 TEST_CONFIG = TEST_DATA / "wlc"
@@ -85,6 +89,39 @@ class WeblateConfigTestCase(TestCase):
         """Valid configuration parsing."""
         config = WeblateConfig()
         config.load(TEST_CONFIG)
+
+    def test_malformed_config_hides_contents(self) -> None:
+        """Parser failures omit secrets even in formatted library tracebacks."""
+        for content, detail in CONFIG_PARSE_ERRORS:
+            with self.subTest(content=content), TemporaryDirectory() as tmpdirname:
+                path = Path(tmpdirname) / "invalid.ini"
+                path.write_text(content, encoding="utf-8")
+                with self.assertRaises(WLCConfigurationError) as raised:
+                    WeblateConfig().load(path)
+                self.assertEqual(
+                    str(raised.exception),
+                    f"Invalid configuration file: {path} ({detail})",
+                )
+                self.assertNotIn(
+                    CONFIG_PARSE_MARKER, "".join(format_exception(raised.exception))
+                )
+
+    def test_config_parser_error_without_line(self) -> None:
+        """Parser errors without location metadata still omit their raw message."""
+        with (
+            patch(
+                "wlc.config.RawConfigParser.read",
+                side_effect=ConfigParserError("synthetic-config-secret"),
+            ),
+            self.assertRaises(WLCConfigurationError) as raised,
+        ):
+            WeblateConfig().load("invalid.ini")
+        self.assertEqual(
+            str(raised.exception), "Invalid configuration file: invalid.ini (Error)"
+        )
+        self.assertNotIn(
+            "synthetic-config-secret", "".join(format_exception(raised.exception))
+        )
 
     def test_deprecated_raises_error(self) -> None:
         """Deprecated configuration parsing raises error."""

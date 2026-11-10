@@ -7,7 +7,8 @@
 from __future__ import annotations
 
 import os
-from configparser import NoOptionError, RawConfigParser
+from configparser import Error as ConfigParserError
+from configparser import NoOptionError, ParsingError, RawConfigParser
 from io import StringIO
 from pathlib import Path
 from typing import Literal, TypeAlias, cast
@@ -122,7 +123,19 @@ class WeblateConfig(RawConfigParser):
     def _read_config(self, path: Path | str, url_source: URLSource) -> list[str]:
         """Read configuration and remember whether it supplied the API URL."""
         parser = RawConfigParser(delimiters=("=",))
-        loaded = parser.read(path)
+        try:
+            loaded = parser.read(path)
+        except ConfigParserError as error:
+            # Parser diagnostics can include credentials from the input file.
+            detail = type(error).__name__
+            line = getattr(error, "lineno", None)
+            if line is None and isinstance(error, ParsingError):
+                # Pylint misses the exception type narrowing here.
+                line = error.errors[0][0]  # pylint: disable=no-member
+            if line is not None:
+                detail += f" at line {line}"
+            msg = f"Invalid configuration file: {path} ({detail})"
+            raise WLCConfigurationError(msg) from None
         if not loaded:
             return loaded
 
