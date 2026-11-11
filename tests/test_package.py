@@ -4,6 +4,9 @@
 
 """Package facade tests."""
 
+import subprocess  # ruff: ignore[suspicious-subprocess-import]
+import sys
+from pathlib import Path
 from unittest import TestCase
 
 import wlc
@@ -39,6 +42,24 @@ from wlc.models import Component, Project, Translation, Unit
 
 class PackageFacadeTestCase(TestCase):
     """Tests for the package-level compatibility facade."""
+
+    def test_version_without_runtime_dependencies(self) -> None:
+        """Release builds can load the version without installed dependencies."""
+        version = subprocess.check_output(  # ruff: ignore[subprocess-without-shell-equals-true]
+            [
+                sys.executable,
+                "-I",
+                "-S",
+                "-c",
+                (
+                    "import sys; from runpy import run_path; "
+                    "print(run_path(sys.argv[1])['__version__'])"
+                ),
+                str(Path(wlc.__file__).with_name("const.py")),
+            ],
+            text=True,
+        )
+        self.assertEqual(version.strip(), wlc.__version__)
 
     def test_root_reexports_objects(self) -> None:
         """Representative API objects remain importable from the package root."""
