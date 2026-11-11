@@ -122,6 +122,25 @@ class TestSettings(CLITestBase):
         self.assertIn("Error: Could not read configuration file:", output)
         self.assertIn("missing.ini", output)
 
+    def test_empty_explicit_config_reports_error_without_discovery(self) -> None:
+        """An empty explicit path fails before discovery or HTTP requests."""
+        with (
+            patch.object(
+                WeblateConfig, "find_config", return_value=TEST_CONFIG
+            ) as user,
+            patch.object(
+                WeblateConfig, "find_project_config", return_value=TEST_CONFIG
+            ) as project,
+        ):
+            output = self.execute(
+                ["--config", "", "list-projects"], settings=False, expected=1
+            )
+
+        self.assertIn("Error: Could not read configuration file:", output)
+        user.assert_not_called()
+        project.assert_not_called()
+        self.assertEqual(len(responses.calls), 0)
+
     def test_config_section(self) -> None:
         """Configuration using custom config file section."""
         output = self.execute(

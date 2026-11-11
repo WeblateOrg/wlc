@@ -285,7 +285,7 @@ class WeblateConfig(RawConfigParser):
         if path is not None and project_path is not None:
             msg = "Cannot combine explicit configuration and project configuration."
             raise WLCConfigurationError(msg)
-        if path:
+        if path is not None:
             loaded = self._read_config(path, "explicit")
             if not loaded:
                 msg = f"Could not read configuration file: {Path(path).absolute()}"
