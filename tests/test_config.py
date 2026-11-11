@@ -349,6 +349,30 @@ class WeblateConfigLoadingTestCase(TestCase):
             ):
                 config.load(missing)
 
+    def test_empty_explicit_path_does_not_discover_config(self) -> None:
+        """An empty explicit path fails without loading discovered configuration."""
+        with (
+            patch.object(
+                WeblateConfig,
+                "find_config",
+                side_effect=AssertionError("User configuration discovery must not run"),
+            ) as user,
+            patch.object(
+                WeblateConfig,
+                "find_project_config",
+                side_effect=AssertionError(
+                    "Project configuration discovery must not run"
+                ),
+            ) as project,
+            self.assertRaisesRegex(
+                WLCConfigurationError, "Could not read configuration file:"
+            ),
+        ):
+            WeblateConfig().load("")
+
+        user.assert_not_called()
+        project.assert_not_called()
+
     def test_default_load_uses_nearest_project_config(self) -> None:
         """Default discovery loads global config and the nearest project config."""
         with TemporaryDirectory() as tmpdirname:
