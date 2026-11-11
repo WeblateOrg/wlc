@@ -20,10 +20,8 @@ jobs:
   setup:
     name: Build packages
     runs-on: ubuntu-26.04
-    permissions:
-      attestations: write
-      contents: read
-      id-token: write
+    outputs:
+      version: ${{ steps.package.outputs.version }}
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       with:
@@ -36,23 +34,11 @@ jobs:
       with:
         enable-cache: false
         version: 0.13.7
-    - name: Install dependencies
-      run: uv pip install --system -e .[dev]
     - name: build sdist
       run: uv build
-    - name: twine
-      run: uvx twine check dist/*
-    - name: pydistcheck
-      run: uvx pydistcheck --inspect dist/*
-    - name: pyroma
-      run: uvx pyroma dist/*.tar.gz
-    - name: check-wheel-contents
-      run: uvx check-wheel-contents dist/*.whl
-    - name: check-manifest
-      run: uvx check-manifest -v
     - name: Package version
       id: package
-      run: python -c "from wlc.const import __version__; print(f'version={__version__}')" >> "$GITHUB_OUTPUT"
+      run: python -c "from runpy import run_path; print('version=' + run_path('wlc/const.py')['__version__'])" >> "$GITHUB_OUTPUT"
     - name: Install Syft
       id: syft
       uses: anchore/sbom-action/download-syft@66cbf4bc1f1c0d2edc94016e65bc221b6bb0ad6c # v0.24.3
@@ -66,26 +52,6 @@ jobs:
         mkdir -p dist/sboms
         "$SYFT" "dist/wlc-$VERSION.tar.gz" -o "cyclonedx-json=dist/sboms/wlc-$VERSION.tar.gz.cdx.json"
         "$SYFT" "dist/wlc-$VERSION-py3-none-any.whl" -o "cyclonedx-json=dist/sboms/wlc-$VERSION-py3-none-any.whl.cdx.json"
-    - name: Attest package provenance
-      if: startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
-      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
-      with:
-        subject-path: |
-          dist/wlc-${{ steps.package.outputs.version }}.tar.gz
-          dist/wlc-${{ steps.package.outputs.version }}-py3-none-any.whl
-    - name: Attest source package SBOM
-      if: startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
-      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
-      with:
-        subject-path: dist/wlc-${{ steps.package.outputs.version }}.tar.gz
-        sbom-path: dist/sboms/wlc-${{ steps.package.outputs.version }}.tar.gz.cdx.json
-    - name: Attest wheel SBOM
-      if: startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
-      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
-      with:
-        subject-path: dist/wlc-${{ steps.package.outputs.version }}-py3-none-any.whl
-        sbom-path: dist/sboms/wlc-${{ steps.package.outputs.version }}-py3-none-any.whl.cdx.json
-
     - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
       with:
         path: |
@@ -94,15 +60,83 @@ jobs:
           dist/sboms/*.json
         name: dist
 
+  lint:
+    name: Lint packages
+    runs-on: ubuntu-26.04
+    needs:
+    - setup
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+    - name: Setup Python
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+      with:
+        python-version: '3.14'
+    - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+      with:
+        enable-cache: false
+        version: 0.13.7
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: dist
+        path: dist
+    - name: twine
+      run: uv run --frozen --only-group package-lint twine check dist/*.tar.gz dist/*.whl
+    - name: pydistcheck
+      run: uv run --frozen --only-group package-lint pydistcheck --inspect dist/*.tar.gz dist/*.whl
+    - name: pyroma
+      run: uv run --frozen --only-group package-lint pyroma dist/*.tar.gz
+    - name: check-wheel-contents
+      run: uv run --frozen --only-group package-lint check-wheel-contents dist/*.whl
+    - name: check-manifest
+      run: uv run --frozen --only-group package-lint check-manifest -v
+
+  attest:
+    name: Attest packages and SBOMs
+    runs-on: ubuntu-26.04
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && github.repository == 'WeblateOrg/wlc'
+    needs:
+    - setup
+    - lint
+    permissions:
+      attestations: write
+      contents: read
+      id-token: write
+    steps:
+    - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+      with:
+        name: dist
+        path: dist
+    - name: Attest package provenance
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      with:
+        subject-path: |
+          dist/wlc-${{ needs.setup.outputs.version }}.tar.gz
+          dist/wlc-${{ needs.setup.outputs.version }}-py3-none-any.whl
+    - name: Attest source package SBOM
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      with:
+        subject-path: dist/wlc-${{ needs.setup.outputs.version }}.tar.gz
+        sbom-path: dist/sboms/wlc-${{ needs.setup.outputs.version }}.tar.gz.cdx.json
+    - name: Attest wheel SBOM
+      uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      with:
+        subject-path: dist/wlc-${{ needs.setup.outputs.version }}-py3-none-any.whl
+        sbom-path: dist/sboms/wlc-${{ needs.setup.outputs.version }}-py3-none-any.whl.cdx.json
+
   release_pypi:
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags') && github.repository == 'WeblateOrg/wlc'
     runs-on: ubuntu-26.04
     name: Publish release to PyPI
+    environment: pypi
     permissions:
       contents: read
       # this permission is mandatory for trusted publishing
       id-token: write
     needs:
+    - attest
+    - lint
     - setup
     steps:
     - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
@@ -113,9 +147,10 @@ jobs:
       run: |
         mkdir packages
         cp dist/*.tar.gz dist/*.whl packages/
-    - name: Publish package
+    - name: Publish packages with attestations
       uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
       with:
+        attestations: true
         packages-dir: packages
 
   release_github:
@@ -124,6 +159,8 @@ jobs:
     permissions:
       contents: write
     needs:
+    - attest
+    - lint
     - setup
     if: startsWith(github.ref, 'refs/tags/')  && github.repository == 'WeblateOrg/wlc'
     steps:
