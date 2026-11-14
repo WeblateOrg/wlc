@@ -33,7 +33,7 @@ jobs:
     - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       with:
         enable-cache: false
-        version: 0.13.7
+        version: 0.13.8
     - name: build sdist
       run: uv build
     - name: Package version
@@ -76,7 +76,7 @@ jobs:
     - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
       with:
         enable-cache: false
-        version: 0.13.7
+        version: 0.13.8
     - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
       with:
         name: dist
