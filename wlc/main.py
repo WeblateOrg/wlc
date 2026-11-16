@@ -1209,7 +1209,7 @@ def main(
     except RequestException as error:
         print_stderr(f"Request failed: {_redact_cli_error(error, config)}")
         return 10
-    except (CommandError, WeblateException, OSError) as error:
+    except (CommandError, WeblateException, WLCConfigurationError, OSError) as error:
         print_stderr(f"Error: {_redact_cli_error(error, config)}")
         return 1
     else:
