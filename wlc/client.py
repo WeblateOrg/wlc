@@ -42,6 +42,7 @@ from .models import (
     Translation,
     Unit,
 )
+from .request_options import validate_request_options
 
 if TYPE_CHECKING:
     from .config import WeblateConfig
@@ -196,6 +197,15 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
             ]
             self.backoff_factor = backoff_factor
 
+        try:
+            validate_request_options(
+                self.retry_total,
+                self.status_forcelist,
+                self.backoff_factor,
+                self.timeout,
+            )
+        except ValueError as error:
+            raise WeblateException(str(error)) from None
         self._validate_api_key()
 
         retry_config = Retry(

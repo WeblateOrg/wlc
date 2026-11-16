@@ -20,6 +20,7 @@ from urllib3.util import parse_url
 from xdg.BaseDirectory import load_first_config
 
 from .const import API_URL
+from .request_options import REQUEST_OPTION_ERRORS, validate_request_options
 
 __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
 
@@ -496,19 +497,45 @@ class WeblateConfig(RawConfigParser):
         url, _url_source, key, _key_source = self._get_url_key_sources()
         return url, key
 
+    def _get_request_int(self, option: str) -> int:
+        """Parse a request option without including its value in diagnostics."""
+        try:
+            return int(self.get(self.section, option))
+        except (TypeError, ValueError):
+            msg = f"{option} must be an integer."
+            raise WLCConfigurationError(msg) from None
+
     def get_request_options(self) -> RequestOptions:
-        """Get request retry and timeout options."""
-        retries = int(self.get(self.section, "retries"))
-        timeout = int(self.get(self.section, "timeout"))
+        """Get validated request retry and timeout options."""
+        retries = self._get_request_int("retries")
+        timeout = self._get_request_int("timeout")
         status_forcelist = self.get(self.section, "status_forcelist")
         if status_forcelist is not None:
-            status_forcelist = [int(option) for option in status_forcelist.split(",")]
+            try:
+                status_forcelist = (
+                    [int(code) for code in status_forcelist.split(",")]
+                    if status_forcelist.strip()
+                    else []
+                )
+            except ValueError:
+                raise WLCConfigurationError(
+                    REQUEST_OPTION_ERRORS["status_forcelist"]
+                ) from None
+        try:
+            backoff_factor = float(self.get(self.section, "backoff_factor"))
+        except (TypeError, ValueError):
+            raise WLCConfigurationError(
+                REQUEST_OPTION_ERRORS["backoff_factor"]
+            ) from None
+        try:
+            validate_request_options(retries, status_forcelist, backoff_factor, timeout)
+        except ValueError as error:
+            raise WLCConfigurationError(str(error)) from None
         allowed_methods = [
             method
             for chunk in self.get(self.section, "allowed_methods").split(",")
             for method in chunk.split()
         ]
-        backoff_factor = float(self.get(self.section, "backoff_factor"))
         return retries, status_forcelist, allowed_methods, backoff_factor, timeout
 
     def get_allow_insecure_http(self) -> bool:
