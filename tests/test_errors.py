@@ -37,6 +37,39 @@ class CLIErrorTest(CLITestBase):
 
     API_KEY = "reflected-api-key"
 
+    def test_url_resolution_errors_hide_rejected_urls(self) -> None:
+        """URL resolution failures produce a generic error before HTTP dispatch."""
+        base_url = "http://127.0.0.1:8000/test-api"
+        rejected_url = "rejected-url-marker"
+        translation = "translations/hello/weblate/cs"
+        cases = (
+            ("projects", {"next": rejected_url, "results": []}, ["list-projects"]),
+            (
+                translation,
+                {"url": f"{base_url}/{translation}/", "file_url": rejected_url},
+                ["download", "hello/weblate/cs"],
+            ),
+        )
+        for path, response, command in cases:
+            with self.subTest(command=command):
+                url = f"{base_url}/{path}/"
+                register_error(path, 200, domain=base_url, json=response)
+                request_count = len(responses.calls)
+                with patch(
+                    "wlc.client.urljoin",
+                    side_effect=[url, ValueError("parser-detail-marker")],
+                ) as resolve_url:
+                    output = self.execute(
+                        ["--debug", "--url", base_url, *command], expected=1, tty=True
+                    )
+
+                resolve_url.assert_called_with(f"{base_url}/", rejected_url)
+                self.assertIn("HTTP failure GET <rejected URL> -> Invalid URL.", output)
+                self.assertIn("Error: Invalid URL.\n", output)
+                self.assertNotIn(rejected_url, output)
+                self.assertNotIn("parser-detail-marker", output)
+                self.assertEqual(len(responses.calls), request_count + 1)
+
     def test_malformed_config_hides_contents(self) -> None:
         """Explicit and discovered configuration errors never echo file contents."""
         for source, (content, detail) in product(
