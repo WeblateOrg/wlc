@@ -292,7 +292,12 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
 
     def normalize_request_url(self, path: str) -> str:
         """Resolve a request path and reject cross-origin targets."""
-        url = self.parse_request_url(urljoin(self.url, path))
+        try:
+            resolved_url = urljoin(self.url, path)
+        except ValueError:
+            msg = "Invalid URL."
+            raise WeblateException(msg) from None
+        url = self.parse_request_url(resolved_url)
         if self.get_origin(url) != self.api_origin:
             msg = "Server returned a URL outside the configured API origin."
             raise WeblateException(msg)
@@ -421,7 +426,7 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
         try:
             path = self.normalize_request_url(path)
         except WeblateException as error:
-            log_failure_debug(method, path, error)
+            log_failure_debug(method, "<rejected URL>", error)
             raise
         headers = {"user-agent": USER_AGENT, "Accept": "application/json"}
         if self.key:
