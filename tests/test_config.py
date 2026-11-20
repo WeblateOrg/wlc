@@ -46,22 +46,36 @@ class WeblateConfigTestCase(TestCase):
 
     def test_find_config_xdg(self) -> None:
         """XDG discovery wraps filenames in Path and preserves search order."""
-        with patch.dict(os.environ, {}, clear=True):
-            for filename, results in (
-                ("user/weblate", ["user/weblate"]),
-                ("user/weblate.ini", [None, "user/weblate.ini"]),
+        with (
+            TemporaryDirectory() as tmpdirname,
+            patch("xdg.BaseDirectory.xdg_config_dirs", [tmpdirname]),
+            patch.dict(os.environ, {}, clear=True),
+        ):
+            root = Path(tmpdirname)
+            self.assertIsNone(WeblateConfig.find_config())
+            alternate = root / "weblate.ini"
+            alternate.touch()
+            self.assertEqual(WeblateConfig.find_config(), alternate)
+            preferred = root / "weblate"
+            preferred.touch()
+            self.assertEqual(WeblateConfig.find_config(), preferred)
+
+    def test_xdg_directory_allows_later_config(self) -> None:
+        """Search remaining XDG locations when the first candidate is a directory."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            later = root / "system"
+            later.mkdir()
+            (root / "weblate").mkdir()
+            with (
+                patch("xdg.BaseDirectory.xdg_config_dirs", [str(root), str(later)]),
+                patch.dict(os.environ, {}, clear=True),
             ):
-                with (
-                    self.subTest(results=results),
-                    patch("wlc.config.load_first_config", side_effect=results) as load,
-                ):
-                    self.assertEqual(WeblateConfig.find_config(), Path(filename))
-                    self.assertEqual(
-                        [call.args[0] for call in load.call_args_list],
-                        ["weblate", "weblate.ini"][: len(results)],
-                    )
-            with patch("wlc.config.load_first_config", return_value=None):
-                self.assertIsNone(WeblateConfig.find_config())
+                for filename in ("weblate.ini", "weblate"):
+                    with self.subTest(filename=filename):
+                        expected = later / filename
+                        expected.touch()
+                        self.assertEqual(WeblateConfig.find_config(), expected)
 
     def test_xdg_directory_cannot_hide_endpoint(self) -> None:
         """Use the alternate filename or fail before falling back to defaults."""

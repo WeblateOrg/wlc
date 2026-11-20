@@ -17,7 +17,7 @@ from typing import Literal, NoReturn, TypeAlias, cast
 
 from urllib3.exceptions import LocationParseError
 from urllib3.util import parse_url
-from xdg.BaseDirectory import load_first_config
+from xdg.BaseDirectory import load_config_paths
 
 from .const import API_URL
 from .request_options import REQUEST_OPTION_ERRORS, validate_request_options
@@ -98,16 +98,20 @@ class WeblateConfig(_ConfigParser):
                     return win_path
 
         # Generic XDG paths
+        skipped_directory = None
         for filename in ("weblate", "weblate.ini"):
-            if config := load_first_config(filename):
+            for config in load_config_paths(filename):
                 candidate = Path(config)
                 if filename == "weblate" and candidate.is_dir():
                     alternate = candidate.with_name("weblate.ini")
                     if alternate.is_file():
                         return alternate
+                    if skipped_directory is None:
+                        skipped_directory = candidate
+                    continue
                 return candidate
 
-        return None
+        return skipped_directory
 
     @staticmethod
     def _project_stat(path: Path) -> os.stat_result | None:
