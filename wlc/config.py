@@ -41,7 +41,17 @@ class WLCConfigurationError(Exception):
     """Configuration could not be loaded or combines unsafe option sources."""
 
 
-class WeblateConfig(RawConfigParser):
+class _ConfigParser(RawConfigParser):
+    """Parse case-insensitive setting names and case-sensitive URL options."""
+
+    def optionxform(self, optionstr: str) -> str:
+        """Preserve URL spelling while folding ordinary option names."""
+        if "://" in optionstr:
+            return optionstr
+        return super().optionxform(optionstr)
+
+
+class WeblateConfig(_ConfigParser):
     """
     Configuration parser wrapper with defaults.
 
@@ -236,7 +246,7 @@ class WeblateConfig(RawConfigParser):
 
     def _read_config(self, path: Path | str, url_source: URLSource) -> list[str]:
         """Read configuration and remember whether it supplied the API URL."""
-        parser = RawConfigParser(delimiters=("=",))
+        parser = _ConfigParser(delimiters=("=",))
         try:
             loaded = parser.read(path)
         except ConfigParserError as error:
@@ -345,18 +355,18 @@ class WeblateConfig(RawConfigParser):
         )
         return expected_scheme, url.host.strip("[]").lower(), port
 
-    def _normalize_key_url(self, value: str) -> str:
+    @staticmethod
+    def _normalize_key_url(value: str) -> str:
         """
         Return the form of a URL used to match it against [keys] entries.
 
         This uses the HTTP transport's URL parser and removes the default port
         of the scheme. Values it can not parse are only matched literally.
         """
-        option = self.optionxform(value)
         try:
-            url = parse_url(option)
+            url = parse_url(value)
         except LocationParseError:
-            return option
+            return value
         if (url.scheme, url.port) in DEFAULT_SCHEME_PORTS:
             url = url._replace(port=None)
         return url.url
@@ -372,7 +382,7 @@ class WeblateConfig(RawConfigParser):
         keys = self._direct_section_items("keys")
         equivalent = {self._normalize_key_url(k): v for k, v in keys.items()}
         fallback = equivalent.get(self._normalize_key_url(url))
-        return keys.get(self.optionxform(url), fallback) or ""
+        return keys.get(url, fallback) or ""
 
     @classmethod
     def _parse_boolean(cls, section: str, option: str, value: str | None) -> bool:
