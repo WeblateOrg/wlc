@@ -505,6 +505,28 @@ class WeblateProjectConfigTestCase(TestCase):
                 with patch.dict(os.environ, {"WLC_URL": company_url}, clear=True):
                     self.assertEqual(config.get_url_key(), (company_url, "user-key"))
 
+    def test_scoped_key_preserves_path_case(self) -> None:
+        """A project can only select a user key for the matching path."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            user = root / "user.ini"
+            user.write_text(
+                "[keys]\nhttps://EXAMPLE.org:443/API/ = upper\n", encoding="utf-8"
+            )
+            project = root / ".weblate"
+            project.write_text(
+                "[weblate]\nURL = https://example.org/api/\n", encoding="utf-8"
+            )
+            config = WeblateConfig()
+            with (
+                patch.object(WeblateConfig, "find_config", return_value=user),
+                patch.dict(os.environ, {}, clear=True),
+            ):
+                config.load(project_path=project)
+                self.assertEqual(config.get_url_key(), ("https://example.org/api/", ""))
+                config.cli_url = "https://example.org/API/"
+                self.assertEqual(config.get_url_key(), (config.cli_url, "upper"))
+
     def test_project_keys_require_project_url(self) -> None:
         """A project without a URL cannot replace user keys."""
         company_url = "https://company.example.com/api/"
