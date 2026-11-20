@@ -120,7 +120,7 @@ def escape_terminal_text(value: str) -> str:
             escaped.append(f"\\x{code:02x}")
             continue
 
-        if code in TERMINAL_UNICODE_CONTROL_CODEPOINTS:
+        if code in TERMINAL_UNICODE_CONTROL_CODEPOINTS or "\ud800" <= char <= "\udfff":
             escaped.append(f"\\u{code:04x}")
             continue
 

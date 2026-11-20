@@ -320,6 +320,13 @@ class TestTextOutput(OutputTestBase):
         joining_text = "می\u200cروم 👩\u200d💻"
         self.assertEqual(format_for_stream(joining_text, TTYStringIO()), joining_text)
 
+    def test_surrogates_are_rendered_before_terminal_encoding(self) -> None:
+        """Interactive output must be encodable even with unpaired surrogates."""
+        rendered = format_for_stream("\ud800\udc80\udfff", TTYStringIO())
+        self.assertEqual(
+            rendered.encode("utf-8", "surrogateescape"), rb"\ud800\udc80\udfff"
+        )
+
     def test_stderr_escapes_unicode_display_controls(self) -> None:
         """Interactive error output should visibly render Unicode controls."""
         output = TTYStringIO()
