@@ -419,8 +419,13 @@ class WeblateConfig(_ConfigParser):
 
     def _validate_insecure_section(self, section: str, scheme: str) -> None:
         """Validate all entries in an origin-scoped insecure section."""
+        origins: set[Origin] = set()
         for option, value in self._direct_section_items(section).items():
-            self._normalize_origin(option, scheme)
+            origin = self._normalize_origin(option, scheme)
+            if origin in origins:
+                msg = f"Duplicate origin in [{section}]."
+                raise WLCConfigurationError(msg)
+            origins.add(origin)
             self._parse_boolean(section, option, value)
 
     def _validate_insecure_configuration(self) -> None:
