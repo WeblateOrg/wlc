@@ -90,7 +90,12 @@ class WeblateConfig(RawConfigParser):
         # Generic XDG paths
         for filename in ("weblate", "weblate.ini"):
             if config := load_first_config(filename):
-                return Path(config)
+                candidate = Path(config)
+                if filename == "weblate" and candidate.is_dir():
+                    alternate = candidate.with_name("weblate.ini")
+                    if alternate.is_file():
+                        return alternate
+                return candidate
 
         return None
 
@@ -292,8 +297,12 @@ class WeblateConfig(RawConfigParser):
                 msg = f"Could not read configuration file: {Path(path).absolute()}"
                 raise WLCConfigurationError(msg)
         else:
-            if config := self.find_config():
-                self._read_config(config, "user")
+            config = self.find_config()
+            if config is not None and (
+                not config.is_file() or not self._read_config(config, "user")
+            ):
+                msg = f"Could not read configuration file: {config.absolute()}"
+                raise WLCConfigurationError(msg)
             config = (
                 Path(project_path)
                 if project_path is not None
