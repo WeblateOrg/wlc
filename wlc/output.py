@@ -46,11 +46,17 @@ TERMINAL_UNICODE_CONTROL_CODEPOINTS = frozenset(
     {
         0x00AD,
         0x061C,
+        0x115F,
+        0x1160,
+        0x180E,
         0x200B,
         *range(0x200E, 0x2010),
         *range(0x202A, 0x202F),
         *range(0x2060, 0x2070),
+        0x3164,
         0xFEFF,
+        0xFFA0,
+        *range(0xFFF9, 0xFFFC),
     }
 )
 
@@ -116,6 +122,10 @@ def escape_terminal_text(value: str) -> str:
 
         if code in TERMINAL_UNICODE_CONTROL_CODEPOINTS:
             escaped.append(f"\\u{code:04x}")
+            continue
+
+        if "\U000e0000" <= char <= "\U000e007f":
+            escaped.append(f"\\U{code:08x}")
             continue
 
         escaped.append(char)

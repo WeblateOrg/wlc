@@ -262,6 +262,8 @@ class TestTextOutput(OutputTestBase):
         codepoints = (
             0x00AD,
             0x061C,
+            *range(0x115F, 0x1161),
+            0x180E,
             0x200B,
             0x200E,
             0x200F,
@@ -286,7 +288,10 @@ class TestTextOutput(OutputTestBase):
             0x206D,
             0x206E,
             0x206F,
+            0x3164,
             0xFEFF,
+            0xFFA0,
+            *range(0xFFF9, 0xFFFC),
         )
         for codepoint in codepoints:
             with self.subTest(codepoint=f"U+{codepoint:04X}"):
@@ -294,6 +299,14 @@ class TestTextOutput(OutputTestBase):
                     format_for_stream(chr(codepoint), TTYStringIO()),
                     f"\\u{codepoint:04x}",
                 )
+
+    def test_unicode_tags_are_visible_on_terminals(self) -> None:
+        """Render supplementary tag code points with eight-digit escapes."""
+        value = "\U000e0000\U000e0061\U000e007f"
+        self.assertEqual(
+            format_for_stream(value, TTYStringIO()), r"\U000e0000\U000e0061\U000e007f"
+        )
+        self.assertEqual(format_for_stream(value, StringIO()), value)
 
     def test_format_for_stream_preserves_non_terminal_unicode(self) -> None:
         """Data streams and ordinary RTL text should preserve Unicode."""
