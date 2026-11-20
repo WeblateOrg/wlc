@@ -8,10 +8,12 @@ from __future__ import annotations
 
 from collections import UserDict
 from copy import copy
+from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
 import dateutil.parser
 
+from . import tasks
 from .const import TIMESTAMPS
 from .exceptions import WeblateException
 from .utils import require_url_string
@@ -234,25 +236,42 @@ class RepoMixin(LazyObject):
     def _get_repo_url(self) -> str:
         return self._get_stored_url("repository_url")
 
+    def _repository_operation(self, operation: str) -> dict[str, Any]:
+        response = self.weblate.invoke_request(
+            "post", self._get_repo_url(), data={"operation": operation}
+        )
+        data = tasks.response_object(response)
+        if response.status_code != HTTPStatus.ACCEPTED:
+            return data
+        result = tasks.task_result(self.weblate, data)
+        if not isinstance(result, dict) or not isinstance(result.get("result"), bool):
+            raise tasks.task_error(result)
+        scope = {
+            key: value
+            for key, value in data.items()
+            if key not in {"detail", "task_url"}
+        }
+        return {**scope, **result}
+
     def commit(self) -> dict[str, Any]:
         """Commit Weblate changes."""
-        return self.weblate.post(self._get_repo_url(), operation="commit")
+        return self._repository_operation("commit")
 
     def push(self) -> dict[str, Any]:
         """Push Weblate changes upstream."""
-        return self.weblate.post(self._get_repo_url(), operation="push")
+        return self._repository_operation("push")
 
     def pull(self) -> dict[str, Any]:
         """Pull upstream changes into Weblate."""
-        return self.weblate.post(self._get_repo_url(), operation="pull")
+        return self._repository_operation("pull")
 
     def reset(self) -> dict[str, Any]:
         """Reset Weblate repository to upstream."""
-        return self.weblate.post(self._get_repo_url(), operation="reset")
+        return self._repository_operation("reset")
 
     def cleanup(self) -> dict[str, Any]:
         """Cleanup Weblate repository from untracked files."""
-        return self.weblate.post(self._get_repo_url(), operation="cleanup")
+        return self._repository_operation("cleanup")
 
 
 class RepoObjectMixin(RepoMixin):

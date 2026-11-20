@@ -22,6 +22,14 @@ REQUEST_OPTION_ERRORS = {
 MAX_HTTP_ERROR_STATUS = 599
 
 
+def validate_task_timeout(value: int) -> int:
+    """Validate a whole number of seconds, with zero indicating an unlimited wait."""
+    if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+        msg = "task_timeout must be a nonnegative integer."
+        raise ValueError(msg)
+    return value
+
+
 def validate_request_options(
     retries: int,
     status_forcelist: Collection[int] | None,

@@ -17,6 +17,18 @@ class WeblateException(Exception):  # ruff: ignore[error-suffix-on-exception-nam
         super().__init__(message or self.__doc__)
 
 
+class WeblateTaskTimeoutError(WeblateException):
+    """The task polling deadline expired."""
+
+    def __init__(self, task_url: str) -> None:
+        """Keep the task URL for callers that resume polling."""
+        super().__init__(
+            "Waiting for the task timed out. The server task may still be running. "
+            f"Check its status at {task_url}"
+        )
+        self.task_url = task_url
+
+
 class WeblateThrottlingError(WeblateException):
     """Throttling on the server."""
 

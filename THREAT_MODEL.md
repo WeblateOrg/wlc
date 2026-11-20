@@ -193,7 +193,9 @@ Implementation and coverage: [output implementation](wlc/output.py),
   server impersonation.
 - **Availability and retries:** There are no strict limits on response size,
   pagination, aggregate time, memory, disk use, or retry cost against a selected
-  server. Timeouts and retries are operational controls. Retrying state-changing
+  server. Task polling has a configurable 30-minute default deadline. Zero allows
+  unlimited polling, and an in-flight request and its retries can outlast the
+  deadline. Stopping a wait leaves the server task running. Retrying state-changing
   methods can repeat effects. Output can be partial after failure, including
   incomplete JSON or HTML; consumers must check the exit status.
 - **Content and integrations:** Origin, filename, and output containment do not
