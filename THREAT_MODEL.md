@@ -73,6 +73,7 @@ See the [configuration documentation][configuration-docs] and
   Transport exceptions require a CLI/environment setting paired with its own
   URL, or a matching origin in trusted user or complete explicit configuration. An
   unscoped CLI/environment exception cannot be combined with a project URL.
+  Each transport exception section accepts only one entry per normalized origin.
 - URL-scoped keys preserve case distinctions in the API path.
 - Authentication comes only from configured API-key sources. Automatic
   `.netrc`/`NETRC` authentication is disabled, URL-embedded credentials are

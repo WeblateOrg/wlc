@@ -184,6 +184,25 @@ class WeblateConfigTestCase(TestCase):
 class WeblateTransportConfigTestCase(TestCase):
     """Test origin-scoped transport configuration."""
 
+    def test_duplicate_transport_origins_are_rejected(self) -> None:
+        """Each trusted transport exception must have an unambiguous value."""
+        with TemporaryDirectory() as tmpdirname:
+            path = Path(tmpdirname) / "user.ini"
+            for section, scheme in (
+                ("insecure_ssl", "https"),
+                ("insecure_http", "http"),
+            ):
+                with self.subTest(section=section):
+                    path.write_text(
+                        f"[{section}]\n{scheme}://EXAMPLE.org/ = no\n"
+                        f"{scheme}://example.org/ = yes\n",
+                        encoding="utf-8",
+                    )
+                    with self.assertRaisesRegex(
+                        WLCConfigurationError, "Duplicate origin"
+                    ):
+                        WeblateConfig().load(path)
+
     def test_allow_insecure_http_defaults_to_false(self) -> None:
         """Non-local HTTP token transport is disabled by default."""
         config = WeblateConfig()
