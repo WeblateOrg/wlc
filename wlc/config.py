@@ -19,8 +19,12 @@ from urllib3.exceptions import LocationParseError
 from urllib3.util import parse_url
 from xdg.BaseDirectory import load_config_paths
 
-from .const import API_URL
-from .request_options import REQUEST_OPTION_ERRORS, validate_request_options
+from .const import API_URL, DEFAULT_TASK_TIMEOUT
+from .request_options import (
+    REQUEST_OPTION_ERRORS,
+    validate_request_options,
+    validate_task_timeout,
+)
 
 __all__ = ["NoOptionError", "WLCConfigurationError", "WeblateConfig"]
 
@@ -83,6 +87,7 @@ class WeblateConfig(_ConfigParser):
         self.set(self.section, "url", API_URL)
         self.set(self.section, "retries", "0")
         self.set(self.section, "timeout", "300")
+        self.set(self.section, "task_timeout", str(DEFAULT_TASK_TIMEOUT))
         self.set(self.section, "status_forcelist", None)
         self.set(self.section, "allowed_methods", "HEAD\nDELETE\nOPTIONS\nPUT\nGET")
         self.set(self.section, "backoff_factor", "0")
@@ -532,6 +537,13 @@ class WeblateConfig(_ConfigParser):
         except (TypeError, ValueError):
             msg = f"{option} must be an integer."
             raise WLCConfigurationError(msg) from None
+
+    def get_task_timeout(self) -> int:
+        """Return the configured task wait in seconds."""
+        try:
+            return validate_task_timeout(self._get_request_int("task_timeout"))
+        except ValueError as error:
+            raise WLCConfigurationError(str(error)) from None
 
     def get_request_options(self) -> RequestOptions:
         """Get validated request retry and timeout options."""

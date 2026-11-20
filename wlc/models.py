@@ -8,10 +8,13 @@ from __future__ import annotations
 
 from contextlib import suppress
 from dataclasses import dataclass
+from http import HTTPStatus
 from typing import TYPE_CHECKING, Any, BinaryIO, ClassVar, TextIO, cast
 from urllib.parse import urlencode
 
+from . import tasks
 from .base import LazyObject, RepoMixin, RepoObjectMixin
+from .const import UPLOAD_RESULT_FIELDS
 from .exceptions import WeblateException
 
 if TYPE_CHECKING:
@@ -343,9 +346,23 @@ class Component(RepoObjectMixin, LazyObject):
 
     def add_translation(self, language: str) -> dict[str, Any]:
         """Create a new translation in the component."""
-        return self.weblate.post(
-            path=self._get_stored_url("translations_url"), language_code=language
+        response = self.weblate.invoke_request(
+            "post",
+            self._get_stored_url("translations_url"),
+            data={"language_code": language},
         )
+        data = tasks.response_object(response)
+        if response.status_code != HTTPStatus.ACCEPTED:
+            return data
+        result = tasks.task_result(self.weblate, data)
+        url = result.get("url") if isinstance(result, dict) else None
+        if not isinstance(url, str) or not url.strip():
+            raise tasks.task_error(result)
+        translation = self.weblate.get(url)
+        if not isinstance(translation, dict):
+            msg = "Invalid translation response."
+            raise WeblateException(msg)
+        return {"data": translation}
 
     def statistics(self) -> Iterator[TranslationStatistics]:
         """Return statistics for component."""
@@ -378,7 +395,7 @@ class Component(RepoObjectMixin, LazyObject):
 
     def delete(self) -> None:
         """Delete the component."""
-        self.weblate.raw_request("delete", self._url)
+        tasks.delete_object(self.weblate, self._url)
 
     def add_source_string(
         self, *, msgid: str, msgstr: str | builtins.list[str]
@@ -505,13 +522,18 @@ class Translation(RepoObjectMixin, LazyObject):
         if overwrite:
             kwargs["conflicts"] = "replace-translated"
 
-        return cast(
-            "JSONDict", self.weblate.request("post", url, files=files, data=kwargs)
-        )
+        response = self.weblate.invoke_request("post", url, files=files, data=kwargs)
+        data = tasks.response_object(response)
+        if response.status_code != HTTPStatus.ACCEPTED:
+            return data
+        result = tasks.task_result(self.weblate, data)
+        if not isinstance(result, dict) or not UPLOAD_RESULT_FIELDS.issubset(result):
+            raise tasks.task_error(result)
+        return result
 
     def delete(self) -> None:
         """Delete the translation."""
-        self.weblate.raw_request("delete", self._url)
+        tasks.delete_object(self.weblate, self._url)
 
     def units(self, **kwargs: QueryValue) -> Iterator[Unit]:
         """List units in the translation."""

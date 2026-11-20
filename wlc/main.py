@@ -30,7 +30,7 @@ from . import __version__
 from .base import LazyObject
 from .client import Weblate
 from .config import NoOptionError, WeblateConfig, WLCConfigurationError
-from .const import DEVEL_URL, URL
+from .const import DEFAULT_TASK_TIMEOUT, DEVEL_URL, UPLOAD_RESULT_FIELDS, URL
 from .exceptions import WeblateDeniedError, WeblateException
 from .http_debug import (
     disable_debug_logging,
@@ -120,6 +120,11 @@ def get_parser() -> ArgumentParser:
     )
     parser.add_argument(
         "--config-section", "-s", default="weblate", help="Configuration section to use"
+    )
+    parser.add_argument(
+        "--task-timeout",
+        metavar="SECONDS",
+        help=f"Maximum task wait in seconds (default: {DEFAULT_TASK_TIMEOUT}, 0 for unlimited)",
     )
     parser.add_argument("--key", "-k", help="API key")
     parser.add_argument("--url", "-u", help="API URL")
@@ -549,6 +554,9 @@ class ObjectCommand(Command, Generic[ObjectT]):
         """Check result json data."""
         if not result["result"]:
             detail = result.get("detail")
+            completion = result.get("completion_message")
+            if detail is None and isinstance(completion, dict):
+                detail = completion.get("text")
             raise CommandError(message, detail=None if detail is None else str(detail))
 
 
@@ -1077,14 +1085,7 @@ class Upload(TranslationCommand):
                 cast("BufferedStream", self.stdin).buffer.read(), **kwargs
             )
 
-        if not (
-            "count" in result
-            and "result" in result
-            and "total" in result
-            and "accepted" in result
-            and "not_found" in result
-            and "skipped" in result
-        ):
+        if not UPLOAD_RESULT_FIELDS.issubset(result):
             msg = "Failed to upload translations!"
             raise CommandError(
                 msg,
@@ -1151,6 +1152,8 @@ def parse_settings(args: Namespace, settings: SettingsSource | None) -> WeblateC
         for section, key, value in settings:
             config.set(section, key, value)
 
+    if args.task_timeout is not None:
+        config.set(config.section, "task_timeout", args.task_timeout)
     if args.key:
         config.cli_key = args.key
     if args.url:

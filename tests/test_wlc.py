@@ -663,9 +663,9 @@ class TranslationTest(ObjectTest[Translation]):
             for file_format in ("po", None):
                 with self.subTest(overwrite=overwrite, format=file_format):
                     file = io.StringIO("test upload data")
-                    with patch.object(
-                        obj.weblate, "request", return_value={}
-                    ) as request:
+                    with patch.object(obj.weblate, "invoke_request") as request:
+                        request.return_value.status_code = 200
+                        request.return_value.json.return_value = {}
                         obj.upload(
                             file,
                             overwrite=overwrite,

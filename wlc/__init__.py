@@ -18,6 +18,7 @@ from .exceptions import (
     WeblateDeniedError,
     WeblateException,
     WeblatePermissionError,
+    WeblateTaskTimeoutError,
     WeblateThrottlingError,
 )
 from .models import (
@@ -60,6 +61,7 @@ __all__ = [
     "WeblateDeniedError",
     "WeblateException",
     "WeblatePermissionError",
+    "WeblateTaskTimeoutError",
     "WeblateThrottlingError",
     "__version__",
 ]
