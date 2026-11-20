@@ -70,6 +70,26 @@ class CLIErrorTest(CLITestBase):
                 self.assertNotIn("parser-detail-marker", output)
                 self.assertEqual(len(responses.calls), request_count + 1)
 
+    def test_download_rejects_non_string_file_url(self) -> None:
+        """Reject malformed URL fields before formatting or dispatch."""
+        base_url = "http://127.0.0.1:8000/test-api"
+        path = "translations/hello/weblate/cs"
+        for value, options in ((None, []), ({"invalid": True}, ["--convert", "po"])):
+            with self.subTest(value=value):
+                register_error(
+                    path,
+                    200,
+                    domain=base_url,
+                    json={"url": f"{base_url}/{path}/", "file_url": value},
+                )
+                count = len(responses.calls)
+                output = self.execute(
+                    ["--url", base_url, "download", "hello/weblate/cs", *options],
+                    expected=1,
+                )
+                self.assertIn("Error: Invalid URL.\n", output)
+                self.assertEqual(len(responses.calls), count + 1)
+
     def test_malformed_config_hides_contents(self) -> None:
         """Explicit and discovered configuration errors never echo file contents."""
         for source, (content, detail) in product(
