@@ -22,8 +22,9 @@ CLI output, or downloaded files.
   variables, user configuration, explicit configuration, upload inputs, and
   user-selected output paths are trusted instructions. The operating system,
   runtime, installed package, and these trusted sources are assumed intact.
-- **Checked-out repository:** Automatic discovery loads user configuration and
-  then the nearest eligible project configuration in the current directory or
+- **Checked-out repository:** Automatic discovery loads user configuration first and
+  stops with an error if the selected file cannot be read. It then loads the
+  nearest eligible project configuration in the current directory or
   a parent, stopping at the nearest repository root. On POSIX systems discovery
   also stops at directories owned by another non-root user or writable by
   everyone; discovered files must meet the same permission rules. Group-writable

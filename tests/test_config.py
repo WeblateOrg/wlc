@@ -63,6 +63,31 @@ class WeblateConfigTestCase(TestCase):
             with patch("wlc.config.load_first_config", return_value=None):
                 self.assertIsNone(WeblateConfig.find_config())
 
+    def test_xdg_directory_cannot_hide_endpoint(self) -> None:
+        """Use the alternate filename or fail before falling back to defaults."""
+        with TemporaryDirectory() as tmpdirname:
+            root = Path(tmpdirname)
+            (root / "weblate").mkdir()
+            with (
+                patch("xdg.BaseDirectory.xdg_config_dirs", [str(root)]),
+                patch.dict(os.environ, {}, clear=True),
+                patch.object(WeblateConfig, "find_project_config", return_value=None),
+            ):
+                config = WeblateConfig()
+                with self.assertRaisesRegex(WLCConfigurationError, "Could not read"):
+                    config.load()
+                alternate = root / "weblate.ini"
+                alternate.write_text(
+                    "[weblate]\nurl = https://example.org/api/\n", encoding="utf-8"
+                )
+                config.load()
+                self.assertEqual(config.get_url_key(), ("https://example.org/api/", ""))
+                with (
+                    patch.object(config, "_read_config", return_value=[]),
+                    self.assertRaisesRegex(WLCConfigurationError, "Could not read"),
+                ):
+                    config.load()
+
     def test_find_project_config_returns_path(self) -> None:
         """Project discovery returns the nearest matching Path."""
         with TemporaryDirectory() as tmpdirname:
