@@ -14,6 +14,7 @@ import dateutil.parser
 
 from .const import TIMESTAMPS
 from .exceptions import WeblateException
+from .utils import require_url_string
 
 if TYPE_CHECKING:
     from collections.abc import Iterator, Mapping
@@ -126,7 +127,7 @@ class LazyObject(UserDict[str, Any]):  # ruff: ignore[too-many-public-methods]
 
     def _get_stored_url(self, name: str) -> str:
         """Return a stored URL field whose API schema specifies a string."""
-        return cast("str", self._get_stored(name))
+        return require_url_string(self._get_stored(name))
 
     def refresh(self) -> None:
         """Read object again from remote."""

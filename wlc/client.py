@@ -43,6 +43,7 @@ from .models import (
     Unit,
 )
 from .request_options import validate_request_options
+from .utils import require_url_string
 
 if TYPE_CHECKING:
     from .config import WeblateConfig
@@ -293,7 +294,7 @@ class Weblate:  # ruff: ignore[too-many-public-methods]
     def normalize_request_url(self, path: str) -> str:
         """Resolve a request path and reject cross-origin targets."""
         try:
-            resolved_url = urljoin(self.url, path)
+            resolved_url = urljoin(self.url, require_url_string(path))
         except ValueError:
             msg = "Invalid URL."
             raise WeblateException(msg) from None
