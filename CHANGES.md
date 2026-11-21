@@ -54,6 +54,7 @@
 ## 3.0.0
 
 * Released on 8th October 2026.
+
 * Breaking Python API changes:
 
   * Require keyword arguments for client construction, request options,
@@ -64,10 +65,14 @@
     is required.
   * `WeblateConfig.find_config()` and `WeblateConfig.find_project_config()` now
     return `pathlib.Path` objects instead of strings when a file is found.
+
 * Reject cyclic category hierarchies and category nesting deeper than three
   levels.
+
 * Raised minimum dependency versions to exclude vulnerable releases.
+
 * Added testing with Python 3.15 and improved type annotations.
+
 * Updated development dependencies, CI actions, and Docker base images.
 
 ## 2.2.1
@@ -131,17 +136,25 @@
 ## 2.0.0
 
 * Released on 21st April 2026.
+
 * Possibly breaking changes:
 
   * Renamed the retry configuration option from `method_whitelist` to `allowed_methods`.
   * Tightened configuration loading: explicit `--config` is authoritative, missing explicit config files fail, and project discovery uses the nearest config file.
   * Tightened URL, download, and output safety: invalid or cross-origin URLs are rejected, binary downloads to terminals are refused, and text, CSV, and HTML output is escaped.
+
 * Added `WLC_URL` and `WLC_KEY` environment variable support.
+
 * Added unit-level CLI commands.
+
 * Updated models and statistics for the current Weblate API while preserving older statistics responses.
+
 * Fixed retry configuration and request adapter wiring.
+
 * Escaped generated HTML output ([GHSA-gx2m-mcc2-r4p3](https://github.com/WeblateOrg/wlc/security/advisories/GHSA-gx2m-mcc2-r4p3)), hardened CSV and terminal output, and redacted authorization headers from debug logs.
+
 * Improved nested category handling, unit editing, help texts, and error messages.
+
 * Split implementation modules, moved tests out of the installed package, and updated packaging, dependencies, Docker images, and CI.
 
 ## 1.17.2
