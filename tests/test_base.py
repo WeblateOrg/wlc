@@ -17,10 +17,12 @@ from io import BytesIO, StringIO
 from pathlib import Path
 from typing import TYPE_CHECKING, Literal, NoReturn, TextIO, cast
 from unittest import TestCase
+from unittest.mock import patch
 
 import responses
 from requests.exceptions import RequestException
 
+from wlc.config import WeblateConfig
 from wlc.main import SettingsSource, main
 
 if TYPE_CHECKING:
@@ -48,6 +50,19 @@ CONFIG_PARSE_ERRORS = (
         "DuplicateSectionError at line 2",
     ),
 )
+
+
+def load_discovered_config(
+    directory: Path, user_config: Path | None = None, *, section: str = "weblate"
+) -> WeblateConfig:
+    """Load configuration using project discovery from the given directory."""
+    config = WeblateConfig(section=section)
+    with (
+        patch.object(Path, "cwd", return_value=directory),
+        patch.object(WeblateConfig, "find_config", return_value=user_config),
+    ):
+        config.load()
+    return config
 
 
 class BufferedStringIO(StringIO):
