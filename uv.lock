@@ -1985,11 +1985,11 @@ wheels = [
 
 [[package]]
 name = "types-pyxdg"
-version = "0.28.0.20261106"
+version = "0.28.0.20261122"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/fe/8d/3f6944dbe612dddcd526b87d20eaecaf208e55bde4fb7032e713e3ec4d07/types_pyxdg-0.28.0.20261106.tar.gz", hash = "sha256:f734f8c7437d3b85e9b319d3d555bad85f7c2dadd88b0d527ba22b0b516df7c9", size = 13341, upload-time = "2026-11-06T08:40:28.503Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/93/b7/49b2c59fb0ff7b80b56a84e2e85e0af0fc4c7a60fc4b713922143747c4c6/types_pyxdg-0.28.0.20261122.tar.gz", hash = "sha256:bd60d95f4c768dd618cbf9e2cc057276178db30e00cf76f297cf06817a2c4081", size = 13347, upload-time = "2026-11-22T08:58:56.243Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/31/2f/8d8581951a1149d0cc407e527fefd61f2ee1e9ad2b2f3fdac84252e5c629/types_pyxdg-0.28.0.20261106-py3-none-any.whl", hash = "sha256:5f221139ee493e40843763465c19cad6f65d804f958c3f81230ec9996f9a2865", size = 16205, upload-time = "2026-11-06T08:40:27.634Z" },
+    { url = "https://files.pythonhosted.org/packages/f3/2f/3e999925d17d70d6237eeee7a105d5d28f70ca319d881958ae75996d5511/types_pyxdg-0.28.0.20261122-py3-none-any.whl", hash = "sha256:3a19169140b5a2def64121280f53e7a8fca29ddf060d7a2ef16cfcdd6d4f3dbf", size = 16213, upload-time = "2026-11-22T08:58:55.473Z" },
 ]
 
 [[package]]
@@ -2133,7 +2133,7 @@ dev = [
     { name = "responses", specifier = "==0.26.3" },
     { name = "ty", specifier = "==0.0.108" },
     { name = "types-python-dateutil", specifier = "==2.9.0.20261122" },
-    { name = "types-pyxdg", specifier = "==0.28.0.20261106" },
+    { name = "types-pyxdg", specifier = "==0.28.0.20261122" },
     { name = "types-requests", specifier = "==2.33.0.20261030" },
 ]
 lint = [
@@ -2159,7 +2159,7 @@ types = [
     { name = "mypy", specifier = "==2.4.1" },
     { name = "ty", specifier = "==0.0.108" },
     { name = "types-python-dateutil", specifier = "==2.9.0.20261122" },
-    { name = "types-pyxdg", specifier = "==0.28.0.20261106" },
+    { name = "types-pyxdg", specifier = "==0.28.0.20261122" },
     { name = "types-requests", specifier = "==2.33.0.20261030" },
 ]
 
