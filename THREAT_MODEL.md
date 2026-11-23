@@ -132,9 +132,9 @@ Coverage: [download tests](tests/test_download.py).
 
 - Supported CLI rendering and handled diagnostics escape terminal controls and
   the supported Unicode bidi and invisible controls on interactive streams.
-  This includes structured text/CSV values and diagnostics from malformed
-  server data. It does not promise protection against all Unicode confusables
-  or misleading text.
+  This includes structured text/CSV values, CLI debug records, and diagnostics
+  from malformed server data. It does not promise protection against all Unicode
+  confusables or misleading text.
 - HTML rendering escapes keys and values. CSV rendering neutralizes formula
   prefixes, including Unicode compatibility forms and those hidden behind
   leading controls, whitespace, marks, or common invisible characters. CSV
@@ -143,10 +143,8 @@ Coverage: [download tests](tests/test_download.py).
 - Raw downloaded translation bytes are refused when standard output is an
   interactive terminal.
 - wlc's debug helpers redact sensitive outgoing request headers and omit request
-  bodies and uploaded contents. This is not general log sanitization: URLs,
-  request parameter values, response content, and reason phrases may appear,
-  and debug output does not receive the supported renderers' terminal-safety
-  guarantee. Do not put secrets in request parameters.
+  bodies and uploaded contents. URLs, request parameter values, response content,
+  and reason phrases may appear in logs. Do not put secrets in request parameters.
 
 Handled CLI errors also mask exact configured authorization values and
 credentials as defense in depth. Configuration syntax diagnostics omit file

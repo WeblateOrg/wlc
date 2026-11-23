@@ -10,6 +10,8 @@ import json
 import logging
 from typing import TYPE_CHECKING
 
+from .output import format_for_stream
+
 if TYPE_CHECKING:
     from collections.abc import Mapping
 
@@ -106,9 +108,16 @@ def log_failure_debug(
     log.debug("HTTP failure %s %s -> %s", method.upper(), path, error_message)
 
 
+class _DebugStreamHandler(logging.StreamHandler):
+    """Render CLI debug records for the destination stream."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        return format_for_stream(super().format(record), self.stream)
+
+
 def enable_debug_logging() -> tuple[logging.Handler, int, bool]:
     """Install a temporary debug handler for sanitized HTTP logs."""
-    handler = logging.StreamHandler()
+    handler = _DebugStreamHandler()
     handler.setFormatter(logging.Formatter("%(levelname)s:%(name)s:%(message)s"))
     previous_level = log.level
     previous_propagate = log.propagate

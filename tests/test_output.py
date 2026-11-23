@@ -11,7 +11,9 @@ import html
 import json
 from argparse import Namespace
 from datetime import datetime, timezone
+from http import HTTPStatus, client
 from io import StringIO
+from itertools import product
 from typing import TYPE_CHECKING
 from unittest.mock import patch
 from weakref import ref
@@ -326,6 +328,38 @@ class TestTextOutput(OutputTestBase):
         self.assertEqual(
             rendered.encode("utf-8", "surrogateescape"), rb"\ud800\udc80\udfff"
         )
+
+    def test_debug_response_reason(self) -> None:
+        """Render response and failure records for the CLI's stderr stream."""
+        url = "http://127.0.0.1:8000/api/projects/"
+        reason = "Server\x1btest"
+        for status, tty in product((200, 500), (True, False)):
+            with (
+                self.subTest(status=status, tty=tty),
+                patch.dict(client.responses, {status: reason}),
+            ):
+                responses.replace(
+                    responses.GET,
+                    url,
+                    status=status,
+                    json={"results": [], "next": None},
+                )
+                output = self.execute(
+                    ["--debug", "list-projects"],
+                    expected=int(status == HTTPStatus.INTERNAL_SERVER_ERROR),
+                    tty=tty,
+                )
+                rendered = r"Server\x1btest" if tty else reason
+                self.assertIn(
+                    f"DEBUG:wlc:HTTP response GET {url} -> {status} {rendered}\n",
+                    output,
+                )
+                if status == HTTPStatus.INTERNAL_SERVER_ERROR:
+                    self.assertIn(
+                        f"DEBUG:wlc:HTTP failure GET {url} -> "
+                        f"500 Server Error: {rendered} for url: {url}\n",
+                        output,
+                    )
 
     def test_stderr_escapes_unicode_display_controls(self) -> None:
         """Interactive error output should visibly render Unicode controls."""
