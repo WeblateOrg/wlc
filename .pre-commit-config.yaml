@@ -46,7 +46,7 @@ repos:
   hooks:
   - id: reuse
 - repo: https://github.com/zizmorcore/zizmor-pre-commit
-  rev: v1.33.1
+  rev: v1.32.0
   hooks:
   - id: zizmor
 - repo: https://github.com/shellcheck-py/shellcheck-py
@@ -64,7 +64,7 @@ repos:
 - repo: https://github.com/mongodb/kingfisher
   rev: v2.20.0
   hooks:
-  - id: kingfisher-auto
+  - id: kingfisher-auto-files
     env:
       KINGFISHER_VERSION: v2.20.0
 - repo: https://github.com/rvben/rumdl-pre-commit
@@ -88,4 +88,4 @@ ci:
   autoupdate_schedule: quarterly
   skip:
   - reuse
-  - kingfisher-auto
+  - kingfisher-auto-files
