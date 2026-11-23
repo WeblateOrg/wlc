@@ -207,7 +207,7 @@ class WeblateURLValidationTest(APITest):
         """URL userinfo should not provide an implicit authentication channel."""
         test_cases = (
             ("https://user:password@example.com/api/", False),
-            ("http://user:password@127.0.0.1:8000/api/", False),
+            ("http://user:password@127.0.0.1:8000/api/", False),  # kingfisher:ignore
             ("http://user:password@example.com/api/", True),
         )
 
@@ -289,7 +289,7 @@ class WeblateURLValidationTest(APITest):
             responses.GET,
             "http://127.0.0.1:8000/api/hostile-projects/",
             json={
-                "next": "http://user:password@127.0.0.1:8000/api/projects/",
+                "next": "http://user:password@127.0.0.1:8000/api/projects/",  # kingfisher:ignore
                 "results": [],
             },
         )
