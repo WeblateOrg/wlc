@@ -1,5 +1,26 @@
 # Changelog
 
+## 3.4.0
+
+* Released on 23rd November 2026.
+* Wait for queued Weblate operations to complete and report their outcome.
+  Set the wait with `--task-timeout` or `task_timeout`. The default is 30
+  minutes, and zero allows unlimited waiting. Python callers can also use
+  `Weblate.wait_for_task()` directly.
+* Reject empty explicit configuration paths and stop with an error when the
+  selected user configuration cannot be read. Continue XDG discovery past
+  directories when a later configuration file is available.
+* Preserve API path case when matching URL-scoped API keys and reject duplicate
+  origins in transport exception settings.
+* Report malformed URLs and non-string URL values in API responses as client
+  errors before sending a follow-up request.
+* Validate HTTP retry and timeout settings before sending requests.
+* Escape additional invisible Unicode characters and surrogate code points in
+  interactive CLI output. Also escape terminal controls in interactive debug
+  logs.
+* Updated the CA certificate bundle, development dependencies, CI actions, and
+  Docker base images.
+
 ## 3.3.0
 
 * Released on 10th November 2026.
